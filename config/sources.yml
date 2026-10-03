@@ -256,7 +256,8 @@ sources:
     publisher: Miss Lobang
     tier: deals
     scope: mixed
-    fnb_only: true      # Food category: every article is F&B
+    # NOT fnb_only: the "Food" category also carries bedsheets, LEGO and F1 events (measured
+    # 2026-10-03), so its headlines must show F&B evidence like any aggregator's.
     ua: browser
     note: "measured 2026-10-03: 74 items (cards older than 60 days dropped), newest 2026-10-03; 1.7 MB page; undated cards fall back to fetch time"
   - name: misslobang_deals

@@ -128,6 +128,21 @@ def assign(new_items, deals):
     return deals
 
 
+def prune(deals, keep):
+    """Drop members `keep` now rejects, then deals left empty. Classification is stored at
+    ingest, so without this a rule fix only reaches items first seen after it ships."""
+    out = []
+    for d in deals:
+        ms = [m for m in d["members"] if keep(m)]
+        if not ms:
+            continue
+        if len(ms) != len(d["members"]):
+            d["members"] = ms
+            aggregate(d)
+        out.append(d)
+    return out
+
+
 def _mode_latest(values):
     vals = [v for v in values if v]
     if not vals:

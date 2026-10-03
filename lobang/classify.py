@@ -44,6 +44,11 @@ FNB = _rx([
     r"soft serve", r"pastry", r"pastries", r"tarts?", r"cookies?", r"bingsu", r"mala", r"korean bbq",
     r"izakaya", r"yakiniku", r"bento", r"kaya toast", r"toast", r"grabfood", r"foodpanda", r"deliveroo",
     r"f&b", r"fnb", r"supper", r"happy hour", r"sake", r"whisky", r"spirits",
+    # Dish words seen in Miss Lobang food headlines once that source lost fnb_only (2026-10-03).
+    r"dishes", r"pies?", r"soups?", r"crepes?", r"cinnamon rolls?", r"buns?", r"curry", r"biryani",
+    r"claypots?", r"steamboat", r"afternoon tea", r"burritos?", r"brekkie", r"mee", r"ban mian",
+    r"gomtang", r"samgyetang", r"pho", r"banh mi", r"salt bread", r"bagels?", r"wagyu", r"tingkat",
+    r"pudding", r"shakes?", r"tofu", r"margaritas?", r"ribs?", r"riblets", r"sandwich(?:es)?",
 ])
 
 # Articles that mention food but are not a deal or an opening.
@@ -53,6 +58,18 @@ NOT_A_DEAL = _rx([
     r"hiring", r"shares? (?:rose|fell|jump|drop)", r"ipo", r"quarterly results", r"profit",
     r"closing down", r"closes? (?:its|for good|permanently|all)", r"shutters?", r"ceases?",
     r"receivership", r"liquidation", r"bankrupt(?:cy)?", r"remains? open", r"cost of opening", r"closures?",
+])
+
+# A non-food product or event in the headline vetoes the item outright, food words or not:
+# "FISH & CHIPS + $3 SOCKS" is a socks deal, "Museum of Ice Cream ... 35% Off Anytime Tickets"
+# is a ticket deal. Every entry here was a live misfire (2026-10-03), so keep it to things that
+# are never F&B; "toys" stays out because a Happy Meal toy is still a meal deal.
+NON_FNB = _rx([
+    r"bed ?sheets?", r"bedding", r"mattress(?:es)?", r"duvets?", r"pillows?", r"lego", r"astro bot",
+    r"f1 drivers?", r"driver appearances?", r"show car", r"sim racing", r"superpark", r"trampoline",
+    r"(?:anytime|entry|admission|race|concert|movie|event) tickets?", r"socks", r"keychains?",
+    r"(?:boosted|bonus|earn|kris\+?) miles", r"\d+ ?mpd", r"staycations?", r"skincare", r"cosmetics",
+    r"pinned an? (?:photo|message|file|video|poll)",
 ])
 
 # ---- Singapore relevance ----------------------------------------------------
@@ -332,6 +349,8 @@ def classify(item, lex, ref):
           or (bool(SG_PUBLISHER.search(pub)) and not UNTRUSTED_PUBLISHER.search(pub))
           or bool(SG_WORDS.search(title)))
     if not sg or (FOREIGN_PLACE.search(title) and not SG_WORDS.search(title)):
+        return None
+    if NON_FNB.search(title):
         return None
     # Merchants come from the HEADLINE only: an excerpt names merchants as landmarks
     # ("a Japanese chain opens near Lau Pa Sat"), which mislabelled openings.

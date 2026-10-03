@@ -49,6 +49,26 @@ class LiveRegressions(unittest.TestCase):
         c = cls("Starbucks Singapore Debuts Protein Cold Foam For Coffee And Matcha Drinks")
         self.assertTrue(c is None or "first-in-sg" not in c["tags"])
 
+    def test_non_food_product_vetoed_even_from_food_only_source(self):
+        for t in ("6 Best Bedsheet Brands in Singapore (2026): Queen Sheet Prices and Promos Compared",
+                  "The Brick Shop LEGO October Special: Free Astro Bot at $215, 25% Off Helicarrier, 1-31 Oct 2026",
+                  "ION Orchard Live the Race (1-12 Oct 2026): Free F1 Driver Appearances, VCARB Show Car, Simulator",
+                  "FISH & CHIPS + $3 SOCKS?! THAT ESCALATED QUICKLY",
+                  "Museum of Ice Cream F1 Deal: Show Your Race Ticket for 35% Off Anytime Tickets",
+                  "Kris+ Birthday Bash: Boosted miles, 50% off deals & more",
+                  "SG Kiasu Foodies [Discounts/Promos] pinned a photo"):
+            self.assertIsNone(cls(t, fnb_only=True), t)
+
+    def test_misslobang_food_dish_headlines_still_count(self):
+        # misslobang_food lost fnb_only, so these need dish words in FNB.
+        for t in ("Morganfield's $14 Anniversary Specials: Baby Back Ribs, Rib Sandwich, Riblets and a Pitcher at $14 Each",
+                  "Penang Culture's Big Boss Birthday: Four New Dishes at $8.80++ Each, 1-31 Oct 2026",
+                  "The Soup Expert Buy 1 Get 1 Free Claypots at Suntec City: $40 Nett Spend, Till 31 Oct 2026"):
+            self.assertIsNotNone(cls(t), t)
+
+    def test_tea_museum_opening_is_not_vetoed(self):
+        self.assertIsNotNone(cls("TWG Tea opens 24-hour Tea Gallery with tea museum at Changi Airport T3"))
+
     def test_receivership_is_not_an_opening(self):
         self.assertIsNone(cls("Crystal Jade restaurants in S'pore remain open as holding companies placed under receivership"))
 

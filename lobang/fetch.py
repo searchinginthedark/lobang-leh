@@ -165,6 +165,18 @@ def run(dry_run=False, only=None, as_json=False):
             print("  {0}: {1}".format(h["name"], h["error"]), file=sys.stderr)
         return 2
 
+    # Re-check stored members against today's rules and config (after `seen`, so a member
+    # dropped here is not re-ingested next run).
+    by_name = {s["name"]: s for s in sources}
+
+    def still_fnb(m):
+        it = dict(m)
+        if m.get("source") in by_name:
+            it["fnb_only"] = bool(by_name[m["source"]].get("fnb_only"))
+        when = parse_iso(m.get("published")) or parse_iso(m["fetched"])
+        return classify(it, lex, when.date()) is not None
+
+    deal_list = D.prune(deal_list, still_fnb)
     D.assign([r for r in fresh if r["cls"]], deal_list)
     for d in deal_list:
         if any(m["id"] in listed for m in d["members"]):

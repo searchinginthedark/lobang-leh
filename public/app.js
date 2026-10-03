@@ -29,7 +29,10 @@
     saved: ['Nothing saved yet', 'Tap Save on a deal and it will show up here.']
   };
 
-  var state = { view: 'hot', q: '', cat: '', f1: false, free: false };
+  // Cards rendered per page. Hot held ~170 cards in one scroll; best-first means the
+  // first page is the part worth reading, and "Show more" keeps the rest one tap away.
+  var PAGE = 12;
+  var state = { view: 'hot', q: '', cat: '', f1: false, free: false, shown: PAGE };
   var saved = {};
   var data = null;
   var loading = false;
@@ -150,8 +153,9 @@
     return out;
   }
 
+  // null when the source states no end date: an empty line beats a guess.
   function validity(d) {
-    if (!d.valid_until) return { text: 'Validity not stated', cls: 'unknown' };
+    if (!d.valid_until) return null;
     var left = daysLeft(d.valid_until);
     if (left === 0 || hasTag(d, 'ends-today')) return { text: 'Ends today', cls: 'today' };
     var s = 'Till ' + fmtDate(d.valid_until);
@@ -192,10 +196,14 @@
   // ---------- rendering ----------
   function card(d) {
     var c = el('article', 'card' + (d.kind === 'opening' ? ' opening' : ''));
+    // The headline is always the heading; a known merchant rides in the eyebrow, an unknown
+    // one is simply left out, so every card has the same shape.
     var merch = merchantsOf(d);
-    c.appendChild(el('div', 'kind', d.kind === 'opening' ? 'New opening' : 'Promo'));
-    c.appendChild(el('h2', 'merch', merch.length ? merch.join(' + ') : 'Unknown merchant'));
-    if (d.title) c.appendChild(el('p', 'title', d.title));
+    var eb = el('div', 'eyebrow');
+    eb.appendChild(el('span', 'kind', d.kind === 'opening' ? 'New opening' : 'Promo'));
+    if (merch.length) eb.appendChild(el('span', 'merch', merch.join(' + ')));
+    c.appendChild(eb);
+    c.appendChild(el('h2', 'title', d.title || merch.join(' + ') || 'Untitled'));
 
     var bs = badgesFor(d);
     if (bs.length) {
@@ -205,7 +213,7 @@
     }
 
     var v = validity(d);
-    c.appendChild(el('p', 'valid ' + v.cls, v.text));
+    if (v) c.appendChild(el('p', 'valid ' + v.cls, v.text));
 
     if (d.summary) {
       var sb = el('button', 'summary-btn');
@@ -221,24 +229,36 @@
     var links = (Array.isArray(d.links) ? d.links : []).map(function (l) {
       return { url: l && safeUrl(l.url), pub: l && l.publisher, title: l && l.title };
     }).filter(function (l) { return l.url; });
-    var shownN = links.length;
-    var total = typeof d.publishers === 'number' ? d.publishers : shownN;
-    if (shownN) {
-      var src = el('p', 'sources');
-      src.appendChild(el('span', null, 'Source:'));
-      links.forEach(function (l) {
-        var a = el('a', null, l.pub || new URL(l.url).hostname);
-        a.href = l.url;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        if (l.title) a.title = l.title;
-        src.appendChild(a);
-      });
-      if (total > shownN) src.appendChild(el('span', 'more', '+' + (total - shownN) + ' more sources'));
-      c.appendChild(src);
-    }
+    var total = Math.max(typeof d.publishers === 'number' ? d.publishers : 0, links.length);
 
+    // One footer row: the newest source as the read link, "+N" for the rest, then actions.
     var act = el('div', 'actions');
+    var list = null;
+    if (links.length) {
+      act.appendChild(srcLink(links[0], 'src'));
+      if (total > 1) {
+        var mb = el('button', 'more-btn', '+' + (total - 1));
+        mb.type = 'button';
+        mb.setAttribute('aria-expanded', 'false');
+        mb.setAttribute('aria-label', (total - 1) + ' more source' + (total > 2 ? 's' : ''));
+        list = el('ul', 'src-list');
+        list.hidden = true;
+        links.slice(1).forEach(function (l) {
+          var li = el('li');
+          li.appendChild(srcLink(l, null));
+          list.appendChild(li);
+        });
+        if (total > links.length) list.appendChild(el('li', 'src-extra', '+' + (total - links.length) + ' not listed'));
+        mb.addEventListener('click', function () {
+          var open = mb.getAttribute('aria-expanded') !== 'true';
+          mb.setAttribute('aria-expanded', String(open));
+          list.hidden = !open;
+        });
+        act.appendChild(mb);
+      }
+    } else {
+      act.appendChild(el('span', 'src'));
+    }
     var isSaved = !!saved[d.id];
     var sv = el('button', 'act', isSaved ? 'Saved' : 'Save');
     sv.type = 'button';
@@ -254,12 +274,22 @@
     act.appendChild(sv);
     act.appendChild(sh);
     c.appendChild(act);
+    if (list) c.appendChild(list);
     return c;
+  }
+
+  function srcLink(l, cls) {
+    var a = el('a', cls, (l.pub || new URL(l.url).hostname) + ' ↗');
+    a.href = l.url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.title = l.title ? 'Read on ' + (l.pub || 'source') + ': ' + l.title : 'Read on source';
+    return a;
   }
 
   function share(d, url) {
     var link = url || location.href;
-    var title = merchantsOf(d).join(' + ') + ': ' + (d.title || 'deal');
+    var title = d.title || merchantsOf(d).join(' + ') || 'LobangLeh deal';
     if (navigator.share) {
       navigator.share({ title: title, text: title, url: link }).catch(function () { /* cancelled */ });
       return;
@@ -333,7 +363,7 @@
         state.cat = state.cat === k ? '' : k;
         savePrefs();
         renderChips();
-        render();
+        rerender();
       });
       box.appendChild(b);
     });
@@ -361,8 +391,28 @@
       return;
     }
     var frag = document.createDocumentFragment();
-    deals.forEach(function (d) { frag.appendChild(card(d)); });
+    deals.slice(0, state.shown).forEach(function (d) { frag.appendChild(card(d)); });
+    var left = deals.length - state.shown;
+    if (left > 0) {
+      var more = el('button', 'show-more', 'Show ' + Math.min(PAGE, left) + ' more · ' + left + ' left');
+      more.type = 'button';
+      more.addEventListener('click', function () {
+        var first = state.shown;
+        state.shown += PAGE;
+        render();
+        // The button is gone; put focus on the first new card so keyboard users keep their place.
+        var n = list.children[first];
+        if (n) { n.tabIndex = -1; n.focus({ preventScroll: true }); }
+      });
+      frag.appendChild(more);
+    }
     list.appendChild(frag);
+  }
+
+  // Any change to what the list shows starts again at page one.
+  function rerender() {
+    state.shown = PAGE;
+    render();
   }
 
   // ---------- loading ----------
@@ -406,22 +456,22 @@
       t.addEventListener('click', function () {
         state.view = t.getAttribute('data-view');
         savePrefs();
-        render();
+        rerender();
       });
     });
     $('q').addEventListener('input', function (e) {
       state.q = e.target.value;
       savePrefs();
-      render();
+      rerender();
     });
-    $('t-1for1').addEventListener('click', function () { state.f1 = !state.f1; savePrefs(); render(); });
-    $('t-free').addEventListener('click', function () { state.free = !state.free; savePrefs(); render(); });
+    $('t-1for1').addEventListener('click', function () { state.f1 = !state.f1; savePrefs(); rerender(); });
+    $('t-free').addEventListener('click', function () { state.free = !state.free; savePrefs(); rerender(); });
     $('clear').addEventListener('click', function () {
       state.q = ''; state.cat = ''; state.f1 = false; state.free = false;
       $('q').value = '';
       savePrefs();
       renderChips();
-      render();
+      rerender();
     });
     $('refresh').addEventListener('click', load);
     document.addEventListener('visibilitychange', function () { if (!document.hidden && data) renderHeader(); });
