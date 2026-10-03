@@ -1,5 +1,6 @@
-const CACHE = 'lobang-v4';
-const ASSETS = ['./', './app.css', './app.js', './manifest.webmanifest', './icon-192.png'];
+const CACHE = 'lobang-v5';
+const ASSETS = ['./', './app.css', './app.js', './manifest.webmanifest', './icon-192.png',
+  './fonts/PlusJakartaSans-latin.woff2'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(

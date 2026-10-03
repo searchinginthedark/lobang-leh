@@ -49,6 +49,25 @@
   }
 }
 
+/* Type system (2026-10-03): Plus Jakarta Sans, one variable family 400-800, self-hosted
+   (CSP font-src 'self', works offline). Modular scale: 16px base, ratio 1.2 (minor third).
+   Steps used: 11 caption/overline, 13 label, 16 body/title, 19 body-lg, 28-33 brand. */
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("fonts/PlusJakartaSans-latin.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+  --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --t-caption: .6875rem;   /* 11px, step -2 */
+  --t-label: .8125rem;     /* 13px, step -1 */
+  --t-body: 1rem;          /* 16px, step 0; also the search input, which must stay >= 16px or iOS zooms */
+  --t-body-lg: 1.1875rem;  /* 19px, step +1 */
+  --t-brand: clamp(1.75rem, 1.2rem + 2.4vw, 2.0625rem);  /* 28px phone -> 33px desktop, steps +3/+4 */
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
@@ -57,7 +76,9 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font: 400 var(--t-body)/1.55 var(--font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overflow-wrap: anywhere;
 }
 
@@ -70,21 +91,21 @@ body {
 /* header */
 .top { padding: 20px 0 8px; }
 .brand-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.brand { margin: 0; font-size: 28px; line-height: 1.1; font-weight: 900; letter-spacing: -.5px; color: var(--brand); }
-.sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
-.fresh { margin: 12px 0 0; font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.health { margin-top: 4px; font-size: 14px; color: var(--muted); }
+.brand { margin: 0; font-size: var(--t-brand); line-height: 1.1; font-weight: 800; letter-spacing: -.025em; color: var(--brand); }
+.sub { margin: 4px 0 0; color: var(--muted); font-size: var(--t-label); line-height: 1.4; }
+.fresh { margin: 12px 0 0; font-size: var(--t-label); color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.health { margin-top: 4px; font-size: var(--t-label); color: var(--muted); }
 .health summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
 .health-list { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 4px; }
 .health-list li { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; }
 .h-name { font-weight: 700; color: var(--text); }
-.h-err { flex-basis: 100%; font-size: 13px; }
+.h-err { flex-basis: 100%; font-size: var(--t-label); }
 
 .icon-btn {
   min-height: 44px; min-width: 44px; padding: 0 14px;
   border: 1px solid var(--line); border-radius: 22px;
   background: var(--surface); color: var(--text);
-  font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  font: inherit; font-size: var(--t-label); font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0;
 }
 .icon-btn:active { transform: scale(.97); }
 
@@ -99,7 +120,7 @@ body {
   min-height: 44px; padding: 4px 2px;
   border: 0; border-radius: 12px;
   background: var(--neutral-bg); color: var(--neutral-fg);
-  font: inherit; font-size: 13px; font-weight: 700; line-height: 1.15; cursor: pointer;
+  font: inherit; font-size: var(--t-label); font-weight: 700; line-height: 1.15; cursor: pointer;
 }
 .tab[aria-selected="true"] { background: var(--red); color: var(--on-red); }
 
@@ -108,7 +129,7 @@ body {
 .search {
   width: 100%; min-height: 44px; padding: 0 14px;
   border: 1px solid var(--line); border-radius: 22px;
-  background: var(--surface); color: var(--text); font: inherit; font-size: 16px;
+  background: var(--surface); color: var(--text); font: inherit; font-size: var(--t-body);
 }
 .search::placeholder { color: var(--muted); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -121,7 +142,7 @@ body {
   min-height: 44px; padding: 0 14px;
   border: 1px solid var(--line); border-radius: 22px;
   background: var(--surface); color: var(--text);
-  font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  font: inherit; font-size: var(--t-label); font-weight: 600; cursor: pointer;
 }
 .chip[aria-pressed="true"] { background: var(--green-bg); color: var(--green-fg); border-color: var(--green-fg); }
 .chip-clear { background: transparent; color: var(--link); border-style: dashed; }
@@ -134,31 +155,31 @@ body {
   border-left: 6px solid var(--red);
 }
 .card.opening { border-left-color: var(--blue); }
-.eyebrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: 12px; color: var(--muted); }
+.eyebrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: var(--t-caption); color: var(--muted); }
 /* The type pill repeats the border colour WITH words, so colour is never the only signal. */
 .kind {
   padding: 2px 8px; border-radius: 6px;
   background: var(--red); color: #fff;
-  font-weight: 800; text-transform: uppercase; letter-spacing: .5px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: .08em; line-height: 1.35;
 }
 .card.opening .kind { background: var(--blue); }
-.merch { font-size: 13px; font-weight: 800; color: var(--text); }
+.merch { font-size: var(--t-label); font-weight: 700; color: var(--text); }
 .merch::before { content: "\00b7"; margin-right: 8px; color: var(--muted); font-weight: 400; }
-.title { margin: 4px 0 0; font-size: 17px; line-height: 1.3; font-weight: 800; }
+.title { margin: 6px 0 0; font-size: var(--t-body); line-height: 1.35; font-weight: 700; letter-spacing: -.01em; }
 .badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
 .badge {
   display: inline-block; padding: 3px 9px; border-radius: 999px;
-  font-size: 12px; font-weight: 800; line-height: 1.3;
+  font-size: var(--t-caption); font-weight: 700; line-height: 1.35; letter-spacing: .01em;
   background: var(--neutral-bg); color: var(--neutral-fg);
 }
 .b-deal { background: var(--red-bg); color: var(--red-fg); }
 .b-good { background: var(--green-bg); color: var(--green-fg); }
 .b-warn { background: var(--yellow-bg); color: var(--yellow-fg); }
-.valid { margin: 10px 0 0; font-size: 14px; font-weight: 700; }
+.valid { margin: 10px 0 0; font-size: var(--t-label); font-weight: 600; }
 .valid.today { color: var(--red-fg); }
 .summary-btn {
   display: block; width: 100%; margin: 8px 0 0; padding: 4px 0; min-height: 44px;
-  background: none; border: 0; color: var(--text); font: inherit; font-size: 14px; text-align: left; cursor: pointer;
+  background: none; border: 0; color: var(--text); font: inherit; font-size: var(--t-label); line-height: 1.5; text-align: left; cursor: pointer;
 }
 .summary {
   display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -169,24 +190,24 @@ body {
 .src {
   flex: 1 1 auto; min-width: 0; line-height: 44px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  color: var(--link); font-size: 14px; font-weight: 700; text-decoration: none;
+  color: var(--link); font-size: var(--t-label); font-weight: 700; text-decoration: none;
 }
 a.src:hover { text-decoration: underline; }
 .more-btn, .act {
   flex: 0 0 auto; min-height: 44px; min-width: 44px; padding: 0 12px;
   border: 1px solid var(--line); border-radius: 12px;
-  background: var(--surface); color: var(--text); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+  background: var(--surface); color: var(--text); font: inherit; font-size: var(--t-label); font-weight: 700; cursor: pointer;
 }
-.more-btn { border-radius: 22px; background: var(--neutral-bg); color: var(--neutral-fg); border-color: transparent; font-size: 13px; }
+.more-btn { border-radius: 22px; background: var(--neutral-bg); color: var(--neutral-fg); border-color: transparent; font-size: var(--t-label); }
 .more-btn[aria-expanded="true"] { background: var(--text); color: var(--bg); }
 .act[aria-pressed="true"] { background: var(--yellow-bg); color: var(--yellow-fg); border-color: var(--yellow-fg); }
-.src-list { list-style: none; margin: 4px 0 0; padding: 0; font-size: 14px; }
+.src-list { list-style: none; margin: 4px 0 0; padding: 0; font-size: var(--t-label); }
 .src-list a { display: flex; align-items: center; min-height: 44px; color: var(--link); font-weight: 700; text-decoration: none; border-top: 1px dashed var(--line); }
 .src-extra { padding: 8px 0; color: var(--muted); border-top: 1px dashed var(--line); }
 .show-more {
   width: 100%; min-height: 48px; margin-top: 4px;
   border: 2px dashed var(--line); border-radius: var(--radius);
-  background: transparent; color: var(--text); font: inherit; font-size: 15px; font-weight: 800; cursor: pointer;
+  background: transparent; color: var(--text); font: inherit; font-size: var(--t-body); font-weight: 700; cursor: pointer;
 }
 .show-more:active { transform: scale(.99); }
 .card:focus { outline: none; }
@@ -194,7 +215,7 @@ a.src:hover { text-decoration: underline; }
 
 /* states */
 .state { margin-top: 24px; padding: 24px 16px; text-align: center; border: 2px dashed var(--line); border-radius: var(--radius); color: var(--muted); }
-.state strong { display: block; color: var(--text); font-size: 18px; margin-bottom: 4px; }
+.state strong { display: block; color: var(--text); font-size: var(--t-body-lg); font-weight: 700; margin-bottom: 4px; }
 .state.err { border-color: var(--red); }
 .state.err strong { color: var(--red-fg); }
 .state .icon-btn { margin-top: 12px; }
@@ -203,7 +224,7 @@ a.src:hover { text-decoration: underline; }
 .toast {
   position: fixed; left: 50%; bottom: 24px; z-index: 20;
   max-width: calc(100vw - 32px); padding: 12px 18px; border-radius: 12px;
-  background: var(--text); color: var(--bg); font-size: 14px; font-weight: 700;
+  background: var(--text); color: var(--bg); font-size: var(--t-label); font-weight: 600;
   transform: translate(-50%, 24px); opacity: 0;
   visibility: hidden; pointer-events: none;
   transition: transform .2s, opacity .2s, visibility .2s;
@@ -211,7 +232,7 @@ a.src:hover { text-decoration: underline; }
 .toast.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
 
 .top-btns { display: flex; gap: 6px; flex-shrink: 0; }
-#tourbtn { padding: 0; font-size: 18px; }
+#tourbtn { padding: 0; font-size: var(--t-body-lg); }
 
 /* guided tour (adapted from news-radar). Above the sticky tabs (5) and the toast (20). The
    transparent layer takes every tap outside the card; the spotlight's shadow IS the dim. */
@@ -229,22 +250,21 @@ a.src:hover { text-decoration: underline; }
 .tour-card.bottom { bottom: calc(16px + env(safe-area-inset-bottom)); }
 .tour-card.top { top: calc(16px + env(safe-area-inset-top)); }
 .tour-card.mid { top: 22%; }
-.tour-n { margin: 0; font-size: 12px; color: var(--muted); }
-.tour-t { margin: 2px 0 6px; font-size: 17px; font-weight: 800; }
-.tour-b { margin: 0 0 4px; font-size: 15px; line-height: 1.45; }
-.tour-off { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 14px; cursor: pointer; }
+.tour-n { margin: 0; font-size: var(--t-caption); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.tour-t { margin: 4px 0 6px; font-size: var(--t-body-lg); line-height: 1.25; font-weight: 700; letter-spacing: -.01em; }
+.tour-b { margin: 0 0 4px; font-size: var(--t-body); line-height: 1.5; }
+.tour-off { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: var(--t-label); cursor: pointer; }
 .tour-off input { width: 20px; height: 20px; margin: 0; accent-color: var(--red); }
 .tour-btns { display: flex; gap: 6px; align-items: center; }
 .tour-btn {
   min-height: 44px; min-width: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px;
-  background: var(--surface); color: var(--text); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+  background: var(--surface); color: var(--text); font: inherit; font-size: var(--t-label); font-weight: 700; cursor: pointer;
 }
 #tour-skip { margin-right: auto; border-color: transparent; background: none; color: var(--muted); }
 .tour-next { background: var(--red); border-color: var(--red); color: var(--on-red); }
 
 @media (min-width: 600px) {
-  .brand { font-size: 34px; }
-  .tab { font-size: 15px; }
+  .tab { font-size: var(--t-body); }
 }
 
 @media (prefers-reduced-motion: reduce) {
