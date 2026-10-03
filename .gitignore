@@ -9,3 +9,6 @@ public/*.tmp
 # Session brief: never goes to the remote (snapshotted to the workspace memory repo).
 CLAUDE.md
 .planning/
+# Memory layer (decisions log + session archives): never pushed. Durable copy lives in the
+# local-only memory repo via memory/briefs/refresh.py.
+memory/
