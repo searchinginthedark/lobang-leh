@@ -1,0 +1,6 @@
+# LF everywhere, so the Linux CI runner and this Windows box read identical bytes.
+* text=auto eol=lf
+data/*.jsonl text eol=lf
+data/*.json  text eol=lf
+*.png binary
+*.gz binary

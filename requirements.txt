@@ -1,0 +1,5 @@
+# Pinned exactly: CI reinstalls on a fresh runner every pass, so a floor would
+# silently track whatever released that morning.
+feedparser==6.0.12
+sgmllib3k==1.0.0
+PyYAML==6.0.3

@@ -1,0 +1,1501 @@
+# LobangLeh merchant lexicon. Matched case-insensitively on WORD BOUNDARIES against headlines.
+# aliases: extra spellings seen in SG headlines (with/without apostrophes, abbreviations).
+# origin: home country ONLY for foreign brands (Japan, Korea, Taiwan, China, Hong Kong, Thailand,
+#   Malaysia, Indonesia, Vietnam, USA, UK, Australia, France, ...); omit for Singapore brands.
+# famous: true for household names / big queues; used as a small score boost.
+merchants:
+  # ---------------- Fast food & chains ----------------
+  - name: "McDonald's"
+    aliases: ["McDonalds", "McD"]  # not "Macs": matches Apple Macs
+    category: fast-food
+    famous: true
+    origin: USA
+  - name: "KFC"
+    aliases: ["Kentucky Fried Chicken"]
+    category: fast-food
+    famous: true
+    origin: USA
+  - name: "Burger King"
+    aliases: []
+    category: fast-food
+    famous: true
+    origin: USA
+  - name: "Jollibee"
+    aliases: []
+    category: fast-food
+    famous: true
+    origin: Philippines
+  - name: "Popeyes"
+    aliases: ["Popeyes Louisiana Kitchen"]
+    category: fast-food
+    famous: true
+    origin: USA
+  - name: "Texas Chicken"
+    aliases: []
+    category: fast-food
+    famous: false
+    origin: USA
+  - name: "Subway"
+    aliases: []
+    category: fast-food
+    famous: true
+    origin: USA
+  - name: "MOS Burger"
+    aliases: ["MOSBurger"]
+    category: fast-food
+    famous: false
+    origin: Japan
+  - name: "Shake Shack"
+    aliases: []
+    category: fast-food
+    famous: true
+    origin: USA
+  - name: "Five Guys"
+    aliases: []
+    category: fast-food
+    famous: true
+    origin: USA
+  - name: "4Fingers"
+    aliases: ["4Fingers Crispy Chicken", "Four Fingers"]
+    category: fast-food
+    famous: false
+    origin: Korea
+  - name: "Pizza Hut"
+    aliases: []
+    category: fast-food
+    famous: true
+    origin: USA
+  - name: "Domino's"
+    aliases: ["Dominos", "Domino's Pizza"]
+    category: fast-food
+    famous: true
+    origin: USA
+  - name: "Long John Silver's"
+    aliases: ["Long John Silvers"]
+    category: fast-food
+    famous: false
+    origin: USA
+  - name: "A&W"
+    aliases: []
+    category: fast-food
+    famous: false
+    origin: USA
+  - name: "Wingstop"
+    aliases: []
+    category: fast-food
+    famous: false
+    origin: USA
+  - name: "Carl's Jr"
+    aliases: ["Carls Jr", "Carl's Jr."]
+    category: fast-food
+    famous: false
+    origin: USA
+  - name: "Arnold's Fried Chicken"
+    aliases: ["Arnolds Fried Chicken"]
+    category: fast-food
+    famous: false
+  - name: "Lotteria"
+    aliases: []
+    category: fast-food
+    famous: true
+    origin: Korea
+  - name: "Chick-fil-A"
+    aliases: ["Chick fil A", "Chickfila"]
+    category: fast-food
+    famous: true
+    origin: USA
+  - name: "Chipotle"
+    aliases: ["Chipotle Mexican Grill"]
+    category: fast-food
+    famous: true
+    origin: USA
+  - name: "Taco Bell"
+    aliases: []
+    category: fast-food
+    famous: false
+    origin: USA
+  - name: "Pezzo"
+    aliases: ["Pezzo Pizza"]
+    category: fast-food
+    famous: false
+  - name: "Kenny Rogers Roasters"
+    aliases: ["Kenny Rogers"]
+    category: fast-food
+    famous: false
+    origin: USA
+  - name: "Marrybrown"
+    aliases: ["Marry Brown"]
+    category: fast-food
+    famous: false
+    origin: Malaysia
+  - name: "Muchachos"
+    aliases: []
+    category: fast-food
+    famous: false
+  - name: "Chicken Up"
+    aliases: []
+    category: fast-food
+    famous: false
+  - name: "Wok Hey"
+    aliases: []
+    category: fast-food
+    famous: false
+  - name: "Pastamania"
+    aliases: ["Pasta Mania"]
+    category: fast-food
+    famous: false
+  - name: "Sushi Express"
+    aliases: []
+    category: fast-food
+    famous: false
+  - name: "Bonchon"
+    aliases: ["BonChon Chicken"]
+    category: fast-food
+    famous: false
+    origin: Korea
+  - name: "Pelicana"
+    aliases: ["Pelicana Chicken"]
+    category: fast-food
+    famous: false
+    origin: Korea
+  - name: "bhc Chicken"
+    aliases: ["bhc Singapore"]
+    category: fast-food
+    famous: false
+    origin: Korea
+  - name: "Eggs 'n Things"
+    aliases: ["Eggs n Things"]
+    category: cafe
+    famous: false
+    origin: USA
+  - name: "Boost Juice"
+    aliases: []
+    category: fast-food
+    famous: false
+    origin: Australia
+  - name: "Joe & The Juice"
+    aliases: ["Joe and the Juice"]
+    category: cafe
+    famous: false
+    origin: Denmark
+  - name: "Mister Donut"
+    aliases: ["Mister Donut Singapore"]
+    category: bakery-dessert
+    famous: false
+    origin: Japan
+  # ---------------- Coffee ----------------
+  - name: "Starbucks"
+    aliases: ["Starbucks Reserve"]
+    category: coffee
+    famous: true
+    origin: USA
+  - name: "The Coffee Bean & Tea Leaf"
+    aliases: ["Coffee Bean", "Coffee Bean & Tea Leaf", "Coffee Bean and Tea Leaf"]
+    category: coffee
+    famous: true
+    origin: USA
+  - name: "Toast Box"
+    aliases: ["ToastBox"]
+    category: coffee
+    famous: true
+  - name: "Ya Kun Kaya Toast"
+    aliases: ["Ya Kun"]
+    category: coffee
+    famous: true
+  - name: "Killiney Kopitiam"
+    aliases: ["Killiney"]
+    category: coffee
+    famous: false
+  - name: "Heavenly Wang"
+    aliases: ["Heavenly Wang Coffee"]
+    category: coffee
+    famous: false
+  - name: "Luckin Coffee"
+    aliases: ["Luckin"]
+    category: coffee
+    famous: true
+    origin: China
+  - name: "Cotti Coffee"
+    aliases: ["Cotti"]
+    category: coffee
+    famous: true
+    origin: China
+  - name: "Tomoro Coffee"
+    aliases: ["Tomoro"]
+    category: coffee
+    famous: false
+    origin: China
+  - name: "Flash Coffee"
+    aliases: []
+    category: coffee
+    famous: false
+  - name: "Common Man Coffee Roasters"
+    aliases: ["Common Man"]
+    category: coffee
+    famous: false
+  - name: "% Arabica"
+    aliases: ["%Arabica", "Percent Arabica", "Arabica Coffee"]
+    category: coffee
+    famous: true
+    origin: Japan
+  - name: "Tim Hortons"
+    aliases: ["Tim Horton's"]
+    category: coffee
+    famous: true
+    origin: Canada
+  - name: "Blue Bottle Coffee"
+    aliases: ["Blue Bottle"]
+    category: coffee
+    famous: true
+    origin: USA
+  - name: "Kopi Kenangan"
+    aliases: ["Kenangan Coffee", "Kenangan"]
+    category: coffee
+    famous: false
+    origin: Indonesia
+  - name: "Fore Coffee"
+    aliases: []
+    category: coffee
+    famous: false
+    origin: Indonesia
+  - name: "Bacha Coffee"
+    aliases: ["Bacha"]
+    category: coffee
+    famous: true
+  - name: "Huggs Coffee"
+    aliases: ["Huggs"]
+    category: coffee
+    famous: false
+  - name: "Dutch Colony Coffee"
+    aliases: ["Dutch Colony"]
+    category: coffee
+    famous: false
+  - name: "Nylon Coffee Roasters"
+    aliases: ["Nylon Coffee"]
+    category: coffee
+    famous: false
+  - name: "Cafe Kitsune"
+    aliases: ["Café Kitsuné", "Cafe Kitsuné", "Kitsune Cafe"]
+    category: coffee
+    famous: false
+    origin: France
+  - name: "Lavazza"
+    aliases: []
+    category: coffee
+    famous: false
+    origin: Italy
+  - name: "Hoshino Coffee"
+    aliases: ["Hoshino"]
+    category: coffee
+    famous: false
+    origin: Japan
+  - name: "Komeda's Coffee"
+    aliases: ["Komeda", "Komedas Coffee"]
+    category: coffee
+    famous: false
+    origin: Japan
+  - name: "Compose Coffee"
+    aliases: []
+    category: coffee
+    famous: false
+    origin: Korea
+  - name: "Mega Coffee"
+    aliases: ["Mega MGC Coffee"]
+    category: coffee
+    famous: false
+    origin: Korea
+  - name: "The Coffee Academics"
+    aliases: ["Coffee Academics"]
+    category: coffee
+    famous: false
+    origin: Hong Kong
+  - name: "ZUS Coffee"
+    aliases: []
+    category: coffee
+    famous: false
+    origin: Malaysia
+  - name: "Gigi Coffee"
+    aliases: []
+    category: coffee
+    famous: false
+    origin: Malaysia
+  - name: "OldTown White Coffee"
+    aliases: ["Old Town White Coffee", "OldTown"]
+    category: coffee
+    famous: false
+    origin: Malaysia
+  - name: "Dang Coffee"
+    aliases: []
+    category: coffee
+    famous: false
+  - name: "Kith Cafe"
+    aliases: ["Kith Café"]
+    category: cafe
+    famous: false
+  # ---------------- Bubble tea / tea ----------------
+  - name: "LiHO"
+    aliases: ["LiHO Tea"]
+    category: bubble-tea
+    famous: true
+  - name: "KOI"
+    aliases: ["KOI Thé", "KOI The"]
+    category: bubble-tea
+    famous: true
+    origin: Taiwan
+  - name: "Gong Cha"
+    aliases: ["Gongcha"]
+    category: bubble-tea
+    famous: true
+    origin: Taiwan
+  - name: "Each A Cup"
+    aliases: ["EachACup"]
+    category: bubble-tea
+    famous: false
+  - name: "Playmade"
+    aliases: ["Playmade by Wanpo"]
+    category: bubble-tea
+    famous: false
+    origin: Taiwan
+  - name: "Chicha San Chen"
+    aliases: ["Chicha"]
+    category: bubble-tea
+    famous: true
+    origin: Taiwan
+  - name: "Tiger Sugar"
+    aliases: []
+    category: bubble-tea
+    famous: true
+    origin: Taiwan
+  - name: "Xing Fu Tang"
+    aliases: ["Xingfutang"]
+    category: bubble-tea
+    famous: true
+    origin: Taiwan
+  - name: "Mixue"
+    aliases: ["Mixue Ice Cream & Tea", "Mixue Bingcheng"]
+    category: bubble-tea
+    famous: true
+    origin: China
+  - name: "HEYTEA"
+    aliases: ["Hey Tea"]
+    category: bubble-tea
+    famous: true
+    origin: China
+  - name: "Nayuki"
+    aliases: ["Nayuki Tea"]
+    category: bubble-tea
+    famous: false
+    origin: China
+  - name: "Chagee"
+    aliases: ["Chagee Tea", "Bawang Chaji"]
+    category: bubble-tea
+    famous: true
+    origin: China
+  - name: "Sharetea"
+    aliases: ["Share Tea"]
+    category: bubble-tea
+    famous: false
+    origin: Taiwan
+  - name: "Machi Machi"
+    aliases: ["MachiMachi"]
+    category: bubble-tea
+    famous: true
+    origin: Taiwan
+  - name: "Partea"
+    aliases: []
+    category: bubble-tea
+    famous: false
+  - name: "Yi Fang"
+    aliases: ["Yifang", "Yi Fang Taiwan Fruit Tea"]
+    category: bubble-tea
+    famous: false
+    origin: Taiwan
+  - name: "The Alley"
+    aliases: ["The Alley Lu Jiao Xiang", "The Alley Taiwan"]
+    category: bubble-tea
+    famous: true
+    origin: Taiwan
+  - name: "CoCo Fresh Tea & Juice"
+    aliases: ["CoCo Fresh Tea", "CoCo Bubble Tea", "CoCo Tea"]
+    category: bubble-tea
+    famous: false
+    origin: Taiwan
+  - name: "R&B Tea"
+    aliases: ["RnB Tea", "R&B Milk Tea"]
+    category: bubble-tea
+    famous: false
+    origin: Taiwan
+  - name: "Hollin"
+    aliases: ["Hollin Tea"]
+    category: bubble-tea
+    famous: false
+    origin: Taiwan
+  - name: "Bober Tea"
+    aliases: ["Bober"]
+    category: bubble-tea
+    famous: false
+  - name: "Ten Ren Tea"
+    aliases: ["Ten Ren"]
+    category: bubble-tea
+    famous: false
+    origin: Taiwan
+  - name: "Presotea"
+    aliases: []
+    category: bubble-tea
+    famous: false
+    origin: Taiwan
+  - name: "Ding Tea"
+    aliases: []
+    category: bubble-tea
+    famous: false
+    origin: Taiwan
+  - name: "Auntea Jenny"
+    aliases: []
+    category: bubble-tea
+    famous: false
+    origin: Taiwan
+  - name: "Chatime"
+    aliases: []
+    category: bubble-tea
+    famous: false
+    origin: Taiwan
+  - name: "Tealive"
+    aliases: []
+    category: bubble-tea
+    famous: false
+    origin: Malaysia
+  - name: "Lelecha"
+    aliases: []
+    category: bubble-tea
+    famous: false
+    origin: China
+  - name: "Tsujiri"
+    aliases: ["Tsujiri Singapore"]
+    category: bubble-tea
+    famous: false
+    origin: Japan
+  - name: "Mr Coconut"
+    aliases: []
+    category: bubble-tea
+    famous: false
+  - name: "Meet Fresh"
+    aliases: []
+    category: bakery-dessert
+    famous: true
+    origin: Taiwan
+  # ---------------- Bakery / dessert ----------------
+  - name: "BreadTalk"
+    aliases: ["Bread Talk"]
+    category: bakery-dessert
+    famous: true
+  - name: "Paris Baguette"
+    aliases: ["Paris Baguette Cafe"]
+    category: bakery-dessert
+    famous: true
+    origin: Korea
+  - name: "Four Leaves"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+  - name: "Tiong Bahru Bakery"
+    aliases: ["TBB"]
+    category: bakery-dessert
+    famous: true
+  - name: "Mr Bean"
+    aliases: ["Mr Bean Soya", "Mr. Bean"]
+    category: bakery-dessert
+    famous: false
+  - name: "Polar Puffs & Cakes"
+    aliases: ["Polar Puffs", "Polar Cafe"]
+    category: bakery-dessert
+    famous: false
+  - name: "Swensen's"
+    aliases: ["Swensens"]
+    category: bakery-dessert
+    famous: true
+    origin: USA
+  - name: "Llao Llao"
+    aliases: ["LlaoLlao"]
+    category: bakery-dessert
+    famous: false
+    origin: Spain
+  - name: "Yole"
+    aliases: ["Yole Frozen Yogurt"]
+    category: bakery-dessert
+    famous: false
+  - name: "Udders"
+    aliases: ["Udders Ice Cream"]
+    category: bakery-dessert
+    famous: false
+  - name: "Baskin-Robbins"
+    aliases: ["Baskin Robbins"]
+    category: bakery-dessert
+    famous: true
+    origin: USA
+  - name: "Häagen-Dazs"
+    aliases: ["Haagen-Dazs", "Haagen Dazs"]
+    category: bakery-dessert
+    famous: true
+    origin: USA
+  - name: "Krispy Kreme"
+    aliases: []
+    category: bakery-dessert
+    famous: true
+    origin: USA
+  - name: "Dunkin'"
+    aliases: ["Dunkin Donuts", "Dunkin' Donuts", "Dunkin"]
+    category: bakery-dessert
+    famous: true
+    origin: USA
+  - name: "Beard Papa's"
+    aliases: ["Beard Papa", "Beard Papas"]
+    category: bakery-dessert
+    famous: false
+    origin: Japan
+  - name: "Old Chang Kee"
+    aliases: []
+    category: bakery-dessert
+    famous: true
+  - name: "Bengawan Solo"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+  - name: "Auntie Anne's"
+    aliases: ["Auntie Annes"]
+    category: bakery-dessert
+    famous: false
+    origin: USA
+  - name: "Twelve Cupcakes"
+    aliases: ["12 Cupcakes"]
+    category: bakery-dessert
+    famous: false
+  - name: "Awfully Chocolate"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+  - name: "Delifrance"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+    origin: France
+  - name: "Cedele"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+  - name: "Cold Stone Creamery"
+    aliases: ["Cold Stone"]
+    category: bakery-dessert
+    famous: false
+    origin: USA
+  - name: "Ben & Jerry's"
+    aliases: ["Ben and Jerrys", "Ben & Jerrys", "Ben and Jerry's"]
+    category: bakery-dessert
+    famous: false
+    origin: USA
+  - name: "Creamier"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+  - name: "Birds of Paradise"
+    aliases: ["Birds of Paradise Gelato"]
+    category: bakery-dessert
+    famous: false
+  - name: "Lady M"
+    aliases: []
+    category: bakery-dessert
+    famous: true
+    origin: USA
+  - name: "Godiva"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+    origin: Belgium
+  - name: "Ladurée"
+    aliases: ["Laduree"]
+    category: bakery-dessert
+    famous: false
+    origin: France
+  - name: "Pierre Hermé"
+    aliases: ["Pierre Herme"]
+    category: bakery-dessert
+    famous: false
+    origin: France
+  - name: "Janice Wong"
+    aliases: ["2am:dessertbar", "2am dessertbar"]
+    category: bakery-dessert
+    famous: false
+  - name: "Pine Garden"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+  - name: "Tai Cheong Bakery"
+    aliases: ["Tai Cheong"]
+    category: bakery-dessert
+    famous: false
+    origin: Hong Kong
+  - name: "Famous Amos"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+    origin: USA
+  - name: "BAKE Cheese Tart"
+    aliases: []
+    category: bakery-dessert
+    famous: true
+    origin: Japan
+  - name: "PABLO Cheese Tart"
+    aliases: []
+    category: bakery-dessert
+    famous: true
+    origin: Japan
+  - name: "Uncle Tetsu"
+    aliases: ["Uncle Tetsu's", "Uncle Tetsus"]
+    category: bakery-dessert
+    famous: true
+    origin: Japan
+  - name: "Hokkaido Baked Cheese Tart"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+    origin: Japan
+  - name: "Cafe Mary Grace"
+    aliases: ["Café Mary Grace", "Mary Grace Cafe", "Mary Grace"]
+    category: bakery-dessert
+    famous: true
+    origin: Philippines
+  - name: "Yi Man Fen Dessert"
+    aliases: ["Yi Man Fen", "Yiman Fen"]
+    category: bakery-dessert
+    famous: true
+    origin: China
+  - name: "Tiffany Blue Box Cafe"
+    aliases: ["Tiffany & Co. Blue Box Cafe", "Tiffany Cafe", "Blue Box Cafe"]
+    category: cafe
+    famous: true
+    origin: USA
+  - name: "Gontran Cherrier"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+    origin: France
+  - name: "Kki Sweets"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+  - name: "Ah Chew Desserts"
+    aliases: ["Ah Chew"]
+    category: bakery-dessert
+    famous: false
+  - name: "Mei Heong Yuen Dessert"
+    aliases: ["Mei Heong Yuen"]
+    category: bakery-dessert
+    famous: false
+    origin: Taiwan
+  - name: "Hui Lau Shan"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+    origin: Hong Kong
+  - name: "Honeymoon Dessert"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+    origin: Hong Kong
+  - name: "Sulbing"
+    aliases: ["Sulbing Korea"]
+    category: bakery-dessert
+    famous: false
+    origin: Korea
+  - name: "After You Dessert Cafe"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+    origin: Thailand
+  - name: "J.CO Donuts & Coffee"
+    aliases: ["J.CO", "JCO Donuts"]
+    category: bakery-dessert
+    famous: false
+    origin: Indonesia
+  - name: "Tous Les Jours"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+    origin: Korea
+  - name: "Mom's Touch"
+    aliases: ["Moms Touch"]
+    category: fast-food
+    famous: false
+    origin: Korea
+  - name: "Prima Taste"
+    aliases: []
+    category: grocery
+    famous: false
+  - name: "Bee Cheng Hiang"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+  - name: "Lim Chee Guan"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+  # ---------------- Restaurants & groups ----------------
+  - name: "Din Tai Fung"
+    aliases: ["DTF"]
+    category: restaurant
+    famous: true
+    origin: Taiwan
+  - name: "Haidilao"
+    aliases: ["Hai Di Lao"]
+    category: restaurant
+    famous: true
+    origin: China
+  - name: "Sushiro"
+    aliases: []
+    category: restaurant
+    famous: true
+    origin: Japan
+  - name: "Genki Sushi"
+    aliases: ["Genki"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Ichiban Boshi"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Ajisen Ramen"
+    aliases: ["Ajisen"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Pepper Lunch"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Saizeriya"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Sukiya"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Yoshinoya"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Ippudo"
+    aliases: []
+    category: restaurant
+    famous: true
+    origin: Japan
+  - name: "Ramen Nagi"
+    aliases: ["Nagi Ramen"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Tonkatsu by Ma Maison"
+    aliases: ["Ma Maison"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Seoul Garden"
+    aliases: []
+    category: buffet
+    famous: false
+  - name: "Jumbo Seafood"
+    aliases: []
+    category: restaurant
+    famous: true
+  - name: "Crystal Jade"
+    aliases: ["Crystal Jade Kitchen"]
+    category: restaurant
+    famous: false
+  - name: "Paradise Group"
+    aliases: ["Paradise Dynasty", "Canton Paradise", "Paradise Classic", "Paradise Hotpot", "Taste Paradise"]
+    category: restaurant
+    famous: false
+  - name: "Tim Ho Wan"
+    aliases: []
+    category: restaurant
+    famous: true
+    origin: Hong Kong
+  - name: "Swee Choon"
+    aliases: ["Swee Choon Dim Sum"]
+    category: restaurant
+    famous: false
+  - name: "Putien"
+    aliases: ["Pu Tien"]
+    category: restaurant
+    famous: false
+  - name: "Fish & Co"
+    aliases: ["Fish and Co", "Fish & Co."]
+    category: restaurant
+    famous: false
+  - name: "Astons"
+    aliases: ["Astons Specialities"]
+    category: restaurant
+    famous: false
+  - name: "Collin's"
+    aliases: ["Collins Grille", "Collins Restaurant"]
+    category: restaurant
+    famous: false
+  - name: "Sakae Sushi"
+    aliases: ["Sakae"]
+    category: restaurant
+    famous: false
+  - name: "Watami"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Kura Sushi"
+    aliases: ["Kura Revolving Sushi"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Tamjai Samgor"
+    aliases: ["Tam Jai Samgor"]
+    category: restaurant
+    famous: false
+    origin: Hong Kong
+  - name: "Beauty in the Pot"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Taiwan
+  - name: "Shabu Sai"
+    aliases: []
+    category: buffet
+    famous: false
+    origin: Japan
+  - name: "Nene Chicken"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Korea
+  - name: "Chir Chir"
+    aliases: ["Chir Chir Chicken"]
+    category: restaurant
+    famous: false
+    origin: Korea
+  - name: "Kyochon"
+    aliases: ["Kyochon Chicken"]
+    category: restaurant
+    famous: false
+    origin: Korea
+  - name: "Ajumma's"
+    aliases: ["Ajummas"]
+    category: restaurant
+    famous: false
+  - name: "Josh's Grill"
+    aliases: ["Joshs Grill"]
+    category: restaurant
+    famous: false
+  - name: "Stuff'd"
+    aliases: ["Stuffd"]
+    category: restaurant
+    famous: false
+  - name: "Guzman y Gomez"
+    aliases: ["GYG"]
+    category: fast-food
+    famous: false
+    origin: Australia
+  - name: "Paik's Bibim"
+    aliases: ["Paik's", "Paiks"]
+    category: restaurant
+    famous: false
+    origin: Korea
+  - name: "Xiao Long Kan"
+    aliases: ["Xiaolongkan"]
+    category: restaurant
+    famous: false
+    origin: China
+  - name: "Coucou"
+    aliases: ["Coucou Hotpot"]
+    category: restaurant
+    famous: false
+    origin: China
+  - name: "Soup Restaurant"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Song Fa Bak Kut Teh"
+    aliases: ["Song Fa"]
+    category: restaurant
+    famous: false
+  - name: "Founder Bak Kut Teh"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Ng Ah Sio Bak Kut Teh"
+    aliases: ["Ng Ah Sio"]
+    category: restaurant
+    famous: false
+  - name: "The Soup Spoon"
+    aliases: ["Soup Spoon"]
+    category: restaurant
+    famous: false
+  - name: "Peach Garden"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Imperial Treasure"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Man Man Unagi"
+    aliases: ["Man Man Japanese Unagi"]
+    category: restaurant
+    famous: false
+  - name: "Sushi Tei"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Indonesia
+  - name: "Itacho Sushi"
+    aliases: ["Itacho"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Maki-San"
+    aliases: ["Maki San"]
+    category: restaurant
+    famous: false
+  - name: "Tonkichi"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Gyu-Kaku"
+    aliases: ["Gyukaku"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Yakiniku Like"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Ootoya"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Tenya"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Santouka"
+    aliases: ["Hokkaido Ramen Santouka"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Marutama Ra-men"
+    aliases: ["Marutama Ramen"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Ichiran"
+    aliases: []
+    category: restaurant
+    famous: true
+    origin: Japan
+  - name: "Ramen Keisuke"
+    aliases: ["Keisuke Ramen"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Yayoi"
+    aliases: ["Yayoi Teishoku"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Marugame Udon"
+    aliases: ["Marugame"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Tamoya Udon"
+    aliases: ["Tamoya"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Gyoza no Ohsho"
+    aliases: ["Ohsho"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Bornga"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Korea
+  - name: "Bulgogi Brothers"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Korea
+  - name: "Jinjja Chicken"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "PizzaExpress"
+    aliases: ["Pizza Express"]
+    category: restaurant
+    famous: false
+    origin: UK
+  - name: "Hard Rock Cafe"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: USA
+  - name: "Burger & Lobster"
+    aliases: ["Burger and Lobster"]
+    category: restaurant
+    famous: false
+    origin: UK
+  - name: "Black Tap"
+    aliases: ["Black Tap Craft Burgers"]
+    category: restaurant
+    famous: false
+    origin: USA
+  - name: "Eggslut"
+    aliases: []
+    category: restaurant
+    famous: true
+    origin: USA
+  - name: "Sizzler"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Australia
+  - name: "Bakerzin"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Brotzeit"
+    aliases: ["Brotzeit German Bier Bar"]
+    category: restaurant
+    famous: false
+  - name: "Ministry of Crab"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Sri Lanka
+  - name: "Pizza 4P's"
+    aliases: ["Pizza 4Ps"]
+    category: restaurant
+    famous: false
+    origin: Vietnam
+  - name: "Thai Express"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Ayam Penyet Ria"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Indonesia
+  - name: "PappaRich"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Malaysia
+  - name: "Secret Recipe"
+    aliases: []
+    category: cafe
+    famous: false
+    origin: Malaysia
+  - name: "Madam Kwan's"
+    aliases: ["Madam Kwans"]
+    category: restaurant
+    famous: false
+    origin: Malaysia
+  - name: "Springleaf Prata Place"
+    aliases: ["Springleaf Prata"]
+    category: restaurant
+    famous: false
+  - name: "The Chicken Rice Shop"
+    aliases: ["Chicken Rice Shop"]
+    category: restaurant
+    famous: false
+  - name: "Tsui Wah"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Hong Kong
+  - name: "Kam's Roast"
+    aliases: ["Kams Roast"]
+    category: restaurant
+    famous: false
+    origin: Hong Kong
+  - name: "Mak's Noodle"
+    aliases: ["Maks Noodle"]
+    category: restaurant
+    famous: false
+    origin: Hong Kong
+  - name: "Cafe de Coral"
+    aliases: ["Café de Coral"]
+    category: restaurant
+    famous: false
+    origin: Hong Kong
+  - name: "Maxim's"
+    aliases: ["Maxims Cafe"]
+    category: restaurant
+    famous: false
+    origin: Hong Kong
+  - name: "Mott 32"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Hong Kong
+  - name: "Lei Garden"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Hong Kong
+  - name: "Ay-Chung Flour-Rice Noodle"
+    aliases: ["Ay Chung", "Ay-Chung"]
+    category: restaurant
+    famous: false
+    origin: Taiwan
+  - name: "Hot-Star"
+    aliases: ["Hot Star Fried Chicken", "Hot-Star Large Fried Chicken"]
+    category: fast-food
+    famous: false
+    origin: Taiwan
+  - name: "Shihlin Taiwan Street Snacks"
+    aliases: ["Shihlin"]
+    category: fast-food
+    famous: false
+    origin: Taiwan
+  - name: "Yang Guo Fu"
+    aliases: ["Yang Guo Fu Malatang"]
+    category: restaurant
+    famous: false
+    origin: China
+  - name: "Zhang Liang Malatang"
+    aliases: ["Zhang Liang Mala Tang"]
+    category: restaurant
+    famous: false
+    origin: China
+  - name: "Boon Tong Kee"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Wee Nam Kee"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "No Signboard Seafood"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Long Beach Seafood"
+    aliases: ["Long Beach UDMC"]
+    category: restaurant
+    famous: false
+  - name: "Palm Beach Seafood"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Dancing Crab"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Violet Oon"
+    aliases: ["Violet Oon Singapore"]
+    category: restaurant
+    famous: false
+  - name: "The Coconut Club"
+    aliases: ["Coconut Club"]
+    category: restaurant
+    famous: false
+  - name: "Spring Court"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Rang Mahal"
+    aliases: []
+    category: restaurant
+    famous: false
+  # ---------------- Buffet / hotel dining ----------------
+  - name: "Carousel"
+    aliases: ["Carousel Buffet", "Carousel Royal Plaza"]
+    category: buffet
+    famous: false
+  - name: "Food Exchange"
+    aliases: ["Food Exchange Novotel"]
+    category: buffet
+    famous: false
+  - name: "Edge at Pan Pacific"
+    aliases: ["Edge Pan Pacific", "Edge Restaurant"]
+    category: buffet
+    famous: false
+  - name: "Kiseki"
+    aliases: ["Kiseki Japanese Buffet"]
+    category: buffet
+    famous: false
+  - name: "Shin Minori"
+    aliases: ["Shin Minori Japanese Buffet"]
+    category: buffet
+    famous: false
+  - name: "Straits Kitchen"
+    aliases: []
+    category: buffet
+    famous: false
+  - name: "Mezza9"
+    aliases: []
+    category: buffet
+    famous: false
+  - name: "The Line at Shangri-La"
+    aliases: ["The Line Shangri-La", "The Line Buffet"]
+    category: buffet
+    famous: false
+  - name: "Shaburi & Kintan"
+    aliases: ["Shaburi Kintan", "Shaburi and Kintan"]
+    category: buffet
+    famous: false
+    origin: Japan
+  - name: "Marina Bay Sands Rise"
+    aliases: ["Rise Marina Bay Sands"]
+    category: buffet
+    famous: false
+  # ---------------- Hawker / food courts ----------------
+  - name: "Kopitiam"
+    aliases: ["Kopitiam Food Court"]
+    category: hawker
+    famous: false
+  - name: "Food Republic"
+    aliases: []
+    category: hawker
+    famous: false
+  - name: "Koufu"
+    aliases: []
+    category: hawker
+    famous: false
+  - name: "Hawker Chan"
+    aliases: ["Liao Fan Hawker Chan", "Hawker Chan Soya Sauce Chicken"]
+    category: hawker
+    famous: true
+  - name: "328 Katong Laksa"
+    aliases: []
+    category: hawker
+    famous: false
+  - name: "Hjh Maimunah"
+    aliases: []
+    category: hawker
+    famous: false
+  - name: "Lau Pa Sat"
+    aliases: []
+    category: hawker
+    famous: false
+  - name: "Maxwell Food Centre"
+    aliases: ["Maxwell Hawker Centre"]
+    category: hawker
+    famous: false
+  - name: "Zam Zam"
+    aliases: ["Zam Zam Restaurant"]
+    category: hawker
+    famous: false
+  # ---------------- Cafes ----------------
+  - name: "PS.Cafe"
+    aliases: ["PS Cafe", "PS.Cafe Petit"]
+    category: cafe
+    famous: false
+  - name: "Wild Honey"
+    aliases: []
+    category: cafe
+    famous: false
+  - name: "Sarnies"
+    aliases: []
+    category: cafe
+    famous: false
+  - name: "Strangers' Reunion"
+    aliases: ["Strangers Reunion"]
+    category: cafe
+    famous: false
+  - name: "Arteastiq"
+    aliases: []
+    category: cafe
+    famous: false
+  - name: "Merci Marcel"
+    aliases: []
+    category: cafe
+    famous: false
+  - name: "The Providore"
+    aliases: []
+    category: cafe
+    famous: false
+  - name: "Park Bench Deli"
+    aliases: []
+    category: cafe
+    famous: false
+  - name: "Lola's Cafe"
+    aliases: ["Lolas Cafe"]
+    category: cafe
+    famous: false
+  - name: "Pacamara"
+    aliases: ["Pacamara Boutique Coffee Roasters"]
+    category: cafe
+    famous: false
+  - name: "Habitat Coffee"
+    aliases: []
+    category: cafe
+    famous: false
+  # ---------------- Bars / drinks ----------------
+  - name: "Brewerkz"
+    aliases: []
+    category: bar-drinks
+    famous: false
+  - name: "Ce La Vi"
+    aliases: ["Cé La Vi"]
+    category: bar-drinks
+    famous: false
+  - name: "1-Altitude"
+    aliases: ["1 Altitude", "1-Altitude Coast"]
+    category: bar-drinks
+    famous: false
+  - name: "LeVeL33"
+    aliases: ["Level 33"]
+    category: bar-drinks
+    famous: false
+  - name: "Jigger & Pony"
+    aliases: ["Jigger and Pony"]
+    category: bar-drinks
+    famous: false
+  - name: "Operation Dagger"
+    aliases: []
+    category: bar-drinks
+    famous: false
+  - name: "Wine Connection"
+    aliases: []
+    category: bar-drinks
+    famous: false
+    origin: Thailand
+  - name: "Timbre+"
+    aliases: ["Timbre Plus", "Timbre Group"]
+    category: bar-drinks
+    famous: false
+  - name: "Paulaner Brauhaus"
+    aliases: ["Paulaner"]
+    category: bar-drinks
+    famous: false
+    origin: Germany
+  - name: "Tiger Beer"
+    aliases: ["Tiger Brewery"]
+    category: bar-drinks
+    famous: false
+  # ---------------- Grocery ----------------
+  - name: "FairPrice"
+    aliases: ["NTUC FairPrice", "Fairprice Finest", "FairPrice Xtra"]
+    category: grocery
+    famous: true
+  - name: "Cold Storage"
+    aliases: []
+    category: grocery
+    famous: true
+  - name: "Sheng Siong"
+    aliases: []
+    category: grocery
+    famous: true
+  - name: "Don Don Donki"
+    aliases: ["Donki", "Don Quijote"]
+    category: grocery
+    famous: true
+    origin: Japan
+  - name: "Giant Hypermarket"
+    aliases: ["Giant Supermarket"]
+    category: grocery
+    famous: false
+  - name: "RedMart"
+    aliases: []
+    category: grocery
+    famous: false
+  - name: "Meidi-Ya"
+    aliases: ["Meidiya"]
+    category: grocery
+    famous: false
+    origin: Japan
+  - name: "Mustafa Centre"
+    aliases: []
+    category: grocery
+    famous: false
+  - name: "Prime Supermarket"
+    aliases: []
+    category: grocery
+    famous: false
+  - name: "Little Farms"
+    aliases: []
+    category: grocery
+    famous: false
+  - name: "7-Eleven"
+    aliases: ["7 Eleven", "Seven-Eleven"]
+    category: grocery
+    famous: true
+    origin: USA
+  # ---------------- Delivery / platforms ----------------
+  - name: "GrabFood"
+    aliases: ["Grab Food"]
+    category: delivery
+    famous: true
+  - name: "foodpanda"
+    aliases: ["Food Panda"]
+    category: delivery
+    famous: true
+  - name: "Deliveroo"
+    aliases: []
+    category: delivery
+    famous: true
+  - name: "WhyQ"
+    aliases: []
+    category: delivery
+    famous: false
+  - name: "Chope"
+    aliases: []
+    category: other
+    famous: false
+  - name: "Burpple"
+    aliases: []
+    category: other
+    famous: false
+
+  # Added 2026-10-03 from the first live audit: openings that appeared under 2+ headlines
+  # with no lexicon match, so each one became its own card.
+  - name: "I'm donut?"
+    aliases: ["I'm Donut", "Im Donut"]
+    category: bakery-dessert
+    famous: true
+    origin: Japan
+  - name: "OJEJE"
+    aliases: []
+    category: restaurant
+    famous: false
+    origin: Korea
+  - name: "TWG Tea"
+    aliases: []
+    category: cafe
+    famous: true
+  - name: "Molly Tea"
+    aliases: []
+    category: bubble-tea
+    famous: false
+    origin: China
+  - name: "CHOYA Ginza Bar"
+    aliases: ["CHOYA"]
+    category: bar-drinks
+    famous: false
+    origin: Japan
+  - name: "GoroGoro Steamboat"
+    aliases: ["GoroGoro"]
+    category: restaurant
+    famous: false
+  - name: "Anteroom Coffee Brewers"
+    aliases: ["Anteroom Coffee"]
+    category: coffee
+    famous: false

@@ -1,0 +1,61 @@
+name: lobangleh collect
+
+# Shown in the run list, so an external trigger is distinguishable from a hand
+# dispatch. Same pattern as news-radar.
+run-name: "collect (${{ github.event.inputs.source || 'gha-cron' }})"
+
+on:
+  schedule:
+    # GitHub DROPS many scheduled triggers (measured in news-radar and hydrate:
+    # ~1 run/day landed against 4 scheduled). Treat these as a safety net; the
+    # reliable driver is an external cron POSTing workflow_dispatch (README).
+    # UTC. SG deal posts land through the SG day, so: 08:00, 12:00, 17:00, 21:00 SGT.
+    - cron: "0 0 * * *"
+    - cron: "0 4 * * *"
+    - cron: "0 9 * * *"
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Who triggered this - surfaces in the run name"
+        required: false
+        default: "manual"
+
+concurrency:
+  group: lobangleh-collect
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Unit tests
+        run: python -m unittest discover -s tests
+
+      - name: Collect
+        # Exit 2 = every source failed; nothing is written and the job goes red,
+        # which is the point: a total outage must never publish "no deals".
+        run: python -m lobang.fetch
+
+      - name: Commit data
+        run: |
+          git config user.name "lobangleh-bot"
+          git config user.email "lobangleh-bot@users.noreply.github.com"
+          git add data public/deals.json
+          if git diff --cached --quiet; then echo "No change to commit."; exit 0; fi
+          git commit -m "data: collect $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3; do git pull --rebase origin main && git push && exit 0; sleep 5; done
+          exit 1

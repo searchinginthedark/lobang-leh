@@ -1,0 +1,249 @@
+# LobangLeh source registry. Measured 2026-10-03 from a residential IP (Singapore); CI IP not yet verified.
+# ua = the plainest User-Agent that was measured working: 'library' (Python-urllib) or 'browser' (Chrome string).
+# fnb_only: the publisher only covers food, so a headline needs no food keyword to count.
+# F&B counts use a loose keyword regex over the newest items; treat them as relative, not exact.
+sources:
+  - name: singpromos
+    type: rss
+    url: https://singpromos.com/feed/
+    publisher: SingPromos
+    tier: deals
+    scope: promo
+    ua: library
+    note: "15 items, 9 F&B, newest 2026-10-03"
+  - name: tg_sgfooddeals
+    type: telegram
+    channel: sgfooddeals
+    publisher: SG Food Deals
+    tier: social
+    scope: promo
+    fnb_only: true      # food-only publisher: every post is F&B
+    ua: library
+    note: "20 items, 11 F&B, newest 2026-10-02"
+  - name: tg_kiasufoodies
+    type: telegram
+    channel: kiasufoodies
+    publisher: SG Kiasu Foodies
+    tier: social
+    scope: promo
+    fnb_only: true      # food-only publisher: every post is F&B
+    ua: library
+    note: "20 items, 12 F&B, newest 2026-10-03"
+  - name: greatdeals_eatdrink
+    type: rss
+    url: https://www.greatdeals.com.sg/category/eat-drink/feed/
+    publisher: "Great Deals Singapore (Eat & Drink)"
+    tier: deals
+    scope: mixed
+    fnb_only: true      # food-only publisher: every post is F&B
+    ua: browser
+    note: "10 items, 9 F&B, newest 2026-10-02"
+  - name: greatdeals_storeopen
+    type: rss
+    url: https://www.greatdeals.com.sg/tag/store-openings/feed/
+    publisher: Great Deals Singapore (store openings)
+    tier: deals
+    scope: opening
+    ua: browser
+    note: "10 items, 10 F&B, newest 2026-10-02"
+  - name: tg_sgfoodies
+    type: telegram
+    channel: sgfoodies
+    publisher: SG Foodies
+    tier: social
+    scope: promo
+    fnb_only: true      # food-only publisher: every post is F&B
+    ua: library
+    note: "15 items, 10 F&B, newest 2026-09-30"
+  - name: eatbook_deals
+    type: rss
+    url: https://eatbook.sg/category/deals/feed/
+    publisher: Eatbook (Deals)
+    tier: media
+    scope: promo
+    fnb_only: true      # food-only publisher: every post is F&B
+    ua: browser
+    note: "10 items, 9 F&B, newest 2026-10-01"
+  - name: eatbook
+    type: rss
+    url: https://eatbook.sg/feed/
+    publisher: Eatbook
+    tier: media
+    scope: mixed
+    fnb_only: true      # food-only publisher: every post is F&B
+    ua: browser
+    note: "10 items, 9 F&B, newest 2026-10-02"
+  - name: eatbook_newopen
+    type: rss
+    url: https://eatbook.sg/tag/new-openings/feed/
+    publisher: Eatbook (new openings)
+    tier: media
+    scope: opening
+    fnb_only: true      # food-only publisher: every post is F&B
+    ua: browser
+    note: "10 items, 10 F&B, newest 2026-09-21"
+  - name: littlebigreddot_food
+    type: rss
+    url: https://littlebigreddot.com/category/food-drinks/feed/
+    publisher: "Little Big Red Dot (Food & Drinks)"
+    tier: deals
+    scope: mixed
+    fnb_only: true      # food-only publisher: every post is F&B
+    ua: browser
+    note: "10 items, 8 F&B, newest 2026-10-03"
+  - name: sethlui_food
+    type: rss
+    url: https://sethlui.com/category/food/feed/
+    publisher: Seth Lui
+    tier: media
+    scope: mixed
+    fnb_only: true      # food-only publisher: every post is F&B
+    ua: browser
+    note: "10 items, 7 F&B, newest 2026-10-03"
+  - name: ladyironchef
+    type: rss
+    url: https://www.ladyironchef.com/feed/
+    publisher: Lady Iron Chef
+    tier: media
+    scope: opening
+    fnb_only: true      # food-only publisher: every post is F&B
+    ua: library
+    note: "20 items, 15 F&B, newest 2026-09-29"
+  - name: tg_danielfooddiary
+    type: telegram
+    channel: danielfooddiary
+    publisher: Daniel Food Diary
+    tier: social
+    scope: opening
+    fnb_only: true      # food-only publisher: every post is F&B
+    ua: library
+    note: "20 items, 12 F&B, newest 2026-10-01"
+  - name: therantingpanda
+    type: rss
+    url: https://www.therantingpanda.com/feed/
+    publisher: The Ranting Panda
+    tier: media
+    scope: mixed
+    fnb_only: true      # food-only publisher: every post is F&B
+    ua: library
+    note: "15 items, 13 F&B, newest 2026-10-01"
+  - name: confirmgood
+    type: rss
+    url: https://confirmgood.com/feed/
+    publisher: Confirm Good
+    tier: deals
+    scope: promo
+    ua: library
+    note: "10 items, 5 F&B, newest 2026-10-02"
+  - name: thesmartlocal
+    type: rss
+    url: https://thesmartlocal.com/feed/
+    publisher: TheSmartLocal
+    tier: media
+    scope: promo
+    ua: library
+    note: "10 items, 2 F&B, newest 2026-10-02"
+  - name: honeycombers
+    type: rss
+    url: https://thehoneycombers.com/singapore/feed/
+    publisher: Honeycombers
+    tier: media
+    scope: mixed
+    ua: browser
+    note: "10 items, 5 F&B, newest 2026-10-02"
+  - name: straitstimes_life
+    type: rss
+    url: https://www.straitstimes.com/news/life/rss.xml
+    publisher: The Straits Times (Life)
+    tier: news
+    scope: mixed
+    ua: library
+    note: "39 items, 8 F&B, newest 2026-10-03"
+  - name: cna_lifestyle
+    type: rss
+    url: https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml&category=6511
+    publisher: CNA Lifestyle
+    tier: news
+    scope: mixed
+    ua: library
+    note: "18 items, 7 F&B, newest 2026-10-03"
+  - name: gnews_promo_fnb
+    type: gnews
+    query: 'Singapore food promotion discount'
+    publisher: Google News
+    tier: news
+    scope: promo
+    ua: library
+    note: "41 items, 17 F&B, newest 2026-10-02, SG F&B by eye ~6/8"
+  - name: gnews_1for1
+    type: gnews
+    query: 'Singapore 1-for-1 deal'
+    publisher: Google News
+    tier: news
+    scope: promo
+    ua: library
+    note: "66 items, 13 F&B, newest 2026-10-03, SG F&B by eye ~6/8"
+  - name: gnews_chain_promo
+    type: gnews
+    query: 'McDonald''s OR KFC OR Starbucks OR Koi OR LiHO Singapore promotion'
+    publisher: Google News
+    tier: news
+    scope: promo
+    ua: library
+    note: "35 items, 17 F&B, newest 2026-10-02, SG F&B by eye ~6/8"
+  - name: gnews_buy1get1
+    type: gnews
+    query: 'Singapore buy 1 get 1 free drink OR burger OR pizza'
+    publisher: Google News
+    tier: news
+    scope: promo
+    ua: library
+    note: "45 items, 12 F&B, newest 2026-10-03, SG F&B by eye ~5/8"
+  - name: gnews_free_food
+    type: gnews
+    query: 'Singapore free food giveaway promotion'
+    publisher: Google News
+    tier: news
+    scope: promo
+    ua: library
+    note: "13 items, 8 F&B, newest 2026-10-02, SG F&B by eye ~5/8"
+  - name: gnews_first_outlet
+    type: gnews
+    query: '"first outlet in Singapore"'
+    publisher: Google News
+    tier: news
+    scope: opening
+    ua: library
+    note: "5 items, 4 F&B, newest 2026-09-30, SG F&B by eye 4/5"
+  - name: gnews_flagship
+    type: gnews
+    query: '"first Singapore outlet" OR "first store in Singapore" food'
+    publisher: Google News
+    tier: news
+    scope: opening
+    ua: library
+    note: "2 items, 2 F&B, newest 2026-09-30, SG F&B by eye 2/2"
+  - name: gnews_overseas_brand
+    type: gnews
+    query: 'overseas chain debuts Singapore cafe restaurant opening'
+    publisher: Google News
+    tier: news
+    scope: opening
+    ua: library
+    note: "4 items, 4 F&B, newest 2026-10-01, SG F&B by eye 4/4"
+  - name: gnews_new_opening
+    type: gnews
+    query: 'new restaurant opening Singapore this week'
+    publisher: Google News
+    tier: news
+    scope: opening
+    ua: library
+    note: "66 items, 15 F&B, newest 2026-10-03, SG F&B by eye 8/8"
+  - name: gnews_bubbletea
+    type: gnews
+    query: 'bubble tea brand Singapore new outlet'
+    publisher: Google News
+    tier: news
+    scope: mixed
+    ua: library
+    note: "15 items, 12 F&B, newest 2026-10-02, SG F&B by eye ~7/8"

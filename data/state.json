@@ -1,0 +1,295 @@
+{
+ "sources": [
+  {
+   "count": 15,
+   "error": null,
+   "fnb": 10,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "singpromos",
+   "ok": true,
+   "publisher": "SingPromos",
+   "type": "rss"
+  },
+  {
+   "count": 20,
+   "error": null,
+   "fnb": 18,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "tg_sgfooddeals",
+   "ok": true,
+   "publisher": "SG Food Deals",
+   "type": "telegram"
+  },
+  {
+   "count": 20,
+   "error": null,
+   "fnb": 20,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "tg_kiasufoodies",
+   "ok": true,
+   "publisher": "SG Kiasu Foodies",
+   "type": "telegram"
+  },
+  {
+   "count": 10,
+   "error": null,
+   "fnb": 10,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "greatdeals_eatdrink",
+   "ok": true,
+   "publisher": "Great Deals Singapore (Eat & Drink)",
+   "type": "rss"
+  },
+  {
+   "count": 10,
+   "error": null,
+   "fnb": 8,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "greatdeals_storeopen",
+   "ok": true,
+   "publisher": "Great Deals Singapore (store openings)",
+   "type": "rss"
+  },
+  {
+   "count": 15,
+   "error": null,
+   "fnb": 12,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "tg_sgfoodies",
+   "ok": true,
+   "publisher": "SG Foodies",
+   "type": "telegram"
+  },
+  {
+   "count": 10,
+   "error": null,
+   "fnb": 2,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "eatbook_deals",
+   "ok": true,
+   "publisher": "Eatbook (Deals)",
+   "type": "rss"
+  },
+  {
+   "count": 10,
+   "error": null,
+   "fnb": 10,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "eatbook",
+   "ok": true,
+   "publisher": "Eatbook",
+   "type": "rss"
+  },
+  {
+   "count": 10,
+   "error": null,
+   "fnb": 1,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "eatbook_newopen",
+   "ok": true,
+   "publisher": "Eatbook (new openings)",
+   "type": "rss"
+  },
+  {
+   "count": 10,
+   "error": null,
+   "fnb": 10,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "littlebigreddot_food",
+   "ok": true,
+   "publisher": "Little Big Red Dot (Food & Drinks)",
+   "type": "rss"
+  },
+  {
+   "count": 10,
+   "error": null,
+   "fnb": 7,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "sethlui_food",
+   "ok": true,
+   "publisher": "Seth Lui",
+   "type": "rss"
+  },
+  {
+   "count": 20,
+   "error": null,
+   "fnb": 1,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "ladyironchef",
+   "ok": true,
+   "publisher": "Lady Iron Chef",
+   "type": "rss"
+  },
+  {
+   "count": 20,
+   "error": null,
+   "fnb": 9,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "tg_danielfooddiary",
+   "ok": true,
+   "publisher": "Daniel Food Diary",
+   "type": "telegram"
+  },
+  {
+   "count": 15,
+   "error": null,
+   "fnb": 4,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "therantingpanda",
+   "ok": true,
+   "publisher": "The Ranting Panda",
+   "type": "rss"
+  },
+  {
+   "count": 10,
+   "error": null,
+   "fnb": 2,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "confirmgood",
+   "ok": true,
+   "publisher": "Confirm Good",
+   "type": "rss"
+  },
+  {
+   "count": 10,
+   "error": null,
+   "fnb": 1,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "thesmartlocal",
+   "ok": true,
+   "publisher": "TheSmartLocal",
+   "type": "rss"
+  },
+  {
+   "count": 10,
+   "error": null,
+   "fnb": 0,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "honeycombers",
+   "ok": true,
+   "publisher": "Honeycombers",
+   "type": "rss"
+  },
+  {
+   "count": 38,
+   "error": null,
+   "fnb": 2,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "straitstimes_life",
+   "ok": true,
+   "publisher": "The Straits Times (Life)",
+   "type": "rss"
+  },
+  {
+   "count": 18,
+   "error": null,
+   "fnb": 0,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "cna_lifestyle",
+   "ok": true,
+   "publisher": "CNA Lifestyle",
+   "type": "rss"
+  },
+  {
+   "count": 41,
+   "error": null,
+   "fnb": 11,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "gnews_promo_fnb",
+   "ok": true,
+   "publisher": "Google News",
+   "type": "gnews"
+  },
+  {
+   "count": 66,
+   "error": null,
+   "fnb": 17,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "gnews_1for1",
+   "ok": true,
+   "publisher": "Google News",
+   "type": "gnews"
+  },
+  {
+   "count": 35,
+   "error": null,
+   "fnb": 8,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "gnews_chain_promo",
+   "ok": true,
+   "publisher": "Google News",
+   "type": "gnews"
+  },
+  {
+   "count": 45,
+   "error": null,
+   "fnb": 9,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "gnews_buy1get1",
+   "ok": true,
+   "publisher": "Google News",
+   "type": "gnews"
+  },
+  {
+   "count": 13,
+   "error": null,
+   "fnb": 2,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "gnews_free_food",
+   "ok": true,
+   "publisher": "Google News",
+   "type": "gnews"
+  },
+  {
+   "count": 5,
+   "error": null,
+   "fnb": 3,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "gnews_first_outlet",
+   "ok": true,
+   "publisher": "Google News",
+   "type": "gnews"
+  },
+  {
+   "count": 2,
+   "error": null,
+   "fnb": 2,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "gnews_flagship",
+   "ok": true,
+   "publisher": "Google News",
+   "type": "gnews"
+  },
+  {
+   "count": 4,
+   "error": null,
+   "fnb": 2,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "gnews_overseas_brand",
+   "ok": true,
+   "publisher": "Google News",
+   "type": "gnews"
+  },
+  {
+   "count": 66,
+   "error": null,
+   "fnb": 15,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "gnews_new_opening",
+   "ok": true,
+   "publisher": "Google News",
+   "type": "gnews"
+  },
+  {
+   "count": 15,
+   "error": null,
+   "fnb": 6,
+   "last_ok": "2026-10-03T17:14:22+08:00",
+   "name": "gnews_bubbletea",
+   "ok": true,
+   "publisher": "Google News",
+   "type": "gnews"
+  }
+ ],
+ "updated": "2026-10-03T17:14:22+08:00"
+}
