@@ -236,6 +236,11 @@ def is_live(deal, today):
     until = deal.get("valid_until")
     if until:
         return date.fromisoformat(until) >= today
+    # A standing offer (bank card dining page) is live while its page still lists it. Two
+    # days of grace, so one failed fetch of that page does not blank its offers.
+    listed = parse_iso(deal.get("last_listed"))
+    if listed and (today - listed.date()).days <= 2:
+        return True
     pub = parse_iso(deal["published"]).date()
     stale = OPENING_STALE_DAYS if deal["kind"] == "opening" else PROMO_STALE_DAYS
     return (today - pub).days <= stale

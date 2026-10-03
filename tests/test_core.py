@@ -172,6 +172,15 @@ class Validity(unittest.TestCase):
     def test_weekday_in_range(self):
         self.assertEqual(self.v("from 6 Oct to Sun 12 Oct"), ("2026-10-06", "2026-10-12"))
 
+    def test_today_only_with_stated_date(self):
+        # Miss Lobang cards have no publish date, so "today" alone would mean the fetch day.
+        self.assertEqual(self.v("mr bean 1-for-1 today only, sunday 20 september 2026"),
+                         (None, "2026-09-20"))
+
+    def test_date_only(self):
+        self.assertEqual(self.v("teachers' day treats, 4 sep 2026 only: free half dozen"),
+                         ("2026-09-04", "2026-09-04"))
+
     def test_none(self):
         self.assertEqual(self.v("great food"), (None, None))
 
@@ -263,6 +272,14 @@ class Score(unittest.TestCase):
 
     def test_undated_promo_lapses(self):
         d = self.deal("KFC 1-for-1 Zinger", when=datetime(2026, 9, 1, 9, tzinfo=SGT))
+        self.assertFalse(D.is_live(d, REF))
+
+    def test_standing_offer_live_while_listed(self):
+        d = self.deal("Din Tai Fung 1-for-1 xiao long bao for DBS cards", when=datetime(2026, 8, 1, 9, tzinfo=SGT))
+        self.assertFalse(D.is_live(d, REF))
+        d["last_listed"] = iso(datetime(2026, 10, 2, 9, tzinfo=SGT))   # one missed fetch: still live
+        self.assertTrue(D.is_live(d, REF))
+        d["last_listed"] = iso(datetime(2026, 9, 28, 9, tzinfo=SGT))   # dropped off the page
         self.assertFalse(D.is_live(d, REF))
 
     def test_ends_today_tag_added_at_publish(self):

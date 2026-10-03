@@ -247,3 +247,45 @@ sources:
     scope: mixed
     ua: library
     note: "15 items, 12 F&B, newest 2026-10-02, SG F&B by eye ~7/8"
+
+  # ---- scrapers / APIs (added 2026-10-03) ----
+  - name: misslobang_food
+    type: scrape
+    parser: misslobang
+    url: https://www.misslobang.com/category/food
+    publisher: Miss Lobang
+    tier: deals
+    scope: mixed
+    fnb_only: true      # Food category: every article is F&B
+    ua: browser
+    note: "measured 2026-10-03: 74 items (cards older than 60 days dropped), newest 2026-10-03; 1.7 MB page; undated cards fall back to fetch time"
+  - name: misslobang_deals
+    type: scrape
+    parser: misslobang
+    url: https://www.misslobang.com/category/deals
+    publisher: Miss Lobang
+    tier: deals
+    scope: mixed        # Deals category mixes F&B with retail/travel; classifier filters
+    ua: browser
+    note: "measured 2026-10-03: 80 items capped, ~21 F&B by classifier, newest 2026-10-03; 4.2 MB page, not newest-first (hence the 60-day filter)"
+  - name: dbs_dining
+    type: scrape
+    parser: dbs_dining
+    url: https://www.dbs.com.sg/personal/promotion/cards-wonderful-dining
+    publisher: DBS/POSB Cards
+    tier: deals
+    scope: promo
+    fnb_only: true      # dining-only page
+    standing: true      # undated standing offers: live while the page lists them (fetch.py `listed`)
+    ua: browser
+    note: "measured 2026-10-03: 39 unique standing card offers, no dates (all look new on first run, then dedupe)"
+  - name: hungrygowhere
+    type: scrape
+    parser: hungrygowhere
+    url: https://www.hungrygowhere.com/
+    publisher: HungryGoWhere
+    tier: media
+    scope: mixed
+    fnb_only: true      # food-only publisher
+    ua: browser
+    note: "measured 2026-10-03: 8 items (homepage cards, several tagged New Openings), newest 2026-10-02; RSS and /food-news/ answer 500"

@@ -494,3 +494,37 @@ Key finding: **the plain library UA is 403'd by most WordPress sites** (Eatbook,
 - Ging Sun Ho launches Singapore-exclusive menu with $9.90 combo - Confirm Good
 - 19 Best Deals In Singapore This Week – 28th September-4th October 2026 - TheSmartLocal
 
+
+## Scraper / API probe (2026-10-03, residential SG IP, Chrome UA, urllib)
+
+Items for kept sources = dry-run counts. robots verdict = `urllib.robotparser` on the fetched robots.txt for the path used.
+
+| candidate | url | status | robots | items | verdict |
+|---|---|---|---|---|---|
+| misslobang food | https://www.misslobang.com/category/food | 200, 1.7 MB | Allow: / | 200 cards in HTML, 74 after 60-day filter | KEPT `misslobang_food`. Server-rendered Next.js cards (h3, standfirst, deal badge); date on some cards only |
+| misslobang deals | https://www.misslobang.com/category/deals | 200, 4.2 MB | Allow: / | 463 cards, 80 taken, ~21 F&B | KEPT `misslobang_deals`. Not newest-first; mixes retail/travel |
+| DBS/POSB dining | https://www.dbs.com.sg/personal/promotion/cards-wonderful-dining | 200, 229 KB | allowed | 46 cards, 39 unique | KEPT `dbs_dining`. Cards sit in a `<noscript>` block; standing offers, no dates |
+| HungryGoWhere home | https://www.hungrygowhere.com/ | 200, 98 KB | only `*/page/*` disallowed | 8 cards, dated, several "New Openings" | KEPT `hungrygowhere`. Its /feed/ and /food-news/ answer 500 |
+| DBS card-promotions hub | https://www.dbs.com.sg/personal/cards/card-promotions | 200, 393 KB | allowed | n/a | superseded by the dining page (hub is generic, all categories) |
+| OCBC card promotions | https://www.ocbc.com/personal-banking/cards/card-promotions?main=foodandgroceries | 200, 139 KB | allowed | 0 | REJECTED: merchant list loaded by JS ("promotions found"), no JSON URL in page or page-script.js; also `?main=` variants identical |
+| UOB cards deals | https://www.uob.com.sg/personal/promotions/cards/deals/index.page | 200, 463 KB | not checked | ~60 modals | REJECTED: hotel/travel/ticket-heavy standing offers in modals, little F&B deal text; dining paths (`/dining.page`, `/dining-privileges.page`) 404 |
+| HSBC / Citi / AMEX SG | hsbc.com.sg/credit-cards/, citibank.com.sg/, americanexpress.com/sg/ | 200 | not checked | 0 dining deals | REJECTED: marketing homepages only; guessed dining paths 404 |
+| Chope deals | https://www.chope.co/singapore-restaurants | 200, 249 KB | `/passport`, `/user` only | page says "Our Deals have Moved" | REJECTED: deals moved to Grab Dine Out |
+| Grab Dine Out | https://www.grab.com/sg/restaurant-deals/ | 200, 164 KB | not checked | 0 | REJECTED: marketing page, deals are in the app |
+| Eatigo | https://eatigo.com/sg/singapore/en (+ /sg, www) | 308 / 404 / 525 | allowed | 0 | REJECTED: redirect loop / origin error, Nuxt app |
+| Burpple | https://www.burpple.com/ | 200 but Cloudflare challenge marker | Crawl-delay 10, AI bots disallowed | 0 | REJECTED: bot wall |
+| foodpanda SG | https://www.foodpanda.sg/ | 200, 870 KB | not checked | 0 deals text | REJECTED: app shell, no promo list in HTML |
+| Deliveroo SG offers | https://www.deliveroo.com.sg/offers | 200, 190 KB | not checked | 0 | REJECTED: Next shell, offers need location + JS |
+| Domino's SG promotions | https://www.dominos.com.sg/promotions | 200, 184 KB | not checked | ~6 | REJECTED: hand-edited CMS tiles with no per-item URL, 6 standing offers |
+| Subway SG | https://www.subway.com/en-sg/promotions | 200, 251 KB | not checked | 0 | REJECTED: no deal text in HTML |
+| KFC SG | https://www.kfc.com.sg/promotions | 200, 34 KB | not checked | 0 | REJECTED: JS app shell |
+| Starbucks / BK / Pizza Hut / Jollibee / McDonald's SG | various | 200/404 | not checked | 0 | REJECTED: no deal list in server HTML (McDonald's deals URLs 404, Jollibee only a "Special Deals" banner) |
+| LiHO, Mixue, KOI, Chagee SG | various | 0/404 | - | 0 | REJECTED: unreachable or 404 |
+| Mall pages (CapitaStar, Jewel, Frasers, Mapletree, VivoCity, ION, Suntec) | various | 200/403/0 | not checked | 0 | REJECTED: shells without dining-promo lists in HTML; ION 403; Suntec domain unreachable; Jewel promotions path 404 |
+| QSR Media Asia RSS | https://qsrmedia.asia/rss.xml | 200, 21 KB | `/rss.xml` allowed | ~20 | REJECTED: titles are standfirsts ("The company withdrew from the market in 2019."), real headline only in the URL slug; Asia-wide, would need a Singapore filter |
+| MoneySmart dining promos | https://www.moneysmart.sg/dining-promotions | 403 | - | 0 | REJECTED: bot wall |
+| Time Out SG new restaurants | https://www.timeout.com/singapore/restaurants/new-restaurants-in-singapore | 404 (binary body) | - | 0 | REJECTED |
+
+### Free-key APIs (not signed up, no key held)
+- GNews.io: 100 requests/day, 10 articles/request, 12-hour delay, non-commercial only (checked on its pricing page 2026-10-03). Env var would be `GNEWS_API_KEY`. Adds little: it indexes the same outlets as the 12 Google News queries, and the 12 h delay hurts a freshness tool. Not recommended.
+- NewsData.io: free tier exists (`NEWSDATA_API_KEY`), limits not verifiable from its pricing page when fetched. Same overlap argument. Not recommended.

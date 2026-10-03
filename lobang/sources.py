@@ -7,6 +7,8 @@ An item is a plain dict:
 from __future__ import annotations
 
 import html
+import importlib
+import os
 import re
 import urllib.parse
 
@@ -131,6 +133,33 @@ def parse_telegram(src, body):
     return out
 
 
+def run_module(src):
+    """`scrape` / `api` sources: lobang/scrapers/<parser>.py owns the requests and parsing.
+
+    Contract (docs/scrapers.md): module.fetch(src, get, key) -> list of dicts with
+    title, url, summary, published (datetime or None). It must RAISE net.FetchError when
+    the page/API no longer has the expected structure; returning [] means "the source
+    genuinely lists nothing today", never "the markup changed".
+    """
+    mod = importlib.import_module("lobang.scrapers." + src["parser"])
+    key = os.environ.get(src["env"]) if src.get("env") else None
+
+    def get(url, **kw):
+        kw.setdefault("ua", src.get("ua", "browser"))
+        return net.get(url, **kw)
+
+    out = []
+    for r in mod.fetch(src, get, key):
+        pub = r.get("published")
+        if pub is not None and pub.tzinfo is None:
+            pub = pub.replace(tzinfo=SGT)
+        it = _item(src, r.get("title"), r.get("url"), r.get("summary") or "",
+                   pub.astimezone(SGT) if pub else None, publisher=r.get("publisher"))
+        if it:
+            out.append(it)
+    return out
+
+
 def fetch(src):
     try:
         kind = src["type"]
@@ -141,6 +170,8 @@ def fetch(src):
         elif kind == "telegram":
             url = "https://t.me/s/" + src["channel"]
             items = parse_telegram(src, net.get(url, ua=src.get("ua", "browser")))
+        elif kind in ("scrape", "api"):
+            items = run_module(src)
         else:
             return {"ok": False, "items": [], "error": "unknown type " + str(kind)}
     except net.FetchError as exc:

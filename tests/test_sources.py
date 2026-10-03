@@ -77,6 +77,37 @@ class Telegram(unittest.TestCase):
             S.parse_telegram({"name": "tg"}, b"<html><body>Telegram</body></html>")
 
 
+class ScraperPlumbing(unittest.TestCase):
+    def test_module_rows_become_items_and_naive_time_is_sgt(self):
+        import types
+        from datetime import datetime
+        fake = types.ModuleType("lobang.scrapers._fake")
+        fake.fetch = lambda src, get, key: [
+            {"title": "KFC 1-for-1", "url": "https://x/1", "summary": "<b>hi</b>", "published": datetime(2026, 10, 3, 9)},
+            {"title": "", "url": "https://x/2"},   # no title: dropped
+        ]
+        sys.modules["lobang.scrapers._fake"] = fake
+        try:
+            res = S.fetch({"name": "f", "type": "scrape", "parser": "_fake", "publisher": "P"})
+        finally:
+            del sys.modules["lobang.scrapers._fake"]
+        self.assertTrue(res["ok"])
+        self.assertEqual(len(res["items"]), 1)
+        it = res["items"][0]
+        self.assertEqual(it["summary"], "hi")
+        self.assertEqual(it["published"].utcoffset().total_seconds(), 8 * 3600)
+        self.assertEqual(it["published"].hour, 9)
+
+    def test_missing_key_source_is_skipped_not_failed(self):
+        from lobang import fetch as F
+        from unittest import mock
+        srcs = [{"name": "a", "type": "rss", "url": "u"}, {"name": "b", "type": "api", "parser": "x", "env": "LOBANG_TEST_NOPE"}]
+        os.environ.pop("LOBANG_TEST_NOPE", None)
+        with mock.patch.object(F.yaml, "safe_load", return_value={"sources": srcs}):
+            names = [s["name"] for s in F.load_sources()]
+        self.assertEqual(names, ["a"])
+
+
 class FetchWrapper(unittest.TestCase):
     def test_parser_crash_contained(self):
         src = {"name": "bad", "type": "rss", "url": "https://x"}

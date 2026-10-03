@@ -69,6 +69,12 @@ def load_sources(only=None):
     with io.open(os.path.join(CFG, "sources.yml"), encoding="utf-8") as fh:
         srcs = (yaml.safe_load(fh) or {}).get("sources") or []
     srcs = [s for s in srcs if not s.get("disabled")]
+    # A free-key source with no key set is OFF, not failing: it must not drag ok/total down
+    # on a laptop without .env, nor fake an outage. Named on stderr so it is never silent.
+    nokey = [s["name"] for s in srcs if s.get("env") and not os.environ.get(s["env"])]
+    if nokey:
+        print("skipped (no key): " + ", ".join(nokey), file=sys.stderr)
+    srcs = [s for s in srcs if s["name"] not in nokey]
     if only:
         srcs = [s for s in srcs if s["name"] == only]
     return srcs
@@ -116,7 +122,12 @@ def run(dry_run=False, only=None, as_json=False):
     health = []
     ok_count = 0
     ledger = read_ledger()
-    seen = {r["id"] for r in ledger}
+    state = load_json(DEALS, {"deals": []})
+    deal_list = state["deals"]
+    # Deal members count as seen too: a standing offer outlives the 30-day ledger window,
+    # and must not be re-ingested as "new" the day its ledger line rotates out.
+    seen = {r["id"] for r in ledger} | {m["id"] for d in deal_list for m in d["members"]}
+    listed = set()   # ids a `standing: true` source still lists this run
     fresh = []
     min_pub = now - timedelta(days=ITEM_MAX_AGE_DAYS)
     for src, res in zip(sources, results):
@@ -124,6 +135,8 @@ def run(dry_run=False, only=None, as_json=False):
         if res["ok"]:
             ok_count += 1
         for it in res["items"]:
+            if src.get("standing"):
+                listed.add(it["id"])
             pub = it["published"]
             if pub and pub < min_pub:
                 continue
@@ -152,11 +165,14 @@ def run(dry_run=False, only=None, as_json=False):
             print("  {0}: {1}".format(h["name"], h["error"]), file=sys.stderr)
         return 2
 
-    state = load_json(DEALS, {"deals": []})
-    deal_list = state["deals"]
     D.assign([r for r in fresh if r["cls"]], deal_list)
+    for d in deal_list:
+        if any(m["id"] in listed for m in d["members"]):
+            d["last_listed"] = iso(now)
     keep_after = now - timedelta(days=D.STATE_KEEP_DAYS)
-    deal_list = [d for d in deal_list if parse_iso(d["last_seen"]) >= keep_after]
+    deal_list = [d for d in deal_list
+                 if parse_iso(d.get("last_listed") or d["last_seen"]) >= keep_after
+                 or parse_iso(d["last_seen"]) >= keep_after]
 
     live = [D.public(d, today) for d in deal_list if D.is_live(d, today)]
     live.sort(key=lambda d: (-d["score"], d["published"]), reverse=False)

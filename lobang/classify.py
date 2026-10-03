@@ -187,6 +187,9 @@ RANGE_MD = re.compile(DATE_MD + r"\s*(?:-|to|till|until)\s*" + _WD + DATE_MD)
 UNTIL = re.compile(r"(?:till|until|til|thru|through|ends?|ending|valid (?:till|until|through)|by|before|up to)\s+" + _WD + r"(?:" + DATE_DM + r"|" + DATE_MD + r")")
 FROM = re.compile(r"(?:from|starting|starts?|begins?|available from)\s+" + _WD + r"(?:" + DATE_DM + r"|" + DATE_MD + r")")
 ON_DAY = re.compile(r"(?:\bon\s+" + _WD + r"|\(\s*" + _WD + r")(?:" + DATE_DM + r"|" + DATE_MD + r")\s*\)?")
+# "Teachers' Day Treats, 4 Sep 2026 Only" is a one-day deal on that date.
+DAY_ONLY = re.compile(r"(?<!\d)(?:" + DATE_DM + r"|" + DATE_MD + r")\s*only\b")
+ANY_DATE = re.compile(r"(?<!\d)(?:" + DATE_DM + r"|" + DATE_MD + r")")
 THIS_WEEKEND = _rx([r"this weekend", r"this sat(?:urday)?(?: and|\s*&)\s*sun(?:day)?"])
 
 
@@ -265,8 +268,17 @@ def extract_validity(text, ref):
             # "Mixue $1 ice cream on 10 Oct" is a one-day deal; "Sushiro opens on 1 Oct with
             # 1-for-1" is a start date, and its promo runs past it.
             return (d, None) if OPENING.search(t) else (d, d)
+    m = DAY_ONLY.search(t)
+    if m:
+        d = _alt_date(m.groups(), ref)
+        if d:
+            return d, d
     if ENDS_TODAY.search(t):
-        return start, ref
+        # "Today Only, Sunday 20 September 2026": the stated date wins over the publish
+        # date, which for an undated scraped card is only the day we first saw it.
+        m = ANY_DATE.search(t)
+        d = _alt_date(m.groups(), ref) if m else None
+        return start, d or ref
     if THIS_WEEKEND.search(t):
         sunday = ref + timedelta(days=(6 - ref.weekday()) % 7)
         return start, sunday
