@@ -112,7 +112,7 @@ body {
 /* tabs */
 .tabs {
   position: sticky; top: 0; z-index: 5;
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px;
   padding: 8px 0; background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
@@ -146,6 +146,26 @@ body {
 }
 .chip[aria-pressed="true"] { background: var(--green-bg); color: var(--green-fg); border-color: var(--green-fg); }
 .chip-clear { background: transparent; color: var(--link); border-style: dashed; }
+
+/* birthday picker (Birthday view only) */
+.bday-box {
+  margin: 4px 0 0; padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.bday-head { margin: 0; font-size: var(--t-label); font-weight: 700; }
+.bday-note { margin-left: 6px; font-weight: 500; color: var(--muted); font-size: var(--t-caption); }
+.bday-pick { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-top: 8px; }
+/* 16px or iOS zooms the page on focus. */
+.sel {
+  width: 100%; min-height: 44px; padding: 0 10px;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--surface); color: var(--text); font: inherit; font-size: var(--t-body);
+}
+.bday-hint { margin: 8px 0 0; font-size: var(--t-label); color: var(--muted); }
+.bday-when.now { color: var(--green-fg); }
+.bday-when.muted { color: var(--muted); font-weight: 500; }
+.bday-needs { margin: 4px 0 0; font-size: var(--t-label); }
+.bday-said { margin: 4px 0 0; font-size: var(--t-caption); color: var(--muted); }
 
 /* cards */
 .list { display: grid; gap: 12px; padding-top: 8px; }

@@ -25,6 +25,9 @@ def fold(s):
              .replace("—", "-").replace("％", "%").lower())
 
 
+from . import birthday as BD  # noqa: E402  (after fold: birthday.py imports it from here)
+
+
 def _rx(words):
     return re.compile(r"(?<![\w])(?:" + "|".join(words) + r")(?![\w])")
 
@@ -49,6 +52,8 @@ FNB = _rx([
     r"claypots?", r"steamboat", r"afternoon tea", r"burritos?", r"brekkie", r"mee", r"ban mian",
     r"gomtang", r"samgyetang", r"pho", r"banh mi", r"salt bread", r"bagels?", r"wagyu", r"tingkat",
     r"pudding", r"shakes?", r"tofu", r"margaritas?", r"ribs?", r"riblets", r"sandwich(?:es)?",
+    # Birthday roundup perks (2026-10-03): "Free lobster after ordering...", "Free slices of salmon sashimi".
+    r"lobsters?", r"sashimi", r"gyozas?", r"pretzels?",
 ])
 
 # Articles that mention food but are not a deal or an opening.
@@ -385,10 +390,15 @@ def classify(item, lex, ref):
 
     opening = bool(OPENING.search(title)) or bool(FIRST_IN_SG.search(text))
     first_sg = bool(FIRST_IN_SG.search(text))
+    bday = BD.is_customer(item["title"], item.get("summary") or "", item.get("birthday_only"))
 
     if NOT_A_DEAL.search(title) and not strong:
         return None
-    if strong:
+    if bday:
+        # A customer birthday perk is a promo by definition, even when it is only "a $100 voucher".
+        kind, opening, first_sg = "promo", False, False
+        tags.append("birthday")
+    elif strong:
         kind = "promo"
     elif opening:
         kind = "opening"
@@ -449,9 +459,11 @@ def classify(item, lex, ref):
     if "buffet" in tags and category in (None, "restaurant", "other"):
         category = "buffet"
 
-    vfrom, vuntil = extract_validity(text, ref)
+    # A birthday roundup's prose carries blackout dates ("except 21st-31st December") that are
+    # not an end date, so a birthday perk takes its validity from the headline only.
+    vfrom, vuntil = extract_validity(title if bday else text, ref)
     famous = any(lex.by_name[n].get("famous") for n in merchants)
-    return {
+    out = {
         "kind": kind,
         "merchants": merchants,
         "category": category or "other",
@@ -462,3 +474,11 @@ def classify(item, lex, ref):
         "valid_until": vuntil.isoformat() if vuntil else None,
         "famous": famous,
     }
+    if bday:
+        b = BD.extract(item["title"], item.get("summary") or "", item.get("redeem"))
+        out["birthday"] = b
+        # The generic MEMBER tag fires on "you don't even need a membership" (Haidilao); the
+        # birthday extractor reads the negation, so it decides.
+        if "member" in tags and "member" not in b["needs"]:
+            tags.remove("member")
+    return out

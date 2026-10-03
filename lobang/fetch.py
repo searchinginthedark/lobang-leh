@@ -173,6 +173,7 @@ def run(dry_run=False, only=None, as_json=False):
         it = dict(m)
         if m.get("source") in by_name:
             it["fnb_only"] = bool(by_name[m["source"]].get("fnb_only"))
+            it["birthday_only"] = bool(by_name[m["source"]].get("birthday_only"))
         when = parse_iso(m.get("published")) or parse_iso(m["fetched"])
         return classify(it, lex, when.date()) is not None
 

@@ -280,6 +280,26 @@ sources:
     standing: true      # undated standing offers: live while the page lists them (fetch.py `listed`)
     ua: browser
     note: "measured 2026-10-03: 39 unique standing card offers, no dates (all look new on first run, then dedupe)"
+  - name: tsl_birthday
+    type: scrape
+    parser: tsl_birthday
+    url: https://thesmartlocal.com/read/birthday-deals-freebies-singapore/
+    publisher: TheSmartLocal
+    tier: media
+    scope: promo
+    # NOT fnb_only: the roundup also lists Uniqlo, Sephora, Timezone.
+    birthday_only: true # every entry is a customer birthday perk (lobang/birthday.py)
+    standing: true      # undated standing perks: live while the roundup lists them
+    ua: browser
+    note: "measured 2026-10-03: 33 entries, 31 with a 'Redeem on:' line; article updated 2026-05-15"
+  - name: gnews_birthday
+    type: gnews
+    query: 'Singapore birthday treat OR "birthday month" OR "birthday freebie" food'
+    publisher: Google News
+    tier: news
+    scope: promo
+    ua: library
+    note: "added 2026-10-03; brand anniversaries ('turns 35') are filtered by lobang/birthday.py BRAND"
   - name: hungrygowhere
     type: scrape
     parser: hungrygowhere

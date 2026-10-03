@@ -50,6 +50,10 @@ LLM-generated: every title, summary and link comes from a fetched source.
   `bundle`, `app-only`, `card`, `member`, `delivery`, `buffet`, `overseas`, `first-in-sg`,
   `limited`, `ends-today`. Unknown tags must be ignored by the page, never crash it.
   `pct-off` deals also carry `"pct": 50` (an int) on the deal object.
+- `birthday` tag: a CUSTOMER birthday perk (free cake in your birthday month). A brand's own
+  birthday ("turns 35", "founder's birthday", "Birthday Bash") is an ordinary promo without it.
+  Tagged deals also carry a `birthday` object (see below). Birthday perks are standing offers,
+  so `valid_until` is usually `null`.
 - `origin`: country name for an overseas brand (`"Japan"`, `"Korea"`, ...) or `null`.
 - `valid_from` / `valid_until`: `YYYY-MM-DD` (Singapore date) or `null` when the source
   does not state it. `null` means UNKNOWN, never "no expiry".
@@ -58,3 +62,25 @@ LLM-generated: every title, summary and link comes from a fetched source.
 - `links` holds at most 6 entries, newest first; `publishers` is the full distinct count.
 - Expired deals (`valid_until` before today SGT) are already removed by the collector.
 - `health.ok == 0` never reaches this file: the collector refuses to write it.
+
+## `birthday` (only on deals tagged `birthday`)
+
+```json
+"birthday": {"window": "around", "before": 14, "after": 14, "days": null, "excl_ph": false,
+             "needs": ["member", "min-spend"], "min_spend": 200, "group": null,
+             "signup_days": 14, "said": "14 days before & after birthday."}
+```
+
+- `window`, relative to the viewer's birthday B (month M):
+  - `day`: B only. `around`: B - `before` days to B + `after` days.
+  - `month`: the whole of month M. `month-plus`: from the 1st of M for `after` days.
+  - `week`: "birthday week" as stated; not resolvable to dates, show the wording.
+  - `visit`: "day of dining in", i.e. tell staff on the day you dine; no date rule stated.
+  - `unknown`: the source states no window. Never read it as "month".
+- `days`: weekday restriction as stated (`"Mon-Thu"`, `"Weekdays"`, `"Weekends"`) or `null`.
+- `excl_ph`: public holidays are excluded.
+- `needs`: zero or more of `member`, `app`, `min-spend`, `group`, `booking`, `id`, `prior-purchase`.
+- `min_spend` (S$), `group` (party size including the birthday person), `signup_days` (join at
+  least this many days ahead): ints or `null`.
+- `said`: the source's own wording for the window, at most 160 chars, or `null`. Show it: other
+  roundups disagree on the same brand, and blackout dates live only here.

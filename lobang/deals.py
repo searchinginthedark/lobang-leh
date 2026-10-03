@@ -70,6 +70,10 @@ def match_score(item, deal):
     c = item["cls"]
     if c["kind"] != deal["kind"]:
         return 0.0
+    # McDonald's free birthday nuggets and McDonald's 1-for-1 McSpicy share a chain and a
+    # "free" tag, but they are different offers with different windows.
+    if ("birthday" in c["tags"]) != ("birthday" in deal["tags"]):
+        return 0.0
     when = _when(item)
     last = max(_when(m) for m in deal["members"])
     gap = _days(when, last)
@@ -186,6 +190,10 @@ def aggregate(deal):
     origins = [m["cls"]["origin"] for m in order if m["cls"].get("origin")]
     deal["origin"] = origins[0] if origins else None
     deal["famous"] = any(m["cls"].get("famous") for m in ms)
+    # The best-sourced member that states a window speaks for the deal; else the lead's "unknown".
+    bdays = [m["cls"]["birthday"] for m in order if m["cls"].get("birthday")]
+    stated = [b for b in bdays if b["window"] != "unknown"]
+    deal["birthday"] = (stated or bdays or [None])[0]
 
     pubs = {}
     for m in sorted(ms, key=lambda m: m.get("published") or m["fetched"], reverse=True):
@@ -285,4 +293,6 @@ def public(deal, today):
     }
     if deal.get("pct"):
         out["pct"] = deal["pct"]
+    if deal.get("birthday"):
+        out["birthday"] = deal["birthday"]
     return out

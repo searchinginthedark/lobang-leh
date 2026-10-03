@@ -475,7 +475,7 @@ merchants:
     famous: false
     origin: Japan
   - name: "Mr Coconut"
-    aliases: []
+    aliases: ["Mr. Coconut"]
     category: bubble-tea
     famous: false
   - name: "Meet Fresh"
@@ -1499,3 +1499,43 @@ merchants:
     aliases: ["Anteroom Coffee"]
     category: coffee
     famous: false
+  # ---------------- From the birthday-perk roundup (2026-10-03) ----------------
+  - name: "Spizza"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Tanuki Raw"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Cajun on Wheels"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Ikkousha Hakata Ramen"
+    aliases: ["Ikkousha Ramen", "Ikkousha"]
+    category: restaurant
+    famous: false
+    origin: Japan
+  - name: "Suki-Ya"
+    aliases: ["Sukiya Hotpot"]   # not bare "Sukiya": the Japanese gyudon chain
+    category: buffet
+    famous: false
+  - name: "Gelatissimo"
+    aliases: []
+    category: bakery-dessert
+    famous: false
+    origin: Australia
+  - name: "Plain Vanilla"
+    aliases: ["Plain Vanilla Bakery"]
+    category: bakery-dessert
+    famous: false
+  - name: "Meow BBQ"
+    aliases: []
+    category: restaurant
+    famous: false
+  - name: "Lawry's The Prime Rib"
+    aliases: ["Lawry's", "Lawrys"]
+    category: restaurant
+    famous: false
+    origin: USA

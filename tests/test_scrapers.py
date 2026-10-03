@@ -14,7 +14,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from lobang.net import FetchError
-from lobang.scrapers import dbs_dining, hungrygowhere, misslobang
+from lobang.scrapers import dbs_dining, hungrygowhere, misslobang, tsl_birthday
 from lobang.textutil import SGT
 
 FIX = os.path.join(ROOT, "tests", "fixtures")
@@ -78,6 +78,30 @@ class DbsDining(unittest.TestCase):
     def test_markup_changed_raises(self):
         with self.assertRaises(FetchError):
             dbs_dining.parse(CHANGED)
+
+
+class TslBirthday(unittest.TestCase):
+    def test_fixture(self):
+        items = tsl_birthday.parse(raw("scrape_tsl_birthday.html"))
+        check_items(self, items, minimum=10)
+        by = {i["title"].split(":")[0]: i for i in items}
+        self.assertEqual(by["Mr. Coconut"]["redeem"], "Within birthday month.")
+        self.assertEqual(by["Ikkousha Hakata Ramen"]["redeem"], "1 day before or after birthday.")
+        self.assertEqual(by["Haidilao"]["title"], "Haidilao: Free fruit platter & cake with a birthday song")
+        self.assertTrue(by["Haidilao"]["url"].endswith("#haidilao"))
+        self.assertIsNone(by["Haidilao"]["published"])
+        # The intro <h3> is not an entry, and credits / "Find out more" stay out of the summary.
+        self.assertFalse(any(i["title"].startswith("What you need") for i in items))
+        self.assertFalse(any("Image credit" in i["summary"] or "Find out more" in i["summary"] for i in items))
+
+    def test_markup_changed_raises(self):
+        with self.assertRaises(FetchError):
+            tsl_birthday.parse(CHANGED)
+
+    def test_lost_redeem_label_raises(self):
+        page = raw("scrape_tsl_birthday.html").replace(b"Redeem on", b"Valid on")
+        with self.assertRaises(FetchError):
+            tsl_birthday.parse(page)
 
 
 class HungryGoWhere(unittest.TestCase):

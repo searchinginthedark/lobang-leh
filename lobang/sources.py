@@ -32,6 +32,8 @@ def _item(src, title, url, summary, published, publisher=None):
         "tier": src.get("tier", "media"),
         "scope": src.get("scope", "mixed"),
         "fnb_only": bool(src.get("fnb_only")),
+        # The source lists only CUSTOMER birthday perks (a birthday roundup).
+        "birthday_only": bool(src.get("birthday_only")),
         # Every RSS/Telegram source in the registry is an SG publisher; Google News is global.
         "sg_source": src.get("type") != "gnews",
         "title": clip(title, 220),
@@ -156,6 +158,10 @@ def run_module(src):
         it = _item(src, r.get("title"), r.get("url"), r.get("summary") or "",
                    pub.astimezone(SGT) if pub else None, publisher=r.get("publisher"))
         if it:
+            if r.get("redeem"):
+                # A labelled redemption window ("Redeem on: Within birthday month."), kept apart
+                # from the summary so lobang.birthday can trust it over prose.
+                it["redeem"] = clip(one_line(r["redeem"]), 200)
             out.append(it)
     return out
 

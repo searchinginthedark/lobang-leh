@@ -22,15 +22,15 @@ def read(*p):
 HTML = read("public", "index.html")
 JS = read("public", "app.js")
 
-# Every control a user can reach: ids of buttons/inputs in the page, the views, and the
+# Every control a user can reach: ids of buttons/inputs/selects in the page, the views, and the
 # classes of buttons app.js builds per card or list.
 FLOW = {
-    "page": {"tourbtn", "refresh", "q", "t-1for1", "t-free", "clear"},
-    "views": {"hot", "ending", "new", "saved"},
+    "page": {"tourbtn", "refresh", "q", "t-1for1", "t-free", "clear", "bday-m", "bday-d"},
+    "views": {"hot", "ending", "new", "birthday", "saved"},
     "js_buttons": {"summary-btn", "more-btn", "act", "show-more", "chip", "icon-btn"},
 }
 # Labels the tour text must mention, so a renamed tab or filter cannot slip past it.
-MUST_MENTION = ["Hot", "Ending soon", "New openings", "Saved", "1-for-1", "Free", "Clear filters",
+MUST_MENTION = ["Hot", "Ending soon", "New openings", "Birthday", "Saved", "1-for-1", "Free", "Clear filters",
                 "Show more", "Save", "Share", "PROMO", "NEW OPENING", "+3"]
 
 
@@ -81,7 +81,7 @@ class TourFollowsFlow(unittest.TestCase):
     """Fails on any user-flow change until the tour steps (and then FLOW) are updated."""
 
     def test_page_controls_pinned(self):
-        found = set(re.findall(r'<(?:button|input)[^>]*\bid="([^"]+)"', HTML))
+        found = set(re.findall(r'<(?:button|input|select)[^>]*\bid="([^"]+)"', HTML))
         found -= {"tour-off", "tour-skip", "tour-back", "tour-next"}
         self.assertEqual(found, FLOW["page"], "page controls changed: update the tour steps, then FLOW")
 
@@ -100,7 +100,7 @@ class TourFollowsFlow(unittest.TestCase):
         for label in MUST_MENTION:
             self.assertIn(label, text, "tour never mentions '%s'" % label)
         # The labels it names must still be real UI text.
-        for label in ("Hot", "Ending soon", "New openings", "Saved", "1-for-1", "Free", "Clear filters"):
+        for label in ("Hot", "Ending soon", "New openings", "Birthday", "Saved", "1-for-1", "Free", "Clear filters"):
             self.assertIn(">" + label + "<", HTML, "tour names '%s' but the page no longer shows it" % label)
         for label in ("Show ", "'Save'", "'Share'", "'New opening'", "'Promo'"):
             self.assertIn(label, JS)

@@ -5,7 +5,8 @@
   var STALE_MS = 12 * 3600 * 1000;
   var KEY_PREFS = 'lobang:prefs';
   var KEY_SAVED = 'lobang:saved';
-  var VIEWS = ['hot', 'ending', 'new', 'saved'];
+  var KEY_BDAY = 'lobang:bday';   // "MM-DD", no year; never leaves this browser
+  var VIEWS = ['hot', 'ending', 'new', 'birthday', 'saved'];
 
   var CATS = {
     'fast-food': 'Fast food', 'coffee': 'Coffee', 'bubble-tea': 'Bubble tea',
@@ -26,6 +27,7 @@
     hot: ['No deals match', 'Try clearing a filter or searching for something else.'],
     ending: ['Nothing with a stated end date', 'No matching deal states when it ends.'],
     'new': ['No new openings match', 'Check back later, or clear your filters.'],
+    birthday: ['No birthday perks match', 'Try clearing a filter or searching for something else.'],
     saved: ['Nothing saved yet', 'Tap Save on a deal and it will show up here.']
   };
 
@@ -164,6 +166,132 @@
     return { text: s, cls: '' };
   }
 
+  // ---------- birthday perks (docs/contract.md, "birthday") ----------
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
+    'October', 'November', 'December'];
+  var MDAYS = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+  function bdayGet() {
+    var m = /^(\d\d)-(\d\d)$/.exec(sGet(KEY_BDAY) || '');
+    if (!m) return null;
+    var mm = +m[1], dd = +m[2];
+    return (mm >= 1 && mm <= 12 && dd >= 1 && dd <= MDAYS[mm - 1]) ? { m: mm, d: dd } : null;
+  }
+  function dn(y, m, d) { return Math.round(Date.UTC(y, m - 1, d) / 86400000); }
+  function leap(y) { return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; }
+  // A window that already passed this year shows next year's dates, so those carry the year.
+  function fmtDn(n) {
+    var iso = new Date(n * 86400000).toISOString().slice(0, 10);
+    return fmtDate(iso) + (iso.slice(0, 4) !== todaySG().slice(0, 4) ? ' ' + iso.slice(0, 4) : '');
+  }
+  function plural(n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); }
+
+  // [first, last] day numbers of a perk's window for a birthday in year y; null when the source
+  // gives no date rule (week, visit, unknown). A 29 Feb birthday counts as 28 Feb in other years.
+  function windowIn(b, bd, y) {
+    var B = dn(y, bd.m, bd.m === 2 && bd.d === 29 && !leap(y) ? 28 : bd.d);
+    var M1 = dn(y, bd.m, 1), before = +b.before || 0, after = +b.after || 0;
+    if (b.window === 'day') return [B, B];
+    if (b.window === 'around') return [B - before, B + after];
+    if (b.window === 'month') return [M1, dn(y, bd.m + 1, 1) - 1];   // Date.UTC rolls month 13 into January
+    if (b.window === 'month-plus') return [M1, M1 + Math.max(1, after) - 1];
+    return null;
+  }
+  // The next window that has not ended yet. Last year's is checked too: a 30 Dec birthday with
+  // 14 days after is still claimable on 5 Jan.
+  function bdayRange(b, bd) {
+    if (!b || !bd) return null;
+    var t = todaySG(), today = dayNum(t), y = +t.slice(0, 4);
+    for (var k = -1; k <= 1; k++) {
+      var r = windowIn(b, bd, y + k);
+      if (!r) return null;
+      if (r[1] >= today) return { start: r[0], end: r[1], now: r[0] <= today, left: r[1] - today };
+    }
+    return null;
+  }
+
+  function windowLabel(b) {
+    var before = +b.before || 0, after = +b.after || 0;
+    if (b.window === 'day') return 'On your birthday only';
+    if (b.window === 'around') {
+      if (before === after) return 'Up to ' + plural(before, 'day') + ' either side of your birthday';
+      if (!before) return 'Your birthday and ' + plural(after, 'day') + ' after';
+      if (!after) return plural(before, 'day') + ' before your birthday';
+      return plural(before, 'day') + ' before to ' + plural(after, 'day') + ' after your birthday';
+    }
+    if (b.window === 'month') return 'Any day in your birthday month';
+    if (b.window === 'month-plus') return plural(after, 'day') + ' from the 1st of your birthday month';
+    if (b.window === 'week') return 'Your birthday week';
+    if (b.window === 'visit') return 'On the day you dine in, tell the staff';
+    return 'Claim window not stated';
+  }
+
+  function bdayWhen(b, r) {
+    var s = windowLabel(b);
+    if (!r) return { text: s, cls: b.window === 'unknown' ? 'muted' : '' };
+    if (r.now) {
+      return { text: s + ' · Claim now, ' + (r.left === 0 ? 'last day today' : 'till ' + fmtDn(r.end)), cls: 'now' };
+    }
+    return { text: s + ' · ' + (r.start === r.end ? 'On ' + fmtDn(r.start) : fmtDn(r.start) + ' to ' + fmtDn(r.end)), cls: '' };
+  }
+
+  function bdayNeeds(b) {
+    var n = Array.isArray(b.needs) ? b.needs : [], out = [];
+    if (typeof b.days === 'string' && b.days) out.push(b.days + ' only');
+    if (b.excl_ph) out.push('not on public holidays');
+    if (n.indexOf('member') >= 0) out.push('members');
+    if (n.indexOf('app') >= 0) out.push('via app');
+    if (typeof b.signup_days === 'number') out.push('join ' + plural(b.signup_days, 'day') + ' ahead');
+    if (typeof b.min_spend === 'number') out.push('min spend $' + b.min_spend);
+    else if (n.indexOf('min-spend') >= 0) out.push('min spend');
+    if (typeof b.group === 'number') out.push('group of ' + b.group + '+');
+    if (n.indexOf('booking') >= 0) out.push('book ahead');
+    if (n.indexOf('id') >= 0) out.push('bring ID');
+    if (n.indexOf('prior-purchase') >= 0) out.push('needs an earlier purchase');
+    if (!out.length) return null;
+    var s = out.join(' · ');
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  // Claimable now (ending soonest), then upcoming (starting soonest), then no date rule (best first).
+  function sortBirthday(list) {
+    var bd = bdayGet();
+    var keyed = list.map(function (d) { return { d: d, r: bdayRange(d.birthday, bd) }; });
+    keyed.sort(function (a, b) {
+      var ra = a.r ? (a.r.now ? 0 : 1) : 2, rb = b.r ? (b.r.now ? 0 : 1) : 2;
+      if (ra !== rb) return ra - rb;
+      if (ra === 0 && a.r.end !== b.r.end) return a.r.end - b.r.end;
+      if (ra === 1 && a.r.start !== b.r.start) return a.r.start - b.r.start;
+      return (b.d.score || 0) - (a.d.score || 0);
+    });
+    return keyed.map(function (k) { return k.d; });
+  }
+
+  function renderBday() {
+    // Only the hint: the selects are the user's, synced from storage once in init(),
+    // or picking a month before a day would be wiped by the next render.
+    var bd = bdayGet(), hint = $('bday-hint');
+    if (!bd) {
+      hint.textContent = $('bday-m').value ? 'Now pick the day.' : 'Pick your birthday to see which perks you can claim now.';
+      return;
+    }
+    var all = ((data && data.deals) || []).filter(function (x) { return hasTag(x, 'birthday'); });
+    var now = all.filter(function (x) { var r = bdayRange(x.birthday, bd); return r && r.now; }).length;
+    hint.textContent = now ? plural(now, 'perk') + ' you can claim today, listed first.'
+      : 'None claimable today. Perks are listed by when they open.';
+  }
+  function fillDays(month) {
+    var d = $('bday-d'), keep = d.value, max = month ? MDAYS[month - 1] : 31;
+    while (d.options.length > 1) d.remove(1);
+    for (var i = 1; i <= max; i++) d.add(new Option(String(i), String(i)));
+    if (+keep <= max) d.value = keep;
+  }
+  function bdaySet() {
+    var m = +$('bday-m').value, d = +$('bday-d').value;
+    if (m && d && d <= MDAYS[m - 1]) sSet(KEY_BDAY, (m < 10 ? '0' : '') + m + '-' + (d < 10 ? '0' : '') + d);
+    else { try { window.localStorage.removeItem(KEY_BDAY); } catch (e) { /* ignore */ } }
+  }
+
   // ---------- filtering / views ----------
   function matches(d) {
     if (state.cat && d.category !== state.cat) return false;
@@ -180,7 +308,12 @@
   function selectDeals() {
     var all = (data && data.deals) || [];
     var list = all.filter(matches);
-    if (state.view === 'ending') {
+    if (state.view === 'hot') {
+      // Birthday perks are standing offers, not news: they live in their own view.
+      list = list.filter(function (d) { return !hasTag(d, 'birthday'); });
+    } else if (state.view === 'birthday') {
+      list = sortBirthday(list.filter(function (d) { return hasTag(d, 'birthday'); }));
+    } else if (state.view === 'ending') {
       list = list.filter(function (d) { return !!d.valid_until; });
       list.sort(function (a, b) {
         return a.valid_until < b.valid_until ? -1 : a.valid_until > b.valid_until ? 1 : (b.score || 0) - (a.score || 0);
@@ -201,7 +334,8 @@
     // one is simply left out, so every card has the same shape.
     var merch = merchantsOf(d);
     var eb = el('div', 'eyebrow');
-    eb.appendChild(el('span', 'kind', d.kind === 'opening' ? 'New opening' : 'Promo'));
+    var bday = hasTag(d, 'birthday') && d.birthday && typeof d.birthday === 'object' ? d.birthday : null;
+    eb.appendChild(el('span', 'kind', d.kind === 'opening' ? 'New opening' : bday ? 'Birthday' : 'Promo'));
     if (merch.length) eb.appendChild(el('span', 'merch', merch.join(' + ')));
     c.appendChild(eb);
     c.appendChild(el('h2', 'title', d.title || merch.join(' + ') || 'Untitled'));
@@ -215,6 +349,14 @@
 
     var v = validity(d);
     if (v) c.appendChild(el('p', 'valid ' + v.cls, v.text));
+    if (bday) {
+      var w = bdayWhen(bday, bdayRange(bday, bdayGet()));
+      c.appendChild(el('p', 'valid bday-when ' + w.cls, w.text));
+      var needs = bdayNeeds(bday);
+      if (needs) c.appendChild(el('p', 'bday-needs', needs));
+      // The source's own words: roundups disagree on the same brand, and blackout dates live here.
+      if (typeof bday.said === 'string' && bday.said) c.appendChild(el('p', 'bday-said', 'Source says: “' + bday.said + '”'));
+    }
 
     if (d.summary) {
       var sb = el('button', 'summary-btn');
@@ -377,6 +519,8 @@
     $('t-1for1').setAttribute('aria-pressed', String(state.f1));
     $('t-free').setAttribute('aria-pressed', String(state.free));
     $('clear').hidden = !(state.q || state.cat || state.f1 || state.free);
+    $('bday-box').hidden = state.view !== 'birthday';
+    if (state.view === 'birthday') renderBday();
   }
 
   function render() {
@@ -621,6 +765,12 @@
       renderChips();
       rerender();
     });
+    MONTHS.forEach(function (name, i) { $('bday-m').add(new Option(name, String(i + 1))); });
+    var bd0 = bdayGet();
+    fillDays(bd0 ? bd0.m : 0);
+    if (bd0) { $('bday-m').value = String(bd0.m); $('bday-d').value = String(bd0.d); }
+    $('bday-m').addEventListener('change', function () { fillDays(+$('bday-m').value); bdaySet(); rerender(); });
+    $('bday-d').addEventListener('change', function () { bdaySet(); rerender(); });
     $('refresh').addEventListener('click', load);
     document.addEventListener('visibilitychange', function () { if (!document.hidden && data) renderHeader(); });
     renderControls();
