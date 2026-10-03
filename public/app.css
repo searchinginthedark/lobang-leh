@@ -210,6 +210,38 @@ a.src:hover { text-decoration: underline; }
 }
 .toast.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
 
+.top-btns { display: flex; gap: 6px; flex-shrink: 0; }
+#tourbtn { padding: 0; font-size: 18px; }
+
+/* guided tour (adapted from news-radar). Above the sticky tabs (5) and the toast (20). The
+   transparent layer takes every tap outside the card; the spotlight's shadow IS the dim. */
+.tour { position: fixed; inset: 0; z-index: 30; }
+.tour-spot {
+  position: fixed; left: 50%; top: 50%; width: 0; height: 0; border-radius: 12px;
+  outline: 3px solid var(--focus); box-shadow: 0 0 0 200vmax rgba(0, 0, 0, .6); pointer-events: none;
+}
+.tour-card {
+  position: fixed; left: 0; right: 0; margin: 0 auto; width: min(24rem, calc(100vw - 32px));
+  max-height: calc(100vh - 32px); overflow: auto;
+  background: var(--surface); color: var(--text); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 14px 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+}
+.tour-card.bottom { bottom: calc(16px + env(safe-area-inset-bottom)); }
+.tour-card.top { top: calc(16px + env(safe-area-inset-top)); }
+.tour-card.mid { top: 22%; }
+.tour-n { margin: 0; font-size: 12px; color: var(--muted); }
+.tour-t { margin: 2px 0 6px; font-size: 17px; font-weight: 800; }
+.tour-b { margin: 0 0 4px; font-size: 15px; line-height: 1.45; }
+.tour-off { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 14px; cursor: pointer; }
+.tour-off input { width: 20px; height: 20px; margin: 0; accent-color: var(--red); }
+.tour-btns { display: flex; gap: 6px; align-items: center; }
+.tour-btn {
+  min-height: 44px; min-width: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--surface); color: var(--text); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+#tour-skip { margin-right: auto; border-color: transparent; background: none; color: var(--muted); }
+.tour-next { background: var(--red); border-color: var(--red); color: var(--on-red); }
+
 @media (min-width: 600px) {
   .brand { font-size: 34px; }
   .tab { font-size: 15px; }

@@ -1,4 +1,4 @@
-const CACHE = 'lobang-v3';
+const CACHE = 'lobang-v4';
 const ASSETS = ['./', './app.css', './app.js', './manifest.webmanifest', './icon-192.png'];
 
 self.addEventListener('install', (e) => {

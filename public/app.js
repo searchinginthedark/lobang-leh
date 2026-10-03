@@ -36,6 +36,7 @@
   var saved = {};
   var data = null;
   var loading = false;
+  var autoTour = false;   // set by tourInit; consumed after the first load so cards exist
   var toastTimer = null;
 
   var $ = function (id) { return document.getElementById(id); };
@@ -391,10 +392,19 @@
       return;
     }
     var frag = document.createDocumentFragment();
-    deals.slice(0, state.shown).forEach(function (d) { frag.appendChild(card(d)); });
+    deals.slice(0, state.shown).forEach(function (d, i) {
+      var c = card(d);
+      if (i === 0) {
+        // Tour targets (index.html #tour-steps).
+        c.id = 'tour-first-card';
+        c.querySelector('.actions').id = 'tour-first-actions';
+      }
+      frag.appendChild(c);
+    });
     var left = deals.length - state.shown;
     if (left > 0) {
       var more = el('button', 'show-more', 'Show ' + Math.min(PAGE, left) + ' more · ' + left + ' left');
+      more.id = 'tour-more';
       more.type = 'button';
       more.addEventListener('click', function () {
         var first = state.shown;
@@ -445,7 +455,145 @@
     }).then(function () {
       loading = false;
       btn.disabled = false;
+      if (autoTour) { autoTour = false; tourOpen(); }
     });
+  }
+
+  // ---------- guided tour ----------
+  // Adapted from news-radar (2026-10-03). The steps are hidden <li>s in index.html, each naming
+  // a target id and the view it lives on, so this code is generic. A step whose target is
+  // missing or hidden is skipped: an empty filter result means fewer steps, never a broken tour.
+  // It opens itself on a new visit (20 min apart) until "Do not show again" is ticked (saved the
+  // moment it is ticked), "?" replays it, and it ends on the view it began on. Views change by
+  // clicking the real tab buttons, so the tour exercises the same path a user does.
+  var TOUR_GAP = 20 * 60 * 1000;
+  var KEY_TOUR = 'lobang:tour';
+  var KEY_SEEN = 'lobang:seen';
+  var tour = { at: -1, from: 'hot', back: null, raf: 0, counted: [], steps: [] };
+
+  function tourTarget(k) {
+    var id = tour.steps[k].getAttribute('data-target');
+    return id ? $(id) : null;
+  }
+  function toView(v) {
+    if (v && v !== state.view) {
+      var b = document.querySelector('.tab[data-view="' + v + '"]');
+      if (b) b.click();
+    }
+  }
+  // Can step k show right now? Switches to its view first, since list targets only exist there.
+  function tourUsable(k) {
+    var li = tour.steps[k];
+    if (!li.getAttribute('data-target')) return true;
+    toView(li.getAttribute('data-view'));
+    var t = tourTarget(k);
+    return !!t && !t.closest('[hidden]');
+  }
+  // The card takes the half of the screen the target is not in.
+  function tourSide(top, h, vh) { return top + h / 2 < vh / 2 ? 'bottom' : 'top'; }
+
+  function tourPaint() {
+    tour.raf = 0;
+    if (tour.at < 0) return;
+    var spot = $('tour-spot'), cardEl = $('tour-card');
+    var t = tourTarget(tour.at), vh = window.innerHeight;
+    if (!t) { spot.style.cssText = ''; cardEl.className = 'tour-card mid'; return; }
+    var r = t.getBoundingClientRect(), h = Math.min(r.height, vh * 0.45), pad = 6;
+    // Kept 2px inside the screen, or an edge target loses part of its outline.
+    var vw = document.documentElement.clientWidth || window.innerWidth;
+    var L = Math.max(2, r.left - pad), T = Math.max(2, r.top - pad);
+    var R = Math.min(vw - 2, r.right + pad), B = Math.min(vh - 2, r.top + h + pad);
+    spot.style.left = L + 'px';
+    spot.style.top = T + 'px';
+    spot.style.width = Math.max(0, R - L) + 'px';
+    spot.style.height = Math.max(0, B - T) + 'px';
+    cardEl.className = 'tour-card ' + tourSide(r.top, h, vh);
+  }
+  function tourLater() { if (tour.at >= 0 && !tour.raf) tour.raf = requestAnimationFrame(tourPaint); }
+
+  function tourShow(i) {
+    var k = tour.counted[i];
+    tour.at = k;
+    tourUsable(k);   // for its side effect: switch to the step's view
+    var li = tour.steps[k], b = li.querySelector('b'), s = li.querySelector('span');
+    $('tour-n').textContent = (i + 1) + ' of ' + tour.counted.length;
+    $('tour-t').textContent = b ? b.textContent : '';
+    $('tour-b').textContent = s ? s.textContent : '';
+    $('tour-back').hidden = i === 0;
+    $('tour-next').textContent = i === tour.counted.length - 1 ? 'Done' : 'Next';
+    var t = tourTarget(k);
+    // A target in the page scrolls to the top fifth so the card fits below it. The sticky
+    // header targets sit at the top anyway.
+    if (t) {
+      var y = t.getBoundingClientRect().top + (window.pageYOffset || 0) - window.innerHeight * 0.2;
+      window.scrollTo(0, Math.max(0, y));
+    }
+    tourPaint();
+    $('tour-next').focus();
+  }
+
+  function tourClose() {
+    if (tour.at < 0) return;
+    tour.at = -1;
+    $('tour').hidden = true;
+    toView(tour.from);
+    window.scrollTo(0, 0);
+    if (tour.back && tour.back.focus) tour.back.focus();
+  }
+
+  function tourOpen() {
+    if (tour.at >= 0 || !tour.steps.length) return;
+    tour.from = state.view;
+    // A tap does not focus a button on iOS/Safari, so "nothing focused" returns to "?".
+    var ae = document.activeElement;
+    tour.back = ae && ae !== document.body ? ae : $('tourbtn');
+    // Which steps can show is decided once, up front, so "3 of 7" never changes mid-tour.
+    tour.counted = [];
+    for (var k = 0; k < tour.steps.length; k++) if (tourUsable(k)) tour.counted.push(k);
+    toView(tour.from);
+    if (!tour.counted.length) return;
+    $('tour-off').checked = sGet(KEY_TOUR) === 'off';
+    $('tour').hidden = false;
+    tourShow(0);
+  }
+
+  function tourStep(d) {
+    var i = tour.counted.indexOf(tour.at) + d;
+    if (i >= tour.counted.length) tourClose();
+    else if (i >= 0) tourShow(i);
+  }
+
+  // Returns whether the tour should open itself once the deals have loaded.
+  function tourInit() {
+    tour.steps = [].slice.call(document.querySelectorAll('#tour-steps li'));
+    if (!tour.steps.length) return false;
+    $('tour-next').addEventListener('click', function () { tourStep(1); });
+    $('tour-back').addEventListener('click', function () { tourStep(-1); });
+    $('tour-skip').addEventListener('click', tourClose);
+    $('tour-off').addEventListener('change', function (e) {
+      if (e.target.checked) sSet(KEY_TOUR, 'off');
+      else { try { window.localStorage.removeItem(KEY_TOUR); } catch (err) { /* ignore */ } }
+    });
+    // On the document, not the card: a tap on the dim moves focus out of the card, and Esc
+    // must still close it. Tab stays inside the card while it is open.
+    document.addEventListener('keydown', function (e) {
+      if (tour.at < 0) return;
+      if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); tourClose(); return; }
+      if (e.key !== 'Tab') return;
+      var f = [].slice.call($('tour-card').querySelectorAll('input,button')).filter(function (x) { return !x.hidden; });
+      var i = f.indexOf(document.activeElement);
+      e.preventDefault();
+      f[(i + (e.shiftKey ? f.length - 1 : 1)) % f.length].focus();
+    });
+    window.addEventListener('resize', tourLater);
+    window.addEventListener('scroll', tourLater);
+    var btn = $('tourbtn');
+    btn.hidden = false;
+    btn.addEventListener('click', tourOpen);
+
+    var now = Date.now(), seen = Number(sGet(KEY_SEEN)) || 0;
+    sSet(KEY_SEEN, String(now));
+    return (!seen || now - seen > TOUR_GAP) && sGet(KEY_TOUR) !== 'off';
   }
 
   // ---------- wiring ----------
@@ -476,6 +624,7 @@
     $('refresh').addEventListener('click', load);
     document.addEventListener('visibilitychange', function () { if (!document.hidden && data) renderHeader(); });
     renderControls();
+    autoTour = tourInit();
     load();
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {

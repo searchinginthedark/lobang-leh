@@ -20,7 +20,10 @@
         <h1 class="brand">LobangLeh</h1>
         <p class="sub">Got a good deal! Singapore food promos and new openings.</p>
       </div>
-      <button type="button" id="refresh" class="icon-btn" aria-label="Refresh deals">Refresh</button>
+      <div class="top-btns">
+        <button type="button" id="tourbtn" class="icon-btn" aria-label="How to use" title="How to use" hidden>?</button>
+        <button type="button" id="refresh" class="icon-btn" aria-label="Refresh deals">Refresh</button>
+      </div>
     </div>
     <p class="fresh" id="fresh"><span id="fresh-text">Loading...</span> <span id="stale" class="badge b-warn" hidden>Stale</span></p>
     <details class="health" id="health" hidden>
@@ -36,7 +39,7 @@
     <button type="button" role="tab" class="tab" data-view="saved" aria-selected="false">Saved</button>
   </nav>
 
-  <section class="filters" aria-label="Filters">
+  <section class="filters" id="filters" aria-label="Filters">
     <label class="sr" for="q">Search deals</label>
     <input type="search" id="q" class="search" placeholder="Search merchant, deal or detail" autocomplete="off">
     <div class="chips" id="chips" role="group" aria-label="Category"></div>
@@ -51,6 +54,34 @@
   <div id="state" class="state" hidden></div>
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- Guided tour, adapted from news-radar. Each step names a target id (none = centred card)
+     and the view it lives on. Steps whose target is missing or hidden are skipped.
+     Changing the user flow means changing these steps: tests/test_tour.py enforces it. -->
+<div class="tour" id="tour" role="dialog" aria-modal="true" aria-labelledby="tour-t" aria-describedby="tour-b" hidden>
+  <div class="tour-spot" id="tour-spot"></div>
+  <div class="tour-card" id="tour-card">
+    <p class="tour-n" id="tour-n"></p>
+    <h2 class="tour-t" id="tour-t"></h2>
+    <p class="tour-b" id="tour-b"></p>
+    <label class="tour-off"><input type="checkbox" id="tour-off"> Do not show again</label>
+    <div class="tour-btns">
+      <button type="button" class="tour-btn" id="tour-skip">Skip</button>
+      <button type="button" class="tour-btn" id="tour-back">Back</button>
+      <button type="button" class="tour-btn tour-next" id="tour-next">Next</button>
+    </div>
+  </div>
+  <ol id="tour-steps" hidden>
+    <li data-target="" data-view=""><b>Welcome to LobangLeh</b><span>Singapore food promos and new openings, collected from food sites and Telegram deal channels several times a day. Food and drinks only.</span></li>
+    <li data-target="fresh" data-view=""><b>Is this up to date?</b><span>This line says when deals were last collected. An orange Stale tag means a collection was missed. Tap the sources line under it to see which sites answered.</span></li>
+    <li data-target="tabs" data-view=""><b>Four views</b><span>Hot: the best deals first. Ending soon: only deals with a stated end date, soonest first. New openings: new outlets, newest first. Saved: the deals you saved on this phone.</span></li>
+    <li data-target="filters" data-view=""><b>Narrow it down</b><span>Search a brand or dish, tap a category, or keep only 1-for-1 or Free deals. Clear filters shows everything again.</span></li>
+    <li data-target="tour-first-card" data-view="hot"><b>Reading a card</b><span>The label says what it is: red PROMO or blue NEW OPENING. The brand sits beside it when we recognise one. Tags sum up the deal, and an end date only shows when the post states one. Tap the grey text to read more.</span></li>
+    <li data-target="tour-first-actions" data-view="hot"><b>Act on it</b><span>Tap the source name to read the full post. A number like +3 lists the other sites that covered it. Save keeps it in the Saved view; Share sends the link.</span></li>
+    <li data-target="tour-more" data-view="hot"><b>12 at a time</b><span>Each view shows 12 deals. Tap Show more at the bottom for the next 12.</span></li>
+    <li data-target="tourbtn" data-view=""><b>That's it</b><span>Tap the ? button any time to see this tour again.</span></li>
+  </ol>
+</div>
 <script src="app.js"></script>
 </body>
 </html>
