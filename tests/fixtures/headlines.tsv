@@ -1,0 +1,24 @@
+# Labelled headlines: every classifier misfire found in the live feed goes here, with the
+# outcome it SHOULD have, before the rule that fixes it. tests/test_headlines.py runs them all.
+# Add the near-misses the fix must NOT catch too, or the next rule change can over-correct.
+#
+# expect  drop | promo | opening
+# flags   comma list or "-": fnb (food-only publisher), post (Telegram: the body is the post),
+#         gnews (not an SG source)
+# title, summary: as the source gave them; summary may be "-"
+expect	flags	title	summary
+drop	fnb	12-Hour Melaka Food Itinerary: Heritage Cafes, 100-Year-Old Bar And More	Follow our one-day Melaka food itinerary, featuring heritage cafes, a 100-year-old bar, and the best things to see and do in Malacca.
+drop	fnb	12-Hour Melaka Food Itinerary: 1-for-1 Cendol And Heritage Cafes	-
+drop	fnb	Penang hawker guide: 50% off char kway teow this weekend	-
+drop	fnb	Bangkok cafes worth the flight: free pastry with any coffee	-
+drop	fnb	Prime Supermarket Launches Fresh Quby Fruity Coin Banks with 4 Collectible Designs	Quby gets a fruity makeover at Prime Supermarket. Visit Great Deals Singapore for the full post.
+drop	fnb	Prime Supermarket: free Quby coin bank with $10 spend	-
+drop	fnb	Starbucks Singapore Debuts Protein Cold Foam For Coffee And Matcha Drinks	Starbucks adds a protein foam. Visit Great Deals Singapore for the full post.
+drop	fnb	Oriental Kopi Singapore Launches Taro Polo Bun And Orh Nee Egg Tart	A limited-time taro series at all outlets.
+drop	fnb	24 best buffets in Singapore: Ultimate all-you-can-eat guide for all occasions [Oct 2026]	From budget spreads to hotel promotions.
+drop	fnb	OREO Launches 5 New Flavours, Including Chicken & Waffles: Are They Worth $17.90?	-
+opening	fnb	21-year-old Japanese handcrafted hamburg chain lands at Lau Pa Sat	Hamburg sets from S$18.
+opening	fnb	Famous Tokyo cafe chain opens first outlet at Funan	-
+opening	fnb	Penang's famous char kway teow opens at Tampines Mall	-
+promo	fnb	Starbucks Mystery Bag: $49.90 for 3 Random Items Worth Up to $140, Drops 21 Sep at 10am	-
+promo	fnb,post	DOUBLE CRUNCH IS BACK!: Smoky, cheesy, crunchy — all in one bite.	Grab it for just $3 at all KFC outlets, limited-time only.

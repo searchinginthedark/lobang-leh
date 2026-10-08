@@ -110,6 +110,20 @@ def rotate_ledger(rows, now):
     return keep
 
 
+def source_flags(m, by_name):
+    """A stored item with its source's CURRENT config flags, ready for classify().
+
+    The flags live in config, not the ledger, so a config change reaches stored items too.
+    Shared with tools/replay.py so the replay classifies exactly what the collector does."""
+    it = dict(m)
+    src = by_name.get(m.get("source"))
+    if src:
+        it["fnb_only"] = bool(src.get("fnb_only"))
+        it["birthday_only"] = bool(src.get("birthday_only"))
+        it["post_body"] = src.get("type") == "telegram"
+    return it
+
+
 def run(dry_run=False, only=None, as_json=False):
     now = now_sgt()
     today = now.date()
@@ -170,10 +184,7 @@ def run(dry_run=False, only=None, as_json=False):
     by_name = {s["name"]: s for s in sources}
 
     def still_fnb(m):
-        it = dict(m)
-        if m.get("source") in by_name:
-            it["fnb_only"] = bool(by_name[m["source"]].get("fnb_only"))
-            it["birthday_only"] = bool(by_name[m["source"]].get("birthday_only"))
+        it = source_flags(m, by_name)
         when = parse_iso(m.get("published")) or parse_iso(m["fetched"])
         return classify(it, lex, when.date()) is not None
 

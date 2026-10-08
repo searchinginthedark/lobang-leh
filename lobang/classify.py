@@ -79,6 +79,8 @@ NON_FNB = _rx([
     # Not "Fab" the detergent: as a word it is also "fab deals".
     r"cleaning", r"laundry", r"detergents?", r"shampoos?", r"tissues?", r"toilet (?:paper|rolls?)",
     r"diapers?", r"persil", r"pantene",
+    # Merch giveaways, like "keychains" above ("Prime Supermarket ... Quby Fruity Coin Banks", 2026-10-08).
+    r"coin banks?", r"piggy banks?",
 ])
 
 # ---- Singapore relevance ----------------------------------------------------
@@ -97,11 +99,19 @@ SG_PUBLISHER = re.compile(r"singapore|s'pore|\bsg\b|eatbook|seth ?lui|mothership
 # Not "Time Out" (Time Out Worldwide covers London) and not Yahoo News Singapore, which
 # syndicates US wire copy ("Dunkin', L.L. Bean launch merch collab"): both need an SG headline.
 UNTRUSTED_PUBLISHER = re.compile(r"yahoo|msn|time ?out worldwide")
-_FOREIGN = (r"jb|johor(?: bahru)?|malaysia|kuala lumpur|kl|penang|ipoh|melaka|batam|bintan|bangkok|hong kong|hk|"
+_FOREIGN = (r"jb|johor(?: bahru)?|malaysia|kuala lumpur|kl|penang|ipoh|melaka|malacca|batam|bintan|bangkok|hong kong|hk|"
             r"taipei|tokyo|osaka|seoul|shanghai|beijing|sydney|melbourne|london|new york|nyc|toronto|seattle|"
             r"orlando|los angeles|dubai|bali|jakarta|manila|vancouver|chicago|texas|california")
+# A foreign place as the TOPIC: "in Melaka", or "Melaka food itinerary" / "Penang hawkers" / "Bangkok
+# cafe guide" (the place directly before a food or travel noun). Before 2026-10-08 the second form
+# covered only jb/johor/malaysia/kl, so "12-Hour Melaka Food Itinerary" passed. The caller skips this
+# when the headline has an SG word, so "Tokyo cafe chain opens at Funan" (origin, not topic) stays in.
 FOREIGN_PLACE = re.compile(r"(?<![\w])(?:in|to|at|around|across|over|all over)\s+(?:the\s+)?(?:" + _FOREIGN + r")(?![\w])"
-                           r"|(?<![\w])(?:jb|johor|malaysia|kl)\s+(?:cafes?|food|restaurants?|eats?|hawkers?|openings?)(?![\w])")
+                           r"|(?<![\w])(?:" + _FOREIGN + r")(?:'s)?\s+(?:street\s+)?(?:cafes?|food|foodie|restaurants?|eats?|"
+                           r"hawkers?|openings?|itinerar(?:y|ies)|guides?|trips?|travel|getaways?|day trips?)(?![\w])")
+# Travel content is never a deal or an opening here, wherever it is ("one-day food itinerary").
+TRAVEL = _rx([r"itinerar(?:y|ies)", r"day trips?", r"road trips?", r"travel guides?", r"weekend getaways?",
+              r"things to (?:do|see)"])
 # ...except a closing-down sale is a genuine lobang; strong promo signals override NOT_A_DEAL.
 
 # ---- promo signals ----------------------------------------------------------
@@ -121,6 +131,9 @@ PROMO_WORDS = _rx([
     r"flash sale", r"redeem", r"freebies?", r"giveaways?", r"specials?", r"limited[- ]time",
     r"members?[- ]only", r"value meal", r"\d+\.\d+ sale", r"price drop", r"cheapest", r"budget",
     r"under \$\d+", r"below \$\d+", r"from \$\d+",
+    # "Starbucks Mystery Bag: $49.90 for 3 Random Items Worth Up to $140"
+    # The qualifier is required: "OREO's 5 New Flavours: Are They Worth $17.90?" is a review.
+    r"worth (?:up to|over) s?\$\d+",
 ])
 BUNDLE = _rx([r"bundles?", r"combos?", r"sets? for (?:2|two|4|four)", r"meal for (?:2|two)", r"family (?:feast|bundle|meal)", r"platter"])
 APP_ONLY = _rx([r"via (?:the )?app", r"in-app", r"app[- ](?:exclusive|only|users?)", r"on the app", r"through the app", r"e-?coupons?"])
@@ -141,6 +154,9 @@ OPENING = _rx([
     r"soft launch", r"grand opening", r"new outlets?", r"new stores?", r"new branch(?:es)?", r"new locations?",
     r"first outlet", r"first store", r"flagship", r"expands? to singapore", r"heads? to singapore",
     r"\[new\]",
+    # "Japanese handcrafted hamburg chain lands at Lau Pa Sat": a place noun before the verb, so
+    # "Pumpkin spice latte lands at Starbucks" (a menu item) stays out.
+    r"(?:chain|brand|bakery|cafe|restaurant|eatery|outlet|stall|concept|izakaya|bistro)\s+(?:lands?|arrives?)\s+(?:at|in)",
     # "Noci Bakehouse - NEW Orchard Gateway Outlet", "New Hokkaido-Style Soup Curry Eatery"
     r"new (?:[\w&'-]+[ -]){0,4}?(?:restaurants?|caf[e]s?|eater(?:y|ies)|openings?|spots?|bakery|bakeries|bars?|"
     r"outlets?|stalls?|kiosks?|shops?|stores?|branch(?:es)?|concepts?|buffets?|hawker|bakehouse|izakaya)",
@@ -359,7 +375,7 @@ def classify(item, lex, ref):
           or bool(SG_WORDS.search(title)))
     if not sg or (FOREIGN_PLACE.search(title) and not SG_WORDS.search(title)):
         return None
-    if NON_FNB.search(title):
+    if NON_FNB.search(title) or TRAVEL.search(title):
         return None
     # Merchants come from the HEADLINE only: an excerpt names merchants as landmarks
     # ("a Japanese chain opens near Lau Pa Sat"), which mislabelled openings.
@@ -389,8 +405,14 @@ def classify(item, lex, ref):
     if prices:
         tags.append("cheap")
     strong = one4one or pct is not None or free or bool(prices) or bool(DOLLAR_OFF.search(text))
+    # Weak promo words count from the HEADLINE only. An excerpt is boilerplate ("Visit Great Deals
+    # Singapore for the full post" made a coin-bank launch a promo) or review prose ("a one-day
+    # Melaka itinerary", "mains from $18"): 27 of 394 stored promos rested on that alone and
+    # almost none were deals (2026-10-08). A Telegram post is the exception: its "title" is just
+    # the first line, and the deal is in the body.
+    weak_text = text if item.get("post_body") else title
     # A deal channel posting a price IS posting a deal ("$9++ bar bites?!").
-    weak = bool(PROMO_WORDS.search(text)) or (item.get("scope") == "promo" and bool(re.search(r"s?\$\d", title)))
+    weak = bool(PROMO_WORDS.search(weak_text)) or (item.get("scope") == "promo" and bool(re.search(r"s?\$\d", title)))
 
     opening = bool(OPENING.search(title)) or bool(FIRST_IN_SG.search(text))
     first_sg = bool(FIRST_IN_SG.search(text))

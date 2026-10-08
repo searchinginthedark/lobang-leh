@@ -34,6 +34,8 @@ def _item(src, title, url, summary, published, publisher=None):
         "fnb_only": bool(src.get("fnb_only")),
         # The source lists only CUSTOMER birthday perks (a birthday roundup).
         "birthday_only": bool(src.get("birthday_only")),
+        # A Telegram "title" is only the post's first line; the deal is in the body (summary).
+        "post_body": src.get("type") == "telegram",
         # Every RSS/Telegram source in the registry is an SG publisher; Google News is global.
         "sg_source": src.get("type") != "gnews",
         "title": clip(title, 220),
