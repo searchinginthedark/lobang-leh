@@ -63,6 +63,14 @@ NOT_A_DEAL = _rx([
     r"hiring", r"shares? (?:rose|fell|jump|drop)", r"ipo", r"quarterly results", r"profit",
     r"closing down", r"closes? (?:its|for good|permanently|all)", r"shutters?", r"ceases?",
     r"receivership", r"liquidation", r"bankrupt(?:cy)?", r"remains? open", r"cost of opening", r"closures?",
+    # "Crystal Jade Closes 4 More Outlets Ahead Of Sale, Around 120 Workers Face Layoffs" (2026-10-08):
+    # a counted closure, the business being sold, and job losses. "Opens ... After Closing Chinatown
+    # Shop" names no count, so it stays an opening.
+    r"(?:closes?|closing|closed|shuts?|shutting) (?:\d+|two|three|four|five|six|several) (?:more )?"
+    r"(?:outlets?|stores?|branch(?:es)?|restaurants?|shops?)",
+    r"(?:closes?|closing|closed|shuts?|shutting) (?:\d+ |two |three |four |five |several )?more "
+    r"(?:outlets?|stores?|branch(?:es)?|restaurants?|shops?)",
+    r"ahead of (?:its |the |a )?sale", r"up for sale", r"layoffs?", r"laid off", r"retrench(?:ed|ments?)?",
 ])
 
 # A non-food product or event in the headline vetoes the item outright, food words or not:
