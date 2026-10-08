@@ -75,13 +75,15 @@ sources:
     note: "10 items, 9 F&B, newest 2026-10-02"
   - name: eatbook_newopen
     type: rss
-    url: https://eatbook.sg/tag/new-openings/feed/
+    # The CATEGORY feed. The tag feed (tag/new-openings) went stale: on 2026-10-08 its newest post
+    # was 23 days old and the rest 2-3 years old, so every item fell outside the 21-day window.
+    url: https://eatbook.sg/category/new-openings/feed/
     publisher: Eatbook (new openings)
     tier: media
     scope: opening
     fnb_only: true      # food-only publisher: every post is F&B
     ua: browser
-    note: "10 items, 10 F&B, newest 2026-09-21"
+    note: "10 items, newest 2026-10-07 (probed 2026-10-08)"
   - name: littlebigreddot_food
     type: rss
     url: https://littlebigreddot.com/category/food-drinks/feed/
@@ -160,6 +162,10 @@ sources:
     ua: library
     note: "39 items, 8 F&B, newest 2026-10-03"
   - name: cna_lifestyle
+    # DISABLED 2026-10-08: category 6511 now serves CNA's Asia news (94 titles in 30 days, 0
+    # classified, 0 cards), and none of the 6 categories on channelnewsasia.com/rss is food or
+    # lifestyle. CNA food stories still arrive through the gnews queries.
+    disabled: true
     type: rss
     url: https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml&category=6511
     publisher: CNA Lifestyle
@@ -293,6 +299,9 @@ sources:
     ua: browser
     note: "measured 2026-10-03: 33 entries, 31 with a 'Redeem on:' line; article updated 2026-05-15"
   - name: gnews_birthday
+    # DISABLED 2026-10-08: 4 items in its first 5 days, all noise ("23 Halloween Costume Shops",
+    # a high tea guide), 0 classified, 0 cards. tsl_birthday supplies every birthday card (26).
+    disabled: true
     type: gnews
     query: 'Singapore birthday treat OR "birthday month" OR "birthday freebie" food'
     publisher: Google News
