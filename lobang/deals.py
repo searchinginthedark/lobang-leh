@@ -35,6 +35,8 @@ overseas international outpost
 PROMO_STALE_DAYS = 14     # no stated end date: assume a promo has lapsed after two weeks
 OPENING_STALE_DAYS = 30
 STATE_KEEP_DAYS = 45      # how long a deal stays matchable after its last new item
+HOT_DECAY_PER_DAY = 8     # Hot order: points lost per day since a deal last got new coverage
+HOT_GRACE_DAYS = 0.5
 
 
 def norm_publisher(p):
@@ -253,6 +255,23 @@ def score(deal, today):
         penalty /= 2.0   # a deal with a stated, unexpired end date is still live
     s -= penalty
     return int(max(0, min(100, round(s))))
+
+
+def hot_rank(pub, now):
+    """Sort key for the Hot view (higher first) on a public deal.
+
+    `score` alone let a strong opening hold #1 for a week while the reader opened the app daily
+    (audit 2026-10-08: 191/237 cards last seen 2-6 days ago). Decaying by `last_seen`, not
+    `published`, keeps an old deal up while new posts still cover it. 8/day was measured on that
+    feed: 12/day let 48-score listicles onto page one, 6/day kept a 4.5-day-old card there."""
+    days = (now - parse_iso(pub["last_seen"])).total_seconds() / 86400.0
+    return pub["score"] - HOT_DECAY_PER_DAY * max(0.0, days - HOT_GRACE_DAYS)
+
+
+def hot_sort(live, now):
+    """Order public deals for the Hot view: hot_rank, then newest coverage, then id."""
+    live.sort(key=lambda d: (-hot_rank(d, now), -parse_iso(d["last_seen"]).timestamp(), d["id"]))
+    return live
 
 
 def is_live(deal, today):

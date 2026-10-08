@@ -1,7 +1,7 @@
 import os
 import sys
 import unittest
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from unittest import mock
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -301,6 +301,20 @@ class Score(unittest.TestCase):
         self.assertTrue(D.is_live(d, REF))
         d["last_listed"] = iso(datetime(2026, 9, 28, 9, tzinfo=SGT))   # dropped off the page
         self.assertFalse(D.is_live(d, REF))
+
+    def test_hot_rank_puts_fresh_coverage_first(self):
+        # Audit 2026-10-08: a 79-score opening last covered 4.5 days ago sat above a 64-score
+        # deal posted that morning, so a daily reader saw the same top cards all week.
+        now = datetime(2026, 10, 8, 8, tzinfo=SGT)
+        old = {"id": "a", "score": 79, "last_seen": iso(now - timedelta(days=4.5))}
+        new = {"id": "b", "score": 64, "last_seen": iso(now - timedelta(hours=14))}
+        self.assertGreater(D.hot_rank(new, now), D.hot_rank(old, now))
+
+    def test_hot_rank_keeps_strength_within_a_day(self):
+        now = datetime(2026, 10, 8, 8, tzinfo=SGT)
+        weak = {"id": "a", "score": 40, "last_seen": iso(now - timedelta(hours=1))}
+        strong = {"id": "b", "score": 72, "last_seen": iso(now - timedelta(hours=20))}
+        self.assertGreater(D.hot_rank(strong, now), D.hot_rank(weak, now))
 
     def test_ends_today_tag_added_at_publish(self):
         d = self.deal("LiHO free topping today only")

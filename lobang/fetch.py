@@ -188,8 +188,7 @@ def run(dry_run=False, only=None, as_json=False):
                  or parse_iso(d["last_seen"]) >= keep_after]
 
     live = [D.public(d, today) for d in deal_list if D.is_live(d, today)]
-    live.sort(key=lambda d: (-d["score"], d["published"]), reverse=False)
-    live.sort(key=lambda d: -d["score"])
+    D.hot_sort(live, now)
     out = {
         "schema": 1,
         "generated_at": iso(now),
