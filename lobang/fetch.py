@@ -183,12 +183,12 @@ def run(dry_run=False, only=None, as_json=False):
     # dropped here is not re-ingested next run).
     by_name = {s["name"]: s for s in sources}
 
-    def still_fnb(m):
+    def reclassify(m):
         it = source_flags(m, by_name)
         when = parse_iso(m.get("published")) or parse_iso(m["fetched"])
-        return classify(it, lex, when.date()) is not None
+        return classify(it, lex, when.date())
 
-    deal_list = D.prune(deal_list, still_fnb)
+    deal_list = D.prune(deal_list, reclassify)
     D.assign([r for r in fresh if r["cls"]], deal_list)
     for d in deal_list:
         if any(m["id"] in listed for m in d["members"]):

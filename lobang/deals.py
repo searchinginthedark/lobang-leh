@@ -134,15 +134,28 @@ def assign(new_items, deals):
     return deals
 
 
-def prune(deals, keep):
-    """Drop members `keep` now rejects, then deals left empty. Classification is stored at
-    ingest, so without this a rule fix only reaches items first seen after it ships."""
+def prune(deals, reclassify):
+    """Re-run today's rules on every stored member: drop the ones `reclassify` now rejects (None),
+    store its new classification on the rest, then drop deals left empty.
+
+    Classification is stored at ingest, so without this a rule fix only reaches items first seen
+    after it ships. Until 2026-10-08 this only dropped, so a relabel ("hamburg chain lands at Lau
+    Pa Sat" promo -> opening) never reached the card it was meant for."""
     out = []
     for d in deals:
-        ms = [m for m in d["members"] if keep(m)]
+        ms, changed = [], False
+        for m in d["members"]:
+            c = reclassify(m)
+            if c is None:
+                changed = True
+                continue
+            if c != m.get("cls"):
+                m["cls"] = c
+                changed = True
+            ms.append(m)
         if not ms:
             continue
-        if len(ms) != len(d["members"]):
+        if changed:
             d["members"] = ms
             aggregate(d)
         out.append(d)

@@ -278,6 +278,24 @@ class Cluster(unittest.TestCase):
         ], [])
         self.assertEqual(len(deals), 2)
 
+    def test_prune_applies_todays_rules_to_stored_members(self):
+        # Stored at ingest as a promo (an old rule); today's rules say opening. The card must follow.
+        it = item(1, "21-year-old Japanese handcrafted hamburg chain lands at Lau Pa Sat", "A", T0)
+        stale = dict(it["cls"], kind="promo", tags=["cheap"])
+        it["cls"] = stale
+        gone = item(2, "KFC 1-for-1 Zinger till 10 Oct", "B", T0)
+        deals = D.assign([it], []) + D.assign([gone], [])
+        self.assertEqual(deals[0]["kind"], "promo")
+
+        def today(m):
+            return None if m["id"] == "i2" else classify(m, LEX, T0.date())
+
+        deals = D.prune(deals, today)
+        self.assertEqual(len(deals), 1, "a deal whose only member now drops is removed")
+        self.assertEqual(deals[0]["kind"], "opening")
+        self.assertNotIn("cheap", deals[0]["tags"])
+        self.assertEqual(deals[0]["members"][0]["cls"]["kind"], "opening")
+
     def test_deterministic_ids(self):
         a = D.assign([item(1, "LiHO free topping today only", "A", T0)], [])
         b = D.assign([item(1, "LiHO free topping today only", "A", T0)], [])
