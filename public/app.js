@@ -292,6 +292,51 @@
     else { try { window.localStorage.removeItem(KEY_BDAY); } catch (e) { /* ignore */ } }
   }
 
+  // ---------- open counter (fleet UX audit, 2026-10-08) ----------
+  // "Do I still use this, and which views?" measured, not guessed. Calendar days (SGT) the app
+  // came to the foreground, and the days each view was looked at; 60 days kept, never sent
+  // anywhere. Same shape as curfew.opens.v1. A resume counts too, at most once per 30 minutes.
+  var KEY_OPENS = 'lobang:opens';   // {"YYYY-MM-DD": opens}
+  var KEY_VIEWS = 'lobang:views';   // {"YYYY-MM-DD": ["hot", "birthday", ...]}
+  var OPEN_DAYS = 60;
+  var OPEN_GAP = 30 * 60 * 1000;
+  var lastOpen = 0;
+
+  function readObj(k) {
+    try { var o = JSON.parse(sGet(k) || '{}'); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; }
+    catch (e) { return {}; }
+  }
+  function trimDays(o) {
+    var cutoff = sgDay.format(new Date(Date.now() - OPEN_DAYS * 86400000));
+    Object.keys(o).forEach(function (k) { if (k < cutoff) delete o[k]; });
+    return o;
+  }
+  function countOpen() {
+    var now = Date.now();
+    if (now - lastOpen < OPEN_GAP) return;
+    lastOpen = now;
+    var o = trimDays(readObj(KEY_OPENS)), t = todaySG();
+    o[t] = (+o[t] || 0) + 1;
+    sSet(KEY_OPENS, JSON.stringify(o));
+  }
+  function countView(v) {
+    var o = trimDays(readObj(KEY_VIEWS)), t = todaySG();
+    var day = Array.isArray(o[t]) ? o[t] : [];
+    if (day.indexOf(v) < 0) day.push(v);
+    o[t] = day;
+    sSet(KEY_VIEWS, JSON.stringify(o));
+  }
+  function usageText() {
+    var opens = Object.keys(trimDays(readObj(KEY_OPENS))).length, views = trimDays(readObj(KEY_VIEWS));
+    var per = {}, names = { hot: 'Hot', ending: 'Ending soon', 'new': 'New openings', birthday: 'Birthday', saved: 'Saved' };
+    Object.keys(views).forEach(function (d) {
+      (Array.isArray(views[d]) ? views[d] : []).forEach(function (v) { per[v] = (per[v] || 0) + 1; });
+    });
+    return 'Opened on ' + opens + ' of the last ' + OPEN_DAYS + ' days. Days each view was used: ' +
+      VIEWS.map(function (v) { return names[v] + ' ' + (per[v] || 0); }).join(', ') +
+      '. Counted on this phone only, never sent.';
+  }
+
   // ---------- filtering / views ----------
   function matches(d) {
     if (state.cat && d.category !== state.cat) return false;
@@ -492,6 +537,7 @@
         if (!s.ok && s.error) li.appendChild(el('span', 'h-err', String(s.error)));
         ul.appendChild(li);
       });
+      ul.appendChild(el('li', 'h-usage', usageText()));
     } else {
       h.hidden = true;
       healthOpen(false);
@@ -632,7 +678,7 @@
   var TOUR_GAP = 20 * 60 * 1000;
   var KEY_TOUR = 'lobang:tour';
   var KEY_SEEN = 'lobang:seen';
-  var tour = { at: -1, from: 'hot', back: null, raf: 0, counted: [], steps: [] };
+  var tour = { at: -1, from: 'hot', back: null, raf: 0, counted: [], steps: [], clicking: false };
 
   function tourTarget(k) {
     var id = tour.steps[k].getAttribute('data-target');
@@ -641,7 +687,8 @@
   function toView(v) {
     if (v && v !== state.view) {
       var b = document.querySelector('.tab[data-view="' + v + '"]');
-      if (b) b.click();
+      // Flagged so the open counter does not log the tour's own tab switches as use.
+      if (b) { tour.clicking = true; b.click(); tour.clicking = false; }
     }
   }
   // Can step k show right now? Switches to its view first, since list targets only exist there.
@@ -766,6 +813,7 @@
     Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (t) {
       t.addEventListener('click', function () {
         state.view = t.getAttribute('data-view');
+        if (!tour.clicking) countView(state.view);
         savePrefs();
         rerender();
       });
@@ -799,7 +847,14 @@
     $('health-btn').addEventListener('click', function () {
       healthOpen($('health-list').hidden);
     });
-    document.addEventListener('visibilitychange', function () { if (!document.hidden && data) renderHeader(); });
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) return;
+      countOpen();
+      countView(state.view);
+      if (data) renderHeader();
+    });
+    countOpen();
+    countView(state.view);
     renderControls();
     autoTour = tourInit();
     load();
