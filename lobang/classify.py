@@ -77,6 +77,12 @@ NOT_A_DEAL = _rx([
     r"(?:sgx|singapore|hk|us)-listed", r"listed (?:firm|company|group)", r"shareholders?",
     r"social media wrap",
 ])
+# A numbered best-of guide is not a deal (user ruling 2026-10-08): "8 Best Vietnamese Restaurants:
+# Pho From $3.90" quotes menu prices. It stays only when its headline names a deal ("11 Best 1-For-1
+# Buffet Deals") or new places ("5 Best New Restaurants": opening roundups are kept, same ruling).
+GUIDE = re.compile(r"(?<![\w$.])\d+ (?:best|good|affordable|must-try|cheapest|top)(?![\w])")
+GUIDE_DEAL = _rx([r"deals?", r"promos?", r"promotions?", r"discounts?", r"lobangs?", r"offers?", r"sales?",
+                  r"freebies", r"vouchers?", r"happy hours?", r"1-for-1", r"one-for-one", r"\d+% off"])
 # "Opening a milk tea shop in Singapore can rack up to S$209,000": a gerund at the START is a
 # business story. Anchored, so "Chagee is opening a new outlet at Jewel" stays an opening.
 BUSINESS_STORY = re.compile(r"^(?:opening|starting|running|owning) an? ")
@@ -409,6 +415,8 @@ def classify(item, lex, ref):
     if not sg or (FOREIGN_PLACE.search(title) and not SG_WORDS.search(title)):
         return None
     if NON_FNB.search(title) or TRAVEL.search(title):
+        return None
+    if GUIDE.search(title) and not GUIDE_DEAL.search(title) and not OPENING.search(title):
         return None
     # A Telegram post's first line can be pure teaser ("A Little Boost for Your Foodie Adventures");
     # when it names no food, the body decides whether it is a non-food ad.
