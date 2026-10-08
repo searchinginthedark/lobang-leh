@@ -89,6 +89,9 @@ NON_FNB = _rx([
     r"diapers?", r"persil", r"pantene",
     # Merch giveaways, like "keychains" above ("Prime Supermarket ... Quby Fruity Coin Banks", 2026-10-08).
     r"coin banks?", r"piggy banks?",
+    # Beauty retail ("Sephora x Olive Young K-Beauty Edit Pop-Up with freebies", sethlui_food, 2026-10-08).
+    # Not bare "beauty": Beauty in the Pot is a hotpot chain.
+    r"k-beauty", r"sephora", r"olive young",
 ])
 
 # ---- Singapore relevance ----------------------------------------------------
@@ -123,12 +126,15 @@ TRAVEL = _rx([r"itinerar(?:y|ies)", r"day trips?", r"road trips?", r"travel guid
 # ...except a closing-down sale is a genuine lobang; strong promo signals override NOT_A_DEAL.
 
 # ---- promo signals ----------------------------------------------------------
-ONE_FOR_ONE = re.compile(r"(?<![\w$.])(?:1|one)\s*-?\s*for\s*-?\s*(?:1|one)(?![\w])|\bbuy\s*(?:1|one)\s*(?:get|free)\s*(?:1|one)\b|\bb1g1\b|\bbogo\b")
+# "Buy-1-Get-1-FREE" is hyphenated: the separators in the buy form take hyphens too.
+ONE_FOR_ONE = re.compile(r"(?<![\w$.])(?:1|one)\s*-?\s*for\s*-?\s*(?:1|one)(?![\w])|\bbuy[\s-]*(?:1|one)[\s-]*(?:get|free)[\s-]*(?:1|one)\b|\bb1g1\b|\bbogo\b")
 PCT_OFF = re.compile(r"(?<![\d.])(\d{1,2})\s*(?:%|per\s?cent)\s*(?:off|discount)")
 UP_TO_PCT = re.compile(r"up to\s*(\d{1,2})\s*(?:%|per\s?cent)")
 FREE = re.compile(r"(?<![\w-])free(?![\w-])(?!\s*(?:-|\s)?flow)")
 NOT_FREE = re.compile(r"(?:gluten|sugar|dairy|alcohol|cruelty|nut|meat|egg|guilt|hassle|stress|msg|caffeine|lactose|smoke|cash|duty|tax|scam|car)[\s-]free")
 PRICE = re.compile(r"(?:s\$|\$)\s?(\d{1,3}(?:\.\d{1,2})?)(?![\d.])(?!\s*(?:off|cashback|rebate|voucher|credit|million|mil|k\b|bn|billion))")
+# A stated usual price beside the price IS the discount: "$10.90 (U.P. $24.50)".
+WAS_PRICE = re.compile(r"(?<![\w])u\.\s?p\.?\s*:?\s*s?\$\s?\d|(?<![\w])usual(?:ly)?(?: price)?\s*:?\s*s?\$\s?\d")
 DOLLAR_OFF = re.compile(r"(?:s\$|\$)\s?\d{1,3}(?:\.\d{1,2})?\s*(?:off|cashback|rebate|voucher)")
 PROMO_WORDS = _rx([
     r"promos?", r"promotions?", r"deals?", r"discounts?", r"vouchers?", r"coupons?", r"offers?",
@@ -158,7 +164,8 @@ ENDS_TODAY = _rx([r"ends? today", r"today only", r"last day", r"one[- ]day only"
 OPENING = _rx([
     # Not bare "launches"/"debuts"/"arrives": "McDonald's launches Samurai burger" is a menu item, not an
     # outlet. Those verbs only count with "in Singapore", which FIRST_IN_SG covers.
-    r"opens?", r"opening", r"opened",r"coming to singapore", r"comes to singapore", r"now in singapore",
+    # Not "opening hours/times": "... But This Time the Poster Prints No Opening Hours" (Popeyes deal).
+    r"opens?", r"opening(?! (?:hours?|times?))", r"opened", r"coming to singapore", r"comes to singapore", r"now in singapore",
     r"soft launch", r"grand opening", r"new outlets?", r"new stores?", r"new branch(?:es)?", r"new locations?",
     r"first outlet", r"first store", r"flagship", r"expands? to singapore", r"heads? to singapore",
     r"\[new\]",
@@ -412,7 +419,20 @@ def classify(item, lex, ref):
     prices = [float(p) for p in PRICE.findall(title) if 0 < float(p) <= 5]
     if prices:
         tags.append("cheap")
-    strong = one4one or pct is not None or free or bool(prices) or bool(DOLLAR_OFF.search(text))
+    strong = (one4one or pct is not None or free or bool(prices) or bool(DOLLAR_OFF.search(text))
+              or bool(WAS_PRICE.search(text)))
+    # WHETHER it is a deal, and which kind, rests on the headline's strong signals; the excerpt's only
+    # add tags to something the headline already made a deal. An excerpt's "free entry" made a food
+    # fair and an Oktoberfest roundup promos, and a free cookie turned "Elijah Pies Opens Its Joo Chiat
+    # Flagship" into a promo (11 of 361 stored items rested on excerpt-only strong signals, 2026-10-08).
+    # Telegram posts again excepted: the body is the post.
+    if item.get("post_body"):
+        decide = strong
+    else:
+        tpm = PCT_OFF.search(title) or UP_TO_PCT.search(title)
+        decide = (bool(ONE_FOR_ONE.search(title)) or bool(tpm and 5 <= int(tpm.group(1)) <= 95)
+                  or (bool(FREE.search(title)) and not NOT_FREE.search(title)) or bool(prices)
+                  or bool(DOLLAR_OFF.search(title)) or bool(WAS_PRICE.search(title)))
     # Weak promo words count from the HEADLINE only. An excerpt is boilerplate ("Visit Great Deals
     # Singapore for the full post" made a coin-bank launch a promo) or review prose ("a one-day
     # Melaka itinerary", "mains from $18"): 27 of 394 stored promos rested on that alone and
@@ -426,13 +446,13 @@ def classify(item, lex, ref):
     first_sg = bool(FIRST_IN_SG.search(text))
     bday = BD.is_customer(item["title"], item.get("summary") or "", item.get("birthday_only"))
 
-    if NOT_A_DEAL.search(title) and not strong:
+    if NOT_A_DEAL.search(title) and not decide:
         return None
     if bday:
         # A customer birthday perk is a promo by definition, even when it is only "a $100 voucher".
         kind, opening, first_sg = "promo", False, False
         tags.append("birthday")
-    elif strong:
+    elif decide:
         kind = "promo"
     elif opening:
         kind = "opening"

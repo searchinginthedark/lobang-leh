@@ -154,6 +154,16 @@ class Classify(unittest.TestCase):
                   "Fab deals: KFC 1-for-1 Zinger till 10 Oct"):
             self.assertIsNotNone(cls(t, fnb_only=True), t)
 
+    def test_hyphenated_buy_one_get_one_is_read_from_the_headline(self):
+        c = cls("Mr Bean Buy-1-Get-1-FREE Almost ALL Soy Drinks One-Day Treat on 4 Oct 2026", fnb_only=True)
+        self.assertIn("1-for-1", c["tags"])
+
+    def test_excerpt_strong_signal_tags_but_does_not_decide(self):
+        # The excerpt's free cookie may tag the card; it must not turn an opening into a promo.
+        c = cls("Elijah Pies Opens Its Joo Chiat Flagship on 12 Sept 2026", "a free cookie with every pie", fnb_only=True)
+        self.assertEqual(c["kind"], "opening")
+        self.assertIn("free", c["tags"])
+
     def test_food_words_in_excerpt_alone_do_not_make_fnb(self):
         self.assertIsNone(cls("Uniqlo 20% off all jeans", "Grab a coffee after shopping"))
 
