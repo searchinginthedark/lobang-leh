@@ -460,10 +460,15 @@
     s.hidden = false;
   }
 
+  function healthOpen(open) {
+    $('health-btn').setAttribute('aria-expanded', String(open));
+    $('health-list').hidden = !open;
+  }
+
   function renderHeader() {
     var fresh = $('fresh-text'), stale = $('stale');
-    var h = $('health');
-    if (!data) { h.hidden = true; stale.hidden = true; return; }
+    var h = $('health-btn');
+    if (!data) { h.hidden = true; healthOpen(false); stale.hidden = true; return; }
     var t = ts(data.generated_at);
     if (t) {
       var age = Date.now() - t;
@@ -476,7 +481,7 @@
     var hl = data.health;
     if (hl && typeof hl === 'object') {
       h.hidden = false;
-      $('health-sum').textContent = hl.ok + '/' + hl.total + ' sources';
+      h.textContent = hl.ok + '/' + hl.total + ' sources';
       var ul = $('health-list');
       clear(ul);
       (Array.isArray(hl.sources) ? hl.sources : []).forEach(function (s) {
@@ -489,6 +494,7 @@
       });
     } else {
       h.hidden = true;
+      healthOpen(false);
     }
   }
 
@@ -518,7 +524,19 @@
     });
     $('t-1for1').setAttribute('aria-pressed', String(state.f1));
     $('t-free').setAttribute('aria-pressed', String(state.free));
-    $('clear').hidden = !(state.q || state.cat || state.f1 || state.free);
+    // The panel is usually shut, so an active filter is always named above the list: a
+    // filtered feed must never pass for a thin one.
+    var on = [];
+    if (state.cat) on.push(CATS[state.cat] || state.cat);
+    if (state.f1) on.push('1-for-1');
+    if (state.free) on.push('Free');
+    if (state.q.trim()) on.push('“' + state.q.trim() + '”');
+    var fb = $('filter-btn');
+    fb.textContent = on.length ? 'Filter · ' + on.length : 'Filter';
+    fb.classList.toggle('on', on.length > 0);
+    fb.setAttribute('aria-label', on.length ? 'Filter, ' + on.length + ' on' : 'Filter');
+    $('active').hidden = !on.length;
+    $('active-text').textContent = 'Showing: ' + on.join(' · ');
     $('bday-box').hidden = state.view !== 'birthday';
     if (state.view === 'birthday') renderBday();
   }
@@ -592,7 +610,8 @@
         $('list').textContent = '';
         $('fresh-text').textContent = 'Could not load deals';
         $('stale').hidden = true;
-        $('health').hidden = true;
+        $('health-btn').hidden = true;
+        healthOpen(false);
         showState('err', 'Could not load deals',
           'The deals file did not load (' + (err && err.message ? err.message : 'network error') + '). This is a loading problem, not an empty list.', true);
       }
@@ -772,6 +791,14 @@
     $('bday-m').addEventListener('change', function () { fillDays(+$('bday-m').value); bdaySet(); rerender(); });
     $('bday-d').addEventListener('change', function () { bdaySet(); rerender(); });
     $('refresh').addEventListener('click', load);
+    $('filter-btn').addEventListener('click', function () {
+      var open = $('filters').hidden;
+      $('filters').hidden = !open;
+      $('filter-btn').setAttribute('aria-expanded', String(open));
+    });
+    $('health-btn').addEventListener('click', function () {
+      healthOpen($('health-list').hidden);
+    });
     document.addEventListener('visibilitychange', function () { if (!document.hidden && data) renderHeader(); });
     renderControls();
     autoTour = tourInit();

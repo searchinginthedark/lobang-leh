@@ -89,14 +89,21 @@ body {
 .wrap { max-width: 640px; margin: 0 auto; padding: 0 16px 80px; }
 
 /* header */
-.top { padding: 20px 0 8px; }
+.top { padding: 14px 0 4px; }
 .brand-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .brand { margin: 0; font-size: var(--t-brand); line-height: 1.1; font-weight: 800; letter-spacing: -.025em; color: var(--brand); }
 .sub { margin: 4px 0 0; color: var(--muted); font-size: var(--t-label); line-height: 1.4; }
-.fresh { margin: 12px 0 0; font-size: var(--t-label); color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.health { margin-top: 4px; font-size: var(--t-label); color: var(--muted); }
-.health summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
-.health-list { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 4px; }
+.status { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; }
+.fresh { margin: 0; font-size: var(--t-label); color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.health-btn {
+  min-height: 44px; padding: 0 2px; border: 0; background: none; cursor: pointer;
+  font: inherit; font-size: var(--t-label); color: var(--muted);
+  text-decoration: underline dotted; text-underline-offset: 3px;
+}
+.health-btn::before { content: "· "; }
+.filter-btn { margin-left: auto; }
+.filter-btn.on { background: var(--green-bg); color: var(--green-fg); border-color: var(--green-fg); }
+.health-list { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 4px; font-size: var(--t-label); color: var(--muted); }
 .health-list li { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; }
 .h-name { font-weight: 700; color: var(--text); }
 .h-err { flex-basis: 100%; font-size: var(--t-label); }
@@ -126,6 +133,7 @@ body {
 
 /* filters */
 .filters { padding: 12px 0 4px; display: grid; gap: 8px; }
+.active-f { margin: 8px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: var(--t-label); color: var(--muted); }
 .search {
   width: 100%; min-height: 44px; padding: 0 14px;
   border: 1px solid var(--line); border-radius: 22px;

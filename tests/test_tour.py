@@ -25,7 +25,7 @@ JS = read("public", "app.js")
 # Every control a user can reach: ids of buttons/inputs/selects in the page, the views, and the
 # classes of buttons app.js builds per card or list.
 FLOW = {
-    "page": {"tourbtn", "refresh", "q", "t-1for1", "t-free", "clear", "bday-m", "bday-d"},
+    "page": {"tourbtn", "refresh", "health-btn", "filter-btn", "q", "t-1for1", "t-free", "clear", "bday-m", "bday-d"},
     "views": {"hot", "ending", "new", "birthday", "saved"},
     "js_buttons": {"summary-btn", "more-btn", "act", "show-more", "chip", "icon-btn"},
 }
