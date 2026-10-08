@@ -71,7 +71,15 @@ NOT_A_DEAL = _rx([
     r"(?:closes?|closing|closed|shuts?|shutting) (?:\d+ |two |three |four |five |several )?more "
     r"(?:outlets?|stores?|branch(?:es)?|restaurants?|shops?)",
     r"ahead of (?:its |the |a )?sale", r"up for sale", r"layoffs?", r"laid off", r"retrench(?:ed|ments?)?",
+    # Live audit 2026-10-08: crime ("Hawker ... Rolls-Royce linked to $3b money laundering probe"),
+    # corporate ("Singapore-listed firm to open 250 Starbucks outlets in Vietnam"), trade roundups.
+    r"money laundering", r"probe", r"charged", r"jailed", r"arrested",
+    r"(?:sgx|singapore|hk|us)-listed", r"listed (?:firm|company|group)", r"shareholders?",
+    r"social media wrap",
 ])
+# "Opening a milk tea shop in Singapore can rack up to S$209,000": a gerund at the START is a
+# business story. Anchored, so "Chagee is opening a new outlet at Jewel" stays an opening.
+BUSINESS_STORY = re.compile(r"^(?:opening|starting|running|owning) an? ")
 
 # A non-food product or event in the headline vetoes the item outright, food words or not:
 # "FISH & CHIPS + $3 SOCKS" is a socks deal, "Museum of Ice Cream ... 35% Off Anytime Tickets"
@@ -92,6 +100,10 @@ NON_FNB = _rx([
     # Beauty retail ("Sephora x Olive Young K-Beauty Edit Pop-Up with freebies", sethlui_food, 2026-10-08).
     # Not bare "beauty": Beauty in the Pot is a hotpot chain.
     r"k-beauty", r"sephora", r"olive young",
+    # Ads in food Telegram channels (2026-10-08): "Prime Sale: Freezer-friendly Storage Tools", and
+    # "A Little Boost for Your Foodie Adventures" (slimming treatments, said only in the body).
+    r"storage (?:tools?|containers?|bags?|boxes)", r"kitchenware", r"cookware", r"slimming", r"facials?",
+    r"spa treatments?", r"beauty treatments?",
 ])
 
 # ---- Singapore relevance ----------------------------------------------------
@@ -112,12 +124,17 @@ SG_PUBLISHER = re.compile(r"singapore|s'pore|\bsg\b|eatbook|seth ?lui|mothership
 UNTRUSTED_PUBLISHER = re.compile(r"yahoo|msn|time ?out worldwide")
 _FOREIGN = (r"jb|johor(?: bahru)?|malaysia|kuala lumpur|kl|penang|ipoh|melaka|malacca|batam|bintan|bangkok|hong kong|hk|"
             r"taipei|tokyo|osaka|seoul|shanghai|beijing|sydney|melbourne|london|new york|nyc|toronto|seattle|"
-            r"orlando|los angeles|dubai|bali|jakarta|manila|vancouver|chicago|texas|california")
+            r"orlando|los angeles|dubai|bali|jakarta|manila|vancouver|chicago|texas|california|"
+            # A KL mall: "6 new openings at The Exchange TRX" (known gap until 2026-10-08).
+            r"(?:the )?exchange trx|trx")
+# Countries count only after a preposition ("outlets in Vietnam, Thailand"): as a topic they are
+# cuisines and fairs held here ("Japan Food Fair at Takashimaya").
+_COUNTRY = r"vietnam|thailand|indonesia|philippines|japan|korea|south korea|taiwan|china|australia|india"
 # A foreign place as the TOPIC: "in Melaka", or "Melaka food itinerary" / "Penang hawkers" / "Bangkok
 # cafe guide" (the place directly before a food or travel noun). Before 2026-10-08 the second form
 # covered only jb/johor/malaysia/kl, so "12-Hour Melaka Food Itinerary" passed. The caller skips this
 # when the headline has an SG word, so "Tokyo cafe chain opens at Funan" (origin, not topic) stays in.
-FOREIGN_PLACE = re.compile(r"(?<![\w])(?:in|to|at|around|across|over|all over)\s+(?:the\s+)?(?:" + _FOREIGN + r")(?![\w])"
+FOREIGN_PLACE = re.compile(r"(?<![\w])(?<!made )(?<!made-)(?:in|to|at|around|across|over|all over)\s+(?:the\s+)?(?:" + _FOREIGN + "|" + _COUNTRY + r")(?![\w])"
                            r"|(?<![\w])(?:" + _FOREIGN + r")(?:'s)?\s+(?:street\s+)?(?:cafes?|food|foodie|restaurants?|eats?|"
                            r"hawkers?|openings?|itinerar(?:y|ies)|guides?|trips?|travel|getaways?|day trips?)(?![\w])")
 # Travel content is never a deal or an opening here, wherever it is ("one-day food itinerary").
@@ -132,7 +149,8 @@ PCT_OFF = re.compile(r"(?<![\d.])(\d{1,2})\s*(?:%|per\s?cent)\s*(?:off|discount)
 UP_TO_PCT = re.compile(r"up to\s*(\d{1,2})\s*(?:%|per\s?cent)")
 FREE = re.compile(r"(?<![\w-])free(?![\w-])(?!\s*(?:-|\s)?flow)")
 NOT_FREE = re.compile(r"(?:gluten|sugar|dairy|alcohol|cruelty|nut|meat|egg|guilt|hassle|stress|msg|caffeine|lactose|smoke|cash|duty|tax|scam|car)[\s-]free")
-PRICE = re.compile(r"(?:s\$|\$)\s?(\d{1,3}(?:\.\d{1,2})?)(?![\d.])(?!\s*(?:off|cashback|rebate|voucher|credit|million|mil|k\b|bn|billion))")
+# Not "$3b" / "$5m" (a $3 billion probe was tagged "Under $5", 2026-10-08) nor "$3,000".
+PRICE = re.compile(r"(?:s\$|\$)\s?(\d{1,3}(?:\.\d{1,2})?)(?![\d.]|,\d)(?!\s*(?:off|cashback|rebate|voucher|credit|million|mil|k\b|bn|billion|b\b|m\b))")
 # A stated usual price beside the price IS the discount: "$10.90 (U.P. $24.50)".
 WAS_PRICE = re.compile(r"(?<![\w])u\.\s?p\.?\s*:?\s*s?\$\s?\d|(?<![\w])usual(?:ly)?(?: price)?\s*:?\s*s?\$\s?\d")
 DOLLAR_OFF = re.compile(r"(?:s\$|\$)\s?\d{1,3}(?:\.\d{1,2})?\s*(?:off|cashback|rebate|voucher)")
@@ -392,6 +410,10 @@ def classify(item, lex, ref):
         return None
     if NON_FNB.search(title) or TRAVEL.search(title):
         return None
+    # A Telegram post's first line can be pure teaser ("A Little Boost for Your Foodie Adventures");
+    # when it names no food, the body decides whether it is a non-food ad.
+    if item.get("post_body") and not FNB.search(title) and NON_FNB.search(summary):
+        return None
     # Merchants come from the HEADLINE only: an excerpt names merchants as landmarks
     # ("a Japanese chain opens near Lau Pa Sat"), which mislabelled openings.
     merchants = lex.find(title)
@@ -446,7 +468,7 @@ def classify(item, lex, ref):
     first_sg = bool(FIRST_IN_SG.search(text))
     bday = BD.is_customer(item["title"], item.get("summary") or "", item.get("birthday_only"))
 
-    if NOT_A_DEAL.search(title) and not decide:
+    if (NOT_A_DEAL.search(title) or BUSINESS_STORY.search(title)) and not decide:
         return None
     if bday:
         # A customer birthday perk is a promo by definition, even when it is only "a $100 voucher".

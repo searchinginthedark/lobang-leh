@@ -4,7 +4,7 @@
 #
 # expect  drop | promo | opening
 # flags   comma list or "-": fnb (food-only publisher), post (Telegram: the body is the post),
-#         gnews (not an SG source)
+#         gnews (not an SG source), scope (source scope: promo, a deal channel)
 # title, summary: as the source gave them; summary may be "-"
 expect	flags	title	summary
 drop	fnb	12-Hour Melaka Food Itinerary: Heritage Cafes, 100-Year-Old Bar And More	Follow our one-day Melaka food itinerary, featuring heritage cafes, a 100-year-old bar, and the best things to see and do in Malacca.
@@ -38,3 +38,17 @@ promo	fnb,post	Sushiro Hougang	1-for-1 sushi plates this weekend only at the new
 promo	fnb	Popeyes Chicken Mania Is Back for Round Two: 5pc Signature Chicken at $10.90 (U.P. $24.50), 21 Sep to 11 Oct 2026, But This Time the Poster Prints No Opening Hours	The deal is identical to August's: $13.60 off.
 promo	-	KFC Zinger box $9.90, usual price $15.40, this week	-
 drop	fnb	Hawker centre opening hours extended for Deepavali weekend	-
+drop	-	Hawker goes viral with video of him driving Rolls-Royce linked to $3b money laundering probe	He says the borrowed Rolls-Royce was a marketing stunt that helped double his daily sales.
+drop	fnb	Opening a milk tea shop in Singapore can rack up to S$209,000 even before the first cup is poured	-
+drop	-	Singapore-listed firm to open 250 new Starbucks outlets mainly in Vietnam, Thailand	-
+drop	scope	Social Media Wrap: Guzman y Gomez Singapore $6 minis; McDonald's Indonesia brings back shuttle bus service	-
+drop	fnb	6 new openings at The Exchange TRX to check out before 2026 ends	-
+drop	fnb,post	Prime Sale: Freezer-friendly Storage Tools	Try Amazon Prime for free & make meal prep easier with these tools: 15% off 5-pc Storage Container
+drop	fnb,post	A Little Boost for Your Foodie Adventures	Claim 2 free slimming treatments to get a little self care between food hunts (worth $1,520)
+opening	fnb	Molly Tea opens third site in Singapore	-
+opening	fnb	Chagee is opening a new outlet at Jewel Changi Airport	-
+promo	fnb	Japan Food Fair at Takashimaya: 20% off Hokkaido snacks	-
+promo	fnb,post	Sushi Express: All plates $1.50++	All plates $1.50++ this week.
+promo	fnb,post	Lemeul: 1-for-1 Signature Chocolate Drinks	Free gift: a reusable tumbler with every 2 drinks.
+promo	fnb	Made-in-Japan dessert pop-up at Takashimaya: 1-for-1 parfaits	-
+promo	fnb	Old Chang Kee's Salted Egg Taro Mochi'O Is $3.80, or 2 for $6.80, at All Outlets 1 to 30 Sep 2026	-

@@ -4,8 +4,8 @@
 
 Classifies every item in data/items.jsonl plus every stored deal member twice, once with the
 rules in the working tree and once with the rules at REV (extracted with `git archive`, never
-checked out), and prints each headline whose outcome differs: DROPPED, ADDED, or KIND (promo vs
-opening). Exit 0 always; read the list. Run it before committing any change to lobang/classify.py,
+checked out), and prints each headline whose outcome differs: DROPPED, ADDED, KIND (promo vs
+opening) or TAGS (kind unchanged, tags differ). Exit 0 always; read the list. Run it before committing any change to lobang/classify.py,
 lobang/birthday.py, config/merchants.yml or config/sources.yml, and put every surprise into
 tests/fixtures/headlines.tsv.
 """
@@ -85,9 +85,15 @@ def main(argv):
     rows = []
     for i, (nk, ntags) in new.items():
         ok, otags = old.get(i, (None, []))
-        if ok == nk:
+        if ok == nk and list(otags) == list(ntags):
             continue
-        what = "DROPPED" if nk is None else "ADDED" if ok is None else "KIND %s>%s" % (ok, nk)
+        if ok == nk:
+            # Tags are user-visible too ("Under $5", "1-for-1"), so a tag-only change is reported.
+            gone = sorted(set(otags) - set(ntags))
+            came = sorted(set(ntags) - set(otags))
+            what = "TAGS" + "".join(" -" + t for t in gone) + "".join(" +" + t for t in came)
+        else:
+            what = "DROPPED" if nk is None else "ADDED" if ok is None else "KIND %s>%s" % (ok, nk)
         m = by_id[i]
         rows.append((what, m.get("source", "?"), m["title"]))
     seen = set()

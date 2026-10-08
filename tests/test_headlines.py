@@ -14,7 +14,7 @@ from lobang.classify import Lexicon, classify
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LEX = Lexicon.load(os.path.join(ROOT, "config", "merchants.yml"))
 REF = date(2026, 10, 8)
-FLAGS = {"fnb", "post", "gnews"}
+FLAGS = {"fnb", "post", "gnews", "scope"}
 
 
 def rows():
@@ -46,7 +46,7 @@ class LabelledHeadlines(unittest.TestCase):
             fl = set() if flags == "-" else set(flags.split(","))
             item = {"title": title, "summary": "" if summary == "-" else summary,
                     "fnb_only": "fnb" in fl, "post_body": "post" in fl, "sg_source": "gnews" not in fl,
-                    "publisher": "Fixture", "scope": "mixed"}
+                    "publisher": "Fixture", "scope": "promo" if "scope" in fl else "mixed"}
             c = classify(item, LEX, REF)
             with self.subTest(title=title):
                 if expect == "drop":

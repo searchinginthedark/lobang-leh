@@ -154,6 +154,12 @@ class Classify(unittest.TestCase):
                   "Fab deals: KFC 1-for-1 Zinger till 10 Oct"):
             self.assertIsNotNone(cls(t, fnb_only=True), t)
 
+    def test_under_five_tag_reads_prices_not_amounts(self):
+        # "$3.80," is a price; "$3b" and "S$1,000" are amounts (live audit 2026-10-08).
+        self.assertIn("cheap", cls("Old Chang Kee's Mochi'O Is $3.80, or 2 for $6.80, at All Outlets", fnb_only=True)["tags"])
+        self.assertNotIn("cheap", cls("Sushi Express Big Eater Challenge: Free Meal, Up to S$1,000 Cash", fnb_only=True)["tags"])
+        self.assertIsNone(cls("Hawker goes viral with Rolls-Royce linked to $3b money laundering probe"))
+
     def test_hyphenated_buy_one_get_one_is_read_from_the_headline(self):
         c = cls("Mr Bean Buy-1-Get-1-FREE Almost ALL Soy Drinks One-Day Treat on 4 Oct 2026", fnb_only=True)
         self.assertIn("1-for-1", c["tags"])
