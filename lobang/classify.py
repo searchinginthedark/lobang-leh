@@ -75,6 +75,10 @@ NON_FNB = _rx([
     r"(?:anytime|entry|admission|race|concert|movie|event) tickets?", r"socks", r"keychains?",
     r"(?:boosted|bonus|earn|kris\+?) miles", r"\d+ ?mpd", r"staycations?", r"skincare", r"cosmetics",
     r"pinned an? (?:photo|message|file|video|poll)",
+    # Supermarket household sales (2026-10-08: "FairPrice Cleaning Sale", "... Pantene and Persil").
+    # Not "Fab" the detergent: as a word it is also "fab deals".
+    r"cleaning", r"laundry", r"detergents?", r"shampoos?", r"tissues?", r"toilet (?:paper|rolls?)",
+    r"diapers?", r"persil", r"pantene",
 ])
 
 # ---- Singapore relevance ----------------------------------------------------

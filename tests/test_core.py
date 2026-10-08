@@ -139,6 +139,21 @@ class Classify(unittest.TestCase):
     def test_non_fnb_sale_dropped(self):
         self.assertIsNone(cls("Shopee 10.10 sale: up to 90% off electronics"))
 
+    def test_supermarket_household_sale_dropped(self):
+        # Live Hot #3 and #10 on 2026-10-08, both from food-only sources.
+        self.assertIsNone(cls("FairPrice Cleaning Sale: 1-for-1 & Up to 55% Off Deals Till 14 Oct 2026",
+                              "Save on laundry, disinfecting and home-cleaning essentials", fnb_only=True))
+        self.assertIsNone(cls("Sheng Siong's 2-Week Special (2 to 15 Oct 2026): Five Buy 1 Free 1 Lines Including "
+                              "Pantene and Persil, Hoegaarden at $2.55 a Bottle, and the Fruit Page Ends Thu 8 Oct",
+                              fnb_only=True))
+        self.assertIsNone(cls("NTUC FairPrice 1-for-1 detergent and tissue deals", fnb_only=True))
+
+    def test_supermarket_food_sale_kept(self):
+        for t in ("Sheng Siong Buy 1 Get 1 Free Deals, $1 Snacks & Up To 50% Off Till 12 Oct 2026",
+                  "FairPrice 30 Eggs at S$4.95 & 1kg Frozen Chicken at S$2.50 Until 31 Dec 2026",
+                  "Fab deals: KFC 1-for-1 Zinger till 10 Oct"):
+            self.assertIsNotNone(cls(t, fnb_only=True), t)
+
     def test_food_words_in_excerpt_alone_do_not_make_fnb(self):
         self.assertIsNone(cls("Uniqlo 20% off all jeans", "Grab a coffee after shopping"))
 
