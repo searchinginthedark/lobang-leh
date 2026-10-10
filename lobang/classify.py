@@ -7,6 +7,7 @@ classify(item, lexicon, today) -> dict | None
 
 from __future__ import annotations
 
+import os
 import re
 import unicodedata
 from datetime import date, timedelta
@@ -368,6 +369,8 @@ def extract_validity(text, ref):
 
 # ---- merchants --------------------------------------------------------------
 class Lexicon(object):
+    places = None
+
     def __init__(self, merchants):
         self.by_name = {}
         pats = []
@@ -388,7 +391,13 @@ class Lexicon(object):
     def load(cls, path):
         with open(path, encoding="utf-8") as fh:
             data = yaml.safe_load(fh) or {}
-        return cls(data.get("merchants") or [])
+        lex = cls(data.get("merchants") or [])
+        # The place lexicon lives beside the merchant one; every caller already loads this.
+        ppath = os.path.join(os.path.dirname(path), "places.yml")
+        if os.path.exists(ppath):
+            from .places import Places
+            lex.places = Places.load(ppath)
+        return lex
 
     def find(self, folded):
         if not self._rx:
@@ -547,6 +556,12 @@ def classify(item, lex, ref):
     # not an end date, so a birthday perk takes its validity from the headline only.
     vfrom, vuntil = extract_validity(title if bday else text, ref)
     famous = any(lex.by_name[n].get("famous") for n in merchants)
+    # Where: the headline's places, else the excerpt's ("now open at Funan"). Merchant names are
+    # NOT masked: the only lexicon merchants that contain a place ARE that place (Lau Pa Sat,
+    # Maxwell Food Centre); brands named after one go in places.yml `ignore`.
+    places = []
+    if lex.places is not None:
+        places = lex.places.locate(title, summary)
     out = {
         "kind": kind,
         "merchants": merchants,
@@ -557,6 +572,7 @@ def classify(item, lex, ref):
         "valid_from": vfrom.isoformat() if vfrom else None,
         "valid_until": vuntil.isoformat() if vuntil else None,
         "famous": famous,
+        "places": places,
     }
     if bday:
         b = BD.extract(item["title"], item.get("summary") or "", item.get("redeem"))

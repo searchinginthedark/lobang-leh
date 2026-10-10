@@ -1,0 +1,331 @@
+# LobangLeh place lexicon: where a deal or opening is, read from the post's own words.
+# Matched case-insensitively on WORD BOUNDARIES, longest name first, after known merchant names
+# are masked out ("Tiong Bahru Bakery" is a chain, not a place). Nothing is guessed: a post that
+# names no place gets no place.
+#
+# Regions are the colloquial five a Singaporean filters by, NOT the URA planning regions: URA puts
+# Katong, Marine Parade and Geylang in Central, which nobody searching "east" would expect.
+#
+# stations: MRT stations (no LRT) by region. A name in `qualified` only matches when followed by
+#   "MRT" or "station", because the bare word means something else ("Lavender latte", "Expo",
+#   "Downtown", "Canberra", "Stadium").
+# places: malls, food centres and neighbourhoods. `mrt` is the nearest station (must be one listed
+#   under stations); omit it when nothing is within a short walk, and give `region` instead.
+# ignore: phrases that contain a place word but are a brand or a dish, removed before matching.
+
+stations:
+  Central:
+    - Orchard
+    - Orchard Boulevard
+    - Somerset
+    - Dhoby Ghaut
+    - City Hall
+    - Raffles Place
+    - Marina Bay
+    - Marina South Pier
+    - Bugis
+    - Lavender
+    - Kallang
+    - Tanjong Pagar
+    - Outram Park
+    - Tiong Bahru
+    - Redhill
+    - Queenstown
+    - Commonwealth
+    - Buona Vista
+    - one-north
+    - Holland Village
+    - Kent Ridge
+    - Haw Par Villa
+    - Pasir Panjang
+    - Labrador Park
+    - Telok Blangah
+    - HarbourFront
+    - Chinatown
+    - Clarke Quay
+    - Little India
+    - Farrer Park
+    - Boon Keng
+    - Potong Pasir
+    - Woodleigh
+    - Bras Basah
+    - Esplanade
+    - Promenade
+    - Nicoll Highway
+    - Stadium
+    - Bayfront
+    - Downtown
+    - Telok Ayer
+    - Fort Canning
+    - Bencoolen
+    - Jalan Besar
+    - Bendemeer
+    - Geylang Bahru
+    - Rochor
+    - Newton
+    - Novena
+    - Toa Payoh
+    - Braddell
+    - Bishan
+    - Marymount
+    - Caldecott
+    - Bright Hill
+    - Upper Thomson
+    - Botanic Gardens
+    - Farrer Road
+    - Stevens
+    - Napier
+    - Great World
+    - Havelock
+    - Maxwell
+    - Shenton Way
+    - Gardens by the Bay
+    - Tanjong Rhu
+    - Beauty World
+    - King Albert Park
+    - Sixth Avenue
+    - Tan Kah Kee
+  East:
+    - Pasir Ris
+    - Tampines
+    - Tampines West
+    - Tampines East
+    - Simei
+    - Tanah Merah
+    - Bedok
+    - Bedok North
+    - Bedok Reservoir
+    - Kembangan
+    - Eunos
+    - Paya Lebar
+    - Aljunied
+    - Expo
+    - Changi Airport
+    - Upper Changi
+    - Mountbatten
+    - Dakota
+    - MacPherson
+    - Mattar
+    - Ubi
+    - Kaki Bukit
+    - Tai Seng
+    - Katong Park
+    - Tanjong Katong
+    - Marine Parade
+    - Marine Terrace
+    - Siglap
+    - Bayshore
+  North:
+    - Kranji
+    - Marsiling
+    - Woodlands
+    - Woodlands North
+    - Woodlands South
+    - Admiralty
+    - Sembawang
+    - Canberra
+    - Yishun
+    - Khatib
+    - Springleaf
+  North-East:
+    - Yio Chu Kang
+    - Ang Mo Kio
+    - Lentor
+    - Mayflower
+    - Serangoon
+    - Kovan
+    - Hougang
+    - Buangkok
+    - Sengkang
+    - Punggol
+    - Bartley
+    - Lorong Chuan
+  West:
+    - Jurong East
+    - Chinese Garden
+    - Lakeside
+    - Boon Lay
+    - Pioneer
+    - Joo Koon
+    - Clementi
+    - Dover
+    - Bukit Batok
+    - Bukit Gombak
+    - Choa Chu Kang
+    - Yew Tee
+    - Bukit Panjang
+    - Cashew
+    - Hillview
+
+qualified: [Lavender, Commonwealth, Stadium, Downtown, Promenade, Expo, Canberra, Dover, Pioneer,
+            Lakeside, Cashew, Stevens, Napier, Mayflower, Springleaf, Dakota, Ubi, City Hall, Newton,
+            Bayfront, Esplanade, Havelock, Mountbatten, Maxwell, Chinese Garden, Botanic Gardens]
+
+places:
+  # Orchard
+  - {name: ION Orchard, mrt: Orchard}   # not bare "ION": Pocari Sweat Ion Water
+  - {name: Ngee Ann City, mrt: Orchard}
+  - {name: Takashimaya, mrt: Orchard}
+  - {name: Wisma Atria, mrt: Orchard}
+  - {name: Paragon, mrt: Orchard}
+  - {name: Tangs, mrt: Orchard, aliases: [Tang Plaza]}
+  - {name: Lucky Plaza, mrt: Orchard}
+  - {name: Far East Plaza, mrt: Orchard}
+  - {name: Shaw Centre, mrt: Orchard}
+  - {name: Scotts Square, mrt: Orchard}
+  - {name: Wheelock Place, mrt: Orchard}
+  - {name: Liat Towers, mrt: Orchard}
+  - {name: Palais Renaissance, mrt: Orchard}
+  - {name: Forum The Shopping Mall, mrt: Orchard}
+  - {name: Orchard Road, mrt: Orchard}
+  - {name: Tanglin Mall, mrt: Orchard Boulevard}
+  - {name: Mandarin Gallery, mrt: Somerset}
+  - {name: 313@Somerset, mrt: Somerset, aliases: [313 Somerset]}
+  - {name: Orchard Central, mrt: Somerset}
+  - {name: Orchard Gateway, mrt: Somerset}
+  - {name: Cineleisure, mrt: Somerset, aliases: [Cineleisure Orchard]}
+  - {name: Plaza Singapura, mrt: Dhoby Ghaut}
+  - {name: Dhoby Xchange, mrt: Dhoby Ghaut}
+  - {name: The Atrium@Orchard, mrt: Dhoby Ghaut}
+  - {name: Great World City, mrt: Great World, aliases: [Great World Mall]}
+  - {name: Valley Point, mrt: Great World}
+  # Civic, Bugis, Marina
+  - {name: Bugis Junction, mrt: Bugis}
+  - {name: Bugis+, mrt: Bugis, aliases: [Bugis Plus]}
+  - {name: Bugis Street, mrt: Bugis}
+  - {name: Duo Galleria, mrt: Bugis}
+  - {name: Kampong Glam, mrt: Bugis, aliases: [Kampong Gelam, Haji Lane, Arab Street]}
+  - {name: Raffles City, mrt: City Hall}
+  - {name: CHIJMES, mrt: City Hall}
+  - {name: Capitol Singapore, mrt: City Hall, aliases: [Capitol Theatre]}
+  - {name: Funan, mrt: City Hall}
+  - {name: Peninsula Plaza, mrt: City Hall}
+  - {name: Raffles Hotel, mrt: City Hall, aliases: [Raffles Arcade]}
+  - {name: Suntec City, mrt: Promenade, aliases: [Suntec]}
+  - {name: Millenia Walk, mrt: Promenade}
+  - {name: Marina Square, mrt: Esplanade}
+  - {name: Esplanade Mall, mrt: Esplanade, aliases: [Esplanade Theatres]}
+  - {name: Marina Bay Sands, mrt: Bayfront, aliases: [MBS, The Shoppes at Marina Bay Sands, The Shoppes]}
+  - {name: Marina Bay Financial Centre, mrt: Downtown, aliases: [MBFC, Marina One]}
+  - {name: Asia Square, mrt: Downtown}
+  - {name: Lau Pa Sat, mrt: Raffles Place}
+  - {name: CapitaSpring, mrt: Raffles Place}
+  - {name: One Raffles Place, mrt: Raffles Place}
+  - {name: Boat Quay, mrt: Raffles Place}
+  - {name: Clarke Quay Central, mrt: Clarke Quay}
+  - {name: Robertson Quay, mrt: Fort Canning}
+  - {name: Gardens by the Bay, mrt: Gardens by the Bay}
+  # Chinatown, Tanjong Pagar, Outram
+  - {name: Chinatown Point, mrt: Chinatown}
+  - {name: People's Park Complex, mrt: Chinatown, aliases: [People's Park Centre]}
+  - {name: Chinatown Complex, mrt: Chinatown, aliases: [Chinatown Complex Food Centre]}
+  - {name: Hong Lim Market, mrt: Chinatown, aliases: [Hong Lim Food Centre]}
+  - {name: Maxwell Food Centre, mrt: Maxwell}
+  - {name: Amoy Street, mrt: Telok Ayer, aliases: [Amoy Street Food Centre]}
+  - {name: Club Street, mrt: Telok Ayer, aliases: [Ann Siang]}
+  - {name: Tanjong Pagar Centre, mrt: Tanjong Pagar, aliases: [Guoco Tower]}
+  - {name: 100AM, mrt: Tanjong Pagar}
+  - {name: Duxton, mrt: Tanjong Pagar, aliases: [Duxton Road, Duxton Hill]}
+  - {name: Keong Saik, mrt: Outram Park, aliases: [Keong Saik Road]}
+  - {name: Tiong Bahru Market, mrt: Tiong Bahru}
+  - {name: Tiong Bahru Plaza, mrt: Tiong Bahru}
+  # South
+  - {name: VivoCity, mrt: HarbourFront, aliases: [Vivo City]}
+  - {name: HarbourFront Centre, mrt: HarbourFront}
+  - {name: Sentosa, region: Central, aliases: [Resorts World Sentosa, RWS]}
+  - {name: ABC Brickworks, region: Central}
+  - {name: Bukit Merah, region: Central}
+  - {name: Alexandra Road, region: Central, aliases: [Alexandra Retail Centre]}   # bare "Alexandra" is a name
+  # Holland, Bukit Timah, Dempsey
+  - {name: Holland Village, mrt: Holland Village, aliases: [Holland V]}
+  - {name: The Star Vista, mrt: Buona Vista, aliases: [Star Vista]}
+  - {name: Ghim Moh, mrt: Buona Vista, aliases: [Ghim Moh Market]}
+  - {name: Dempsey Hill, region: Central, aliases: [Dempsey]}
+  - {name: Adam Road Food Centre, mrt: Botanic Gardens}
+  - {name: Bukit Timah, region: Central, aliases: [Bukit Timah Road]}
+  - {name: Beauty World Centre, mrt: Beauty World}
+  - {name: Bukit Timah Plaza, mrt: Beauty World}
+  # Novena, Toa Payoh, Bishan, Thomson
+  - {name: Velocity@Novena Square, mrt: Novena, aliases: [Novena Square]}
+  - {name: United Square, mrt: Novena}
+  - {name: Square 2, mrt: Novena}
+  - {name: Newton Food Centre, mrt: Newton}
+  - {name: Toa Payoh HDB Hub, mrt: Toa Payoh, aliases: [HDB Hub]}
+  - {name: Junction 8, mrt: Bishan}
+  - {name: Thomson Plaza, mrt: Upper Thomson}
+  - {name: Upper Thomson Road, mrt: Upper Thomson}
+  # Little India, Farrer Park, Kallang, Jalan Besar
+  - {name: Tekka Centre, mrt: Little India, aliases: [Tekka Market]}
+  - {name: City Square Mall, mrt: Farrer Park}
+  - {name: Mustafa Centre, mrt: Farrer Park}
+  - {name: Whampoa, mrt: Boon Keng, aliases: [Whampoa Food Centre]}
+  - {name: Kallang Wave Mall, mrt: Stadium}
+  - {name: Singapore Sports Hub, mrt: Stadium, aliases: [Sports Hub]}
+  - {name: Leisure Park Kallang, mrt: Stadium}
+  - {name: Golden Mile Food Centre, mrt: Nicoll Highway, aliases: [Golden Mile Complex, Golden Mile Tower]}
+  - {name: Lavender Food Square, mrt: Lavender, aliases: [Lavender Street]}
+  # East
+  - {name: Paya Lebar Quarter, mrt: Paya Lebar, aliases: [PLQ]}
+  - {name: SingPost Centre, mrt: Paya Lebar}
+  - {name: Paya Lebar Square, mrt: Paya Lebar}
+  - {name: KINEX, mrt: Paya Lebar}
+  - {name: Geylang Serai, mrt: Paya Lebar, aliases: [Geylang Serai Market]}
+  - {name: Geylang, region: East}
+  - {name: Joo Chiat, region: East}
+  - {name: Katong, region: East}
+  - {name: i12 Katong, mrt: Marine Parade}
+  - {name: Parkway Parade, mrt: Marine Parade}
+  - {name: East Coast, region: East, aliases: [East Coast Park, East Coast Road]}
+  - {name: Old Airport Road, mrt: Dakota, aliases: [Old Airport Road Food Centre]}
+  - {name: Bedok Mall, mrt: Bedok}
+  - {name: Bedok Interchange, mrt: Bedok}
+  - {name: Tampines Mall, mrt: Tampines}
+  - {name: Tampines 1, mrt: Tampines, aliases: [Tampines One]}
+  - {name: Century Square, mrt: Tampines}
+  - {name: Our Tampines Hub, mrt: Tampines, aliases: [OTH]}
+  - {name: Eastpoint Mall, mrt: Simei}
+  - {name: Changi City Point, mrt: Expo}
+  - {name: Singapore Expo, mrt: Expo}
+  - {name: Jewel Changi Airport, mrt: Changi Airport, aliases: [Jewel Changi, Jewel]}
+  - {name: Changi Airport, mrt: Changi Airport, aliases: [Changi Airport Terminal, Changi T1, Changi T2, Changi T3, Changi T4]}
+  - {name: Changi Village, region: East}
+  - {name: Sceneca Square, mrt: Tanah Merah}
+  - {name: White Sands, mrt: Pasir Ris}
+  - {name: Downtown East, mrt: Pasir Ris}
+  # North-East
+  - {name: AMK Hub, mrt: Ang Mo Kio}
+  - {name: NEX, mrt: Serangoon}
+  - {name: Chomp Chomp, region: North-East, aliases: [Chomp Chomp Food Centre]}
+  - {name: Serangoon Gardens, region: North-East}
+  - {name: Heartland Mall, mrt: Kovan}
+  - {name: Hougang Mall, mrt: Hougang}
+  - {name: Compass One, mrt: Sengkang}
+  - {name: Sengkang Grand Mall, mrt: Buangkok}
+  - {name: Waterway Point, mrt: Punggol}
+  - {name: Oasis Terraces, mrt: Punggol}
+  - {name: The Seletar Mall, region: North-East, aliases: [Seletar Mall]}
+  # North
+  - {name: Causeway Point, mrt: Woodlands}
+  - {name: Northpoint City, mrt: Yishun, aliases: [Northpoint]}
+  - {name: Sun Plaza, mrt: Sembawang}
+  - {name: Canberra Plaza, mrt: Canberra}
+  # West
+  - {name: JEM, mrt: Jurong East}
+  - {name: Westgate, mrt: Jurong East}
+  - {name: IMM, mrt: Jurong East}
+  - {name: JCube, mrt: Jurong East}
+  - {name: Jurong Point, mrt: Boon Lay}
+  - {name: Jurong, region: West}
+  - {name: Clementi Mall, mrt: Clementi}
+  - {name: West Mall, mrt: Bukit Batok}
+  - {name: Lot One, mrt: Choa Chu Kang}
+  - {name: Bukit Panjang Plaza, mrt: Bukit Panjang}
+  - {name: Hillion Mall, mrt: Bukit Panjang}
+  - {name: HillV2, mrt: Hillview}
+  - {name: Rail Mall, mrt: Hillview, aliases: [The Rail Mall]}
+
+ignore:
+  - tiong bahru bakery
+  - katong laksa
+  - punggol nasi lemak
+  - jurong bird park

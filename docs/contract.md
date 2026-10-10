@@ -54,6 +54,13 @@ LLM-generated: every title, summary and link comes from a fetched source.
   birthday ("turns 35", "founder's birthday", "Birthday Bash") is an ordinary promo without it.
   Tagged deals also carry a `birthday` object (see below). Birthday perks are standing offers,
   so `valid_until` is usually `null`.
+- `places` (optional, absent when the posts name no place): at most 3
+  `{"name": "Hougang Mall", "mrt": "Hougang", "region": "North-East"}`, from `config/places.yml`.
+  `name` is the mall, food centre, station or neighbourhood the post names; `mrt` the nearest MRT
+  station or `null` (Joo Chiat, Sentosa); `region` one of `Central`, `East`, `North`, `North-East`,
+  `West` (colloquial, not URA: Katong is East). Read from the headline, else a short or unit-numbered
+  excerpt; a post that says "all outlets", "islandwide" or "except …" gets none. A missing `places`
+  means NOT STATED, never "islandwide".
 - `origin`: country name for an overseas brand (`"Japan"`, `"Korea"`, ...) or `null`.
 - `valid_from` / `valid_until`: `YYYY-MM-DD` (Singapore date) or `null` when the source
   does not state it. `null` means UNKNOWN, never "no expiry".

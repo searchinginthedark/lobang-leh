@@ -5,8 +5,8 @@
 Classifies every item in data/items.jsonl plus every stored deal member twice, once with the
 rules in the working tree and once with the rules at REV (extracted with `git archive`, never
 checked out), and prints each headline whose outcome differs: DROPPED, ADDED, KIND (promo vs
-opening) or TAGS (kind unchanged, tags differ). Exit 0 always; read the list. Run it before committing any change to lobang/classify.py,
-lobang/birthday.py, config/merchants.yml or config/sources.yml, and put every surprise into
+opening), TAGS (kind unchanged, tags differ) or PLACES (only the place line differs). Exit 0 always; read the list. Run it before committing any change to lobang/classify.py,
+lobang/birthday.py, lobang/places.py, config/merchants.yml, config/places.yml or config/sources.yml, and put every surprise into
 tests/fixtures/headlines.tsv.
 """
 
@@ -55,7 +55,8 @@ def classify_all(root, items):
                 it["birthday_only"] = bool(by_name[m["source"]].get("birthday_only"))
             when = parse_iso(m.get("published")) or parse_iso(m["fetched"])
             c = classify(it, lex, when.date())
-            out[m["id"]] = (c["kind"], sorted(c["tags"])) if c else (None, [])
+            out[m["id"]] = ((c["kind"], sorted(c["tags"]), [p["name"] for p in c.get("places") or []])
+                            if c else (None, [], []))
         return out
     finally:
         sys.path.remove(root)
@@ -83,11 +84,14 @@ def main(argv):
 
     by_id = {m["id"]: m for m in items}
     rows = []
-    for i, (nk, ntags) in new.items():
-        ok, otags = old.get(i, (None, []))
-        if ok == nk and list(otags) == list(ntags):
+    for i, (nk, ntags, nplaces) in new.items():
+        ok, otags, oplaces = old.get(i, (None, [], []))
+        if ok == nk and list(otags) == list(ntags) and list(oplaces) == list(nplaces):
             continue
-        if ok == nk:
+        if ok == nk and list(otags) == list(ntags):
+            # The card's place line (config/places.yml) is user-visible as well.
+            what = "PLACES %s" % (" / ".join(nplaces) or "none")
+        elif ok == nk:
             # Tags are user-visible too ("Under $5", "1-for-1"), so a tag-only change is reported.
             gone = sorted(set(otags) - set(ntags))
             came = sorted(set(ntags) - set(otags))

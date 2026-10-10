@@ -31,10 +31,13 @@
     saved: ['Nothing saved yet', 'Tap Save on a deal and it will show up here.']
   };
 
+  // Colloquial regions (config/places.yml), in chip order.
+  var AREAS = ['Central', 'East', 'North', 'North-East', 'West'];
+
   // Cards rendered per page. Hot held ~170 cards in one scroll; best-first means the
   // first page is the part worth reading, and "Show more" keeps the rest one tap away.
   var PAGE = 12;
-  var state = { view: 'hot', q: '', cat: '', f1: false, free: false, shown: PAGE };
+  var state = { view: 'hot', q: '', cat: '', area: '', f1: false, free: false, shown: PAGE };
   var saved = {};
   var data = null;
   var loading = false;
@@ -54,6 +57,7 @@
         if (VIEWS.indexOf(p.view) >= 0) state.view = p.view;
         if (typeof p.q === 'string') state.q = p.q.slice(0, 100);
         if (typeof p.cat === 'string') state.cat = p.cat;
+        if (AREAS.indexOf(p.area) >= 0) state.area = p.area;
         state.f1 = p.f1 === true;
         state.free = p.free === true;
       }
@@ -64,7 +68,7 @@
     } catch (e) { /* ignore */ }
   }
   function savePrefs() {
-    sSet(KEY_PREFS, JSON.stringify({ view: state.view, q: state.q, cat: state.cat, f1: state.f1, free: state.free }));
+    sSet(KEY_PREFS, JSON.stringify({ view: state.view, q: state.q, cat: state.cat, area: state.area, f1: state.f1, free: state.free }));
   }
   function saveSaved() { sSet(KEY_SAVED, JSON.stringify(Object.keys(saved))); }
 
@@ -125,6 +129,17 @@
   function hasTag(d, t) { return tagsOf(d).indexOf(t) >= 0; }
   function merchantsOf(d) {
     return (Array.isArray(d.merchants) ? d.merchants : []).filter(function (m) { return typeof m === 'string' && m; });
+  }
+
+  // [{name, mrt, region}] as the collector wrote it; anything malformed is dropped, never shown.
+  function placesOf(d) {
+    return (Array.isArray(d.places) ? d.places : []).filter(function (p) {
+      return p && typeof p.name === 'string' && p.name;
+    });
+  }
+  // "Hougang Mall, Hougang MRT" / "Bugis" (the area itself) / "Joo Chiat" (no station nearby).
+  function placeText(p) {
+    return typeof p.mrt === 'string' && p.mrt && p.mrt !== p.name ? p.name + ', ' + p.mrt + ' MRT' : p.name;
   }
 
   function badgesFor(d) {
@@ -340,11 +355,13 @@
   // ---------- filtering / views ----------
   function matches(d) {
     if (state.cat && d.category !== state.cat) return false;
+    if (state.area && !placesOf(d).some(function (p) { return p.region === state.area; })) return false;
     if (state.f1 && !hasTag(d, '1-for-1')) return false;
     if (state.free && !hasTag(d, 'free')) return false;
     var q = state.q.trim().toLowerCase();
     if (q) {
-      var hay = (merchantsOf(d).join(' ') + ' ' + (d.title || '') + ' ' + (d.summary || '')).toLowerCase();
+      var where = placesOf(d).map(function (p) { return p.name + ' ' + (p.mrt || ''); }).join(' ');
+      var hay = (merchantsOf(d).join(' ') + ' ' + (d.title || '') + ' ' + (d.summary || '') + ' ' + where).toLowerCase();
       if (hay.indexOf(q) < 0) return false;
     }
     return true;
@@ -384,6 +401,14 @@
     if (merch.length) eb.appendChild(el('span', 'merch', merch.join(' + ')));
     c.appendChild(eb);
     c.appendChild(el('h2', 'title', d.title || merch.join(' + ') || 'Untitled'));
+    // Only when the post names the place; a chain-wide deal has none, and none is never guessed.
+    var ps = placesOf(d);
+    if (ps.length) {
+      var wh = el('p', 'where');
+      wh.appendChild(el('span', 'sr', 'Where: '));
+      wh.appendChild(document.createTextNode(ps.map(placeText).join(' · ')));
+      c.appendChild(wh);
+    }
 
     var bs = badgesFor(d);
     if (bs.length) {
@@ -562,6 +587,26 @@
       });
       box.appendChild(b);
     });
+    // Areas: only regions some card is in. A chain-wide promo names no place, so it never shows
+    // under an area; the Showing line says so.
+    var abox = $('areas');
+    clear(abox);
+    var inArea = {};
+    ((data && data.deals) || []).forEach(function (d) { placesOf(d).forEach(function (p) { inArea[p.region] = true; }); });
+    if (state.area && !inArea[state.area]) state.area = '';
+    AREAS.filter(function (a) { return inArea[a]; }).forEach(function (a) {
+      var b = el('button', 'chip', a);
+      b.type = 'button';
+      b.setAttribute('aria-pressed', String(state.area === a));
+      b.addEventListener('click', function () {
+        state.area = state.area === a ? '' : a;
+        savePrefs();
+        renderChips();
+        rerender();
+      });
+      abox.appendChild(b);
+    });
+    abox.hidden = !abox.firstChild;
   }
 
   function renderControls() {
@@ -574,6 +619,7 @@
     // filtered feed must never pass for a thin one.
     var on = [];
     if (state.cat) on.push(CATS[state.cat] || state.cat);
+    if (state.area) on.push(state.area + ' (named places only)');
     if (state.f1) on.push('1-for-1');
     if (state.free) on.push('Free');
     if (state.q.trim()) on.push('“' + state.q.trim() + '”');
@@ -826,7 +872,7 @@
     $('t-1for1').addEventListener('click', function () { state.f1 = !state.f1; savePrefs(); rerender(); });
     $('t-free').addEventListener('click', function () { state.free = !state.free; savePrefs(); rerender(); });
     $('clear').addEventListener('click', function () {
-      state.q = ''; state.cat = ''; state.f1 = false; state.free = false;
+      state.q = ''; state.cat = ''; state.area = ''; state.f1 = false; state.free = false;
       $('q').value = '';
       savePrefs();
       renderChips();

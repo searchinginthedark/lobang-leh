@@ -11,6 +11,7 @@ from collections import Counter
 from datetime import date
 
 from .classify import fold
+from .places import merge as merge_places
 from .textutil import clip, parse_iso, sha
 
 TIER_RANK = {"deals": 0, "media": 1, "news": 2, "social": 3}
@@ -205,6 +206,7 @@ def aggregate(deal):
     origins = [m["cls"]["origin"] for m in order if m["cls"].get("origin")]
     deal["origin"] = origins[0] if origins else None
     deal["famous"] = any(m["cls"].get("famous") for m in ms)
+    deal["places"] = merge_places([p for m in order for p in m["cls"].get("places") or []])
     # The best-sourced member that states a window speaks for the deal; else the lead's "unknown".
     bdays = [m["cls"]["birthday"] for m in order if m["cls"].get("birthday")]
     stated = [b for b in bdays if b["window"] != "unknown"]
@@ -325,6 +327,8 @@ def public(deal, today):
     }
     if deal.get("pct"):
         out["pct"] = deal["pct"]
+    if deal.get("places"):
+        out["places"] = deal["places"]
     if deal.get("birthday"):
         out["birthday"] = deal["birthday"]
     return out

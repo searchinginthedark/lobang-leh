@@ -22,6 +22,10 @@
   --neutral-fg: #3d352b;
   --shadow: 0 1px 2px rgba(60, 40, 10, .08);
   --radius: 16px;
+  /* No pills (UX audit 2026-10-08, ruled 2026-10-11): fully rounded chips and badges are the stock
+     AI-app look. Controls get a 10px corner, inline tags 6px, like the rest of the fleet. */
+  --r-ctl: 10px;
+  --r-tag: 6px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -111,7 +115,7 @@ body {
 
 .icon-btn {
   min-height: 44px; min-width: 44px; padding: 0 14px;
-  border: 1px solid var(--line); border-radius: 22px;
+  border: 1px solid var(--line); border-radius: var(--r-ctl);
   background: var(--surface); color: var(--text);
   font: inherit; font-size: var(--t-label); font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0;
 }
@@ -126,7 +130,7 @@ body {
 }
 .tab {
   min-height: 44px; padding: 4px 2px;
-  border: 0; border-radius: 12px;
+  border: 0; border-radius: var(--r-ctl);
   background: var(--neutral-bg); color: var(--neutral-fg);
   font: inherit; font-size: var(--t-label); font-weight: 700; line-height: 1.15; cursor: pointer;
 }
@@ -137,23 +141,25 @@ body {
 .active-f { margin: 8px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: var(--t-label); color: var(--muted); }
 .search {
   width: 100%; min-height: 44px; padding: 0 14px;
-  border: 1px solid var(--line); border-radius: 22px;
+  border: 1px solid var(--line); border-radius: var(--r-ctl);
   background: var(--surface); color: var(--text); font: inherit; font-size: var(--t-body);
 }
 .search::placeholder { color: var(--muted); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 /* Up to 12 categories: one swipeable row, so the first deal stays above the fold on a phone.
    The row scrolls, never the page. */
-#chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 2px; }
-#chips::-webkit-scrollbar { display: none; }
-#chips .chip { flex: 0 0 auto; white-space: nowrap; }
+#chips, #areas { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 2px; }
+#chips::-webkit-scrollbar, #areas::-webkit-scrollbar { display: none; }
+#chips .chip, #areas .chip { flex: 0 0 auto; white-space: nowrap; }
 .chip {
   min-height: 44px; padding: 0 14px;
-  border: 1px solid var(--line); border-radius: 22px;
+  border: 1px solid var(--line); border-radius: var(--r-ctl);
   background: var(--surface); color: var(--text);
   font: inherit; font-size: var(--t-label); font-weight: 600; cursor: pointer;
 }
 .chip[aria-pressed="true"] { background: var(--green-bg); color: var(--green-fg); border-color: var(--green-fg); }
+/* A tick as well as the colour, so "on" never rests on colour alone. */
+.chip[aria-pressed="true"]::before { content: "\2713\00a0"; }
 .chip-clear { background: transparent; color: var(--link); border-style: dashed; }
 
 /* birthday picker (Birthday view only) */
@@ -167,7 +173,7 @@ body {
 /* 16px or iOS zooms the page on focus. */
 .sel {
   width: 100%; min-height: 44px; padding: 0 10px;
-  border: 1px solid var(--line); border-radius: 12px;
+  border: 1px solid var(--line); border-radius: var(--r-ctl);
   background: var(--surface); color: var(--text); font: inherit; font-size: var(--t-body);
 }
 .bday-hint { margin: 8px 0 0; font-size: var(--t-label); color: var(--muted); }
@@ -177,7 +183,10 @@ body {
 .bday-said { margin: 4px 0 0; font-size: var(--t-caption); color: var(--muted); }
 
 /* cards */
-.list { display: grid; gap: 12px; padding-top: 8px; }
+/* minmax(0, 1fr), not the implicit auto track: a card whose footer holds a long nowrap source name
+   ("Great Deals Singapore (Eat & Drink)" + three buttons) otherwise sizes the track to its
+   min-content and pushes every card 60px past a 375px screen (found 2026-10-11). */
+.list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-top: 8px; }
 .card {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
   padding: 14px; box-shadow: var(--shadow);
@@ -187,7 +196,7 @@ body {
 .eyebrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: var(--t-caption); color: var(--muted); }
 /* The type pill repeats the border colour WITH words, so colour is never the only signal. */
 .kind {
-  padding: 2px 8px; border-radius: 6px;
+  padding: 2px 8px; border-radius: var(--r-tag);
   background: var(--red); color: #fff;
   font-weight: 700; text-transform: uppercase; letter-spacing: .08em; line-height: 1.35;
 }
@@ -195,9 +204,12 @@ body {
 .merch { font-size: var(--t-label); font-weight: 700; color: var(--text); }
 .merch::before { content: "\00b7"; margin-right: 8px; color: var(--muted); font-weight: 400; }
 .title { margin: 6px 0 0; font-size: var(--t-body); line-height: 1.35; font-weight: 700; letter-spacing: -.01em; }
+/* Where the post says it is: plain text under the headline, never a tag (it is a fact, not a perk). */
+.where { margin: 4px 0 0; font-size: var(--t-label); font-weight: 600; line-height: 1.4; color: var(--muted); }
+.where::before { content: "\1F4CD\00a0"; }
 .badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
 .badge {
-  display: inline-block; padding: 3px 9px; border-radius: 999px;
+  display: inline-block; padding: 3px 8px; border-radius: var(--r-tag);
   font-size: var(--t-caption); font-weight: 700; line-height: 1.35; letter-spacing: .01em;
   background: var(--neutral-bg); color: var(--neutral-fg);
 }
@@ -224,10 +236,10 @@ body {
 a.src:hover { text-decoration: underline; }
 .more-btn, .act {
   flex: 0 0 auto; min-height: 44px; min-width: 44px; padding: 0 12px;
-  border: 1px solid var(--line); border-radius: 12px;
+  border: 1px solid var(--line); border-radius: var(--r-ctl);
   background: var(--surface); color: var(--text); font: inherit; font-size: var(--t-label); font-weight: 700; cursor: pointer;
 }
-.more-btn { border-radius: 22px; background: var(--neutral-bg); color: var(--neutral-fg); border-color: transparent; font-size: var(--t-label); }
+.more-btn { background: var(--neutral-bg); color: var(--neutral-fg); border-color: transparent; font-size: var(--t-label); }
 .more-btn[aria-expanded="true"] { background: var(--text); color: var(--bg); }
 .act[aria-pressed="true"] { background: var(--yellow-bg); color: var(--yellow-fg); border-color: var(--yellow-fg); }
 .src-list { list-style: none; margin: 4px 0 0; padding: 0; font-size: var(--t-label); }
@@ -286,7 +298,7 @@ a.src:hover { text-decoration: underline; }
 .tour-off input { width: 20px; height: 20px; margin: 0; accent-color: var(--red); }
 .tour-btns { display: flex; gap: 6px; align-items: center; }
 .tour-btn {
-  min-height: 44px; min-width: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px;
+  min-height: 44px; min-width: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: var(--r-ctl);
   background: var(--surface); color: var(--text); font: inherit; font-size: var(--t-label); font-weight: 700; cursor: pointer;
 }
 #tour-skip { margin-right: auto; border-color: transparent; background: none; color: var(--muted); }

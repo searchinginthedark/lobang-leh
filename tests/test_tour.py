@@ -31,7 +31,7 @@ FLOW = {
 }
 # Labels the tour text must mention, so a renamed tab or filter cannot slip past it.
 MUST_MENTION = ["Hot", "Ending soon", "New openings", "Birthday", "Saved", "1-for-1", "Free", "Clear filters",
-                "Show more", "Save", "Share", "PROMO", "NEW OPENING", "+3"]
+                "Show more", "Save", "Share", "PROMO", "NEW OPENING", "+3", "area", "MRT"]
 
 
 def tour_block():
