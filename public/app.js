@@ -15,6 +15,18 @@
     'delivery': 'Delivery', 'other': 'Other'
   };
 
+  // Category -> sticker file in stickers/ (docs/restyle-contract.md, section 4).
+  var STICKER = {
+    'fast-food': 'fast-food', 'coffee': 'coffee', 'bubble-tea': 'bubble-tea',
+    'bakery-dessert': 'bakery-dessert', 'buffet': 'buffet', 'restaurant': 'restaurant',
+    'cafe': 'cafe', 'bar-drinks': 'bar-drinks', 'hawker': 'hawker', 'grocery': 'grocery',
+    'delivery': 'delivery', 'other': 'other'
+  };
+  function stickerFor(d, isBday) {
+    if (isBday) return 'birthday';
+    return Object.prototype.hasOwnProperty.call(STICKER, d.category) ? STICKER[d.category] : 'other';
+  }
+
   // tag -> [label, css class]; unknown tags are ignored. Order = display order.
   var TAG_ORDER = ['ends-today', '1-for-1', 'pct-off', 'free', 'cheap', 'bundle', 'overseas',
     'first-in-sg', 'limited', 'app-only', 'card', 'member', 'delivery', 'buffet'];
@@ -43,6 +55,7 @@
   var loading = false;
   var autoTour = false;   // set by tourInit; consumed after the first load so cards exist
   var toastTimer = null;
+  var lastSeen = 0;       // ms timestamp of the previous visit (KEY_SEEN as read by tourInit); 0 = first visit
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -392,11 +405,22 @@
   // ---------- rendering ----------
   function card(d) {
     var c = el('article', 'card' + (d.kind === 'opening' ? ' opening' : ''));
+    var bday = hasTag(d, 'birthday') && d.birthday && typeof d.birthday === 'object' ? d.birthday : null;
+    // Decorative; a missing file just drops the image (listener, not onerror: CSP).
+    var stk = document.createElement('img');
+    stk.className = 'sticker';
+    stk.setAttribute('src', 'stickers/' + stickerFor(d, !!bday) + '.png');
+    stk.setAttribute('alt', '');
+    stk.setAttribute('width', '48');
+    stk.setAttribute('height', '48');
+    stk.setAttribute('loading', 'lazy');
+    stk.setAttribute('decoding', 'async');
+    stk.addEventListener('error', function () { stk.remove(); });
+    c.appendChild(stk);
     // The headline is always the heading; a known merchant rides in the eyebrow, an unknown
     // one is simply left out, so every card has the same shape.
     var merch = merchantsOf(d);
     var eb = el('div', 'eyebrow');
-    var bday = hasTag(d, 'birthday') && d.birthday && typeof d.birthday === 'object' ? d.birthday : null;
     eb.appendChild(el('span', 'kind', d.kind === 'opening' ? 'New opening' : bday ? 'Birthday' : 'Promo'));
     if (merch.length) eb.appendChild(el('span', 'merch', merch.join(' + ')));
     c.appendChild(eb);
@@ -476,19 +500,41 @@
     var sv = el('button', 'act', isSaved ? 'Saved' : 'Save');
     sv.type = 'button';
     sv.setAttribute('aria-pressed', String(isSaved));
+    sv.setAttribute('data-act', 'save');
     sv.addEventListener('click', function () {
       if (saved[d.id]) delete saved[d.id]; else saved[d.id] = true;
       saveSaved();
-      render();
+      var now = !!saved[d.id];
+      sv.textContent = now ? 'Saved' : 'Save';
+      sv.setAttribute('aria-pressed', String(now));
+      // No render() here: it would rebuild the list and destroy the burst on this button.
+      // Only the Saved view must drop the card that was just un-saved.
+      if (state.view === 'saved') { render(); return; }
+      if (now) burst(sv);
     });
     var sh = el('button', 'act', 'Share');
     sh.type = 'button';
+    sh.setAttribute('data-act', 'share');
     sh.addEventListener('click', function () { share(d, links[0] && links[0].url); });
     act.appendChild(sv);
     act.appendChild(sh);
     c.appendChild(act);
     if (list) c.appendChild(list);
     return c;
+  }
+
+  // Six sparkles fly out of the Save button. Motion preference is read per click, and under
+  // reduced motion nothing is created at all.
+  function burst(btn) {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    for (var i = 0; i < 6; i++) {
+      var a = i / 6 * 2 * Math.PI - Math.PI / 2;
+      var s = el('span', 'burst b' + (i % 3 + 1));
+      s.style.setProperty('--x', Math.round(Math.cos(a) * 30) + 'px');
+      s.style.setProperty('--y', Math.round(Math.sin(a) * 30) + 'px');
+      btn.appendChild(s);
+      setTimeout(function (n) { if (n.parentNode) n.parentNode.removeChild(n); }, 700, s);
+    }
   }
 
   function srcLink(l, cls) {
@@ -519,6 +565,19 @@
     var s = $('state');
     clear(s);
     s.className = 'state' + (kind === 'err' ? ' err' : '');
+    if (kind === 'empty') {
+      var NS = 'http://www.w3.org/2000/svg';
+      var m = document.createElementNS(NS, 'svg');
+      m.setAttribute('class', 'mascot');
+      m.setAttribute('viewBox', '0 0 64 64');
+      m.setAttribute('width', '64');
+      m.setAttribute('height', '64');
+      m.setAttribute('aria-hidden', 'true');
+      var u = document.createElementNS(NS, 'use');
+      u.setAttribute('href', '#kaya');
+      m.appendChild(u);
+      s.appendChild(m);
+    }
     s.appendChild(el('strong', null, head));
     s.appendChild(el('span', null, body));
     if (withRetry) {
@@ -567,6 +626,18 @@
       h.hidden = true;
       healthOpen(false);
     }
+  }
+
+  // Speech bubble under the name: deals first seen since the previous visit.
+  function renderNewSince() {
+    var b = $('newsince');
+    if (!b) return;
+    var n = 0;
+    if (lastSeen) {
+      ((data && data.deals) || []).forEach(function (d) { if (ts(d.first_seen) > lastSeen) n++; });
+    }
+    b.hidden = !n;
+    if (n) b.textContent = n + ' new lobang since you last looked';
   }
 
   function renderChips() {
@@ -652,6 +723,7 @@
         // Tour targets (index.html #tour-steps).
         c.id = 'tour-first-card';
         c.querySelector('.actions').id = 'tour-first-actions';
+        if (state.view === 'hot') c.classList.add('taped');
       }
       frag.appendChild(c);
     });
@@ -693,6 +765,7 @@
       j.deals = j.deals.filter(function (d) { return d && typeof d === 'object' && typeof d.id === 'string'; });
       data = j;
       renderHeader();
+      renderNewSince();
       renderChips();
       render();
     }).catch(function (err) {
@@ -821,6 +894,9 @@
 
   // Returns whether the tour should open itself once the deals have loaded.
   function tourInit() {
+    // Read first so the new-since count works even when there is no tour to run.
+    var now = Date.now(), seen = Number(sGet(KEY_SEEN)) || 0;
+    lastSeen = seen;
     tour.steps = [].slice.call(document.querySelectorAll('#tour-steps li'));
     if (!tour.steps.length) return false;
     $('tour-next').addEventListener('click', function () { tourStep(1); });
@@ -847,7 +923,6 @@
     btn.hidden = false;
     btn.addEventListener('click', tourOpen);
 
-    var now = Date.now(), seen = Number(sGet(KEY_SEEN)) || 0;
     sSet(KEY_SEEN, String(now));
     return (!seen || now - seen > TOUR_GAP) && sGet(KEY_TOUR) !== 'off';
   }

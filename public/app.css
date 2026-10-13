@@ -1,9 +1,15 @@
 :root {
-  --bg: #faf6ee;
+  /* Sage paper with a dot grid (restyle 2026-10-13, docs/restyle-contract.md). Replaces the cream
+     background, which is on the fleet's avoid list. */
+  --bg: #e4efe9;
+  --dot: #b9cfc2;
   --surface: #ffffff;
-  --text: #211c16;
-  --muted: #655c51;
-  --line: #e4dccd;
+  --text: #1f2a24;
+  --ink: #1f2a24;      /* selected tab, Save-on */
+  --on-ink: #ffffff;
+  --muted: #4b5a51;
+  --line: #cddcd3;
+  --edge: #b3c6bb;     /* the pressable bottom edge */
   --red: #c82626;
   /* Openings are blue, not green: red vs green is the pair red-green colour blindness
      cannot separate, and green already means "overseas/good" on badges. */
@@ -18,9 +24,11 @@
   --yellow-fg: #4d3900;
   --red-bg: #fde0dc;
   --red-fg: #8f1414;
-  --neutral-bg: #efe8da;
-  --neutral-fg: #3d352b;
-  --shadow: 0 1px 2px rgba(60, 40, 10, .08);
+  --neutral-bg: #edf3ef;
+  --neutral-fg: #33433a;
+  --tape: rgba(255, 214, 92, .75);
+  --die: #ffffff;      /* sticker die-cut outline */
+  --shadow: 0 2px 0 rgba(31, 42, 36, .08);
   --radius: 16px;
   /* No pills (UX audit 2026-10-08, ruled 2026-10-11): fully rounded chips and badges are the stock
      AI-app look. Controls get a 10px corner, inline tags 6px, like the rest of the fleet. */
@@ -30,13 +38,18 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #15120e;
-    --surface: #221e18;
-    --text: #f4eee4;
-    --muted: #b8ad9d;
-    --line: #3a342b;
-    --red: #c82626;
-    --blue: #2a64c4;
+    --bg: #111915;
+    --dot: #1f2c25;
+    --surface: #1b2520;
+    --text: #e8f0eb;
+    --ink: #e8f0eb;
+    --on-ink: #111915;
+    --muted: #a3b5aa;
+    --line: #2c3a33;
+    --edge: #0a0f0c;
+    /* Nudged up from the light values so the filled tag clears 3:1 on the dark card. */
+    --red: #d63333;
+    --blue: #3070d6;
     --brand: #ff7468;
     --on-red: #ffffff;
     --link: #ff9f95;
@@ -47,8 +60,10 @@
     --yellow-fg: #ffdc73;
     --red-bg: #4d1d1b;
     --red-fg: #ffb8b0;
-    --neutral-bg: #332d25;
-    --neutral-fg: #e8dfd0;
+    --neutral-bg: #26332c;
+    --neutral-fg: #d6e2db;
+    --tape: rgba(255, 214, 92, .45);
+    --die: #e8f0eb;    /* still white-edged, just not glaring */
     --shadow: none;
   }
 }
@@ -63,8 +78,18 @@
   font-style: normal;
   font-display: swap;
 }
+/* Display face (2026-10-13): Bagel Fat One, OFL, one weight. Brand, tabs and the kind tag ONLY:
+   it is unreadable in long runs, so never headlines, body or other buttons. */
+@font-face {
+  font-family: "Bagel Fat One";
+  src: url("fonts/BagelFatOne-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 :root {
   --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --display: "Bagel Fat One", var(--font);
   --t-caption: .6875rem;   /* 11px, step -2 */
   --t-label: .8125rem;     /* 13px, step -1 */
   --t-body: 1rem;          /* 16px, step 0; also the search input, which must stay >= 16px or iOS zooms */
@@ -78,7 +103,9 @@
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: radial-gradient(var(--dot) 1.2px, transparent 1.3px);
+  background-size: 18px 18px;
   color: var(--text);
   font: 400 var(--t-body)/1.55 var(--font);
   -webkit-font-smoothing: antialiased;
@@ -94,9 +121,34 @@ body {
 
 /* header */
 .top { padding: 14px 0 4px; }
-.brand-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.brand { margin: 0; font-size: var(--t-brand); line-height: 1.1; font-weight: 800; letter-spacing: -.025em; color: var(--brand); }
-.sub { margin: 4px 0 0; color: var(--muted); font-size: var(--t-label); line-height: 1.4; }
+.brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand-lockup { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.brand {
+  margin: 0; display: inline-block; white-space: nowrap;
+  font: 400 var(--t-brand)/1 var(--display); letter-spacing: 0;
+  color: var(--brand); transform: rotate(-2deg);
+}
+/* Kaya toast mascot (fixed colours in both themes: it is an illustration). Sized per place. */
+.brand-lockup .mascot { width: 40px; height: 40px; flex: none; transform-origin: 50% 90%; }
+/* Two bobs (4.8s) then still: motion running past 5s needs a pause control (WCAG 2.2.2). */
+.bob { animation: bob 2.4s ease-in-out 2; }
+@keyframes bob {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg) translateY(-2px); }
+}
+/* "N new lobang since you last looked". Text, not a control, so flat: the 3D edge means "pressable". */
+.bubble {
+  position: relative; display: inline-block; margin: 12px 0 0; padding: 6px 10px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-ctl);
+  font-size: var(--t-label); font-weight: 700; line-height: 1.4;
+}
+.bubble::before, .bubble::after {
+  content: ""; position: absolute; left: 14px; width: 0; height: 0;
+  border-style: solid; border-color: transparent; border-top-width: 0;
+}
+.bubble::before { top: -8px; margin-left: -1px; border-width: 0 7px 7px; border-bottom-color: var(--line); }
+.bubble::after { top: -6px; border-width: 0 6px 6px; border-bottom-color: var(--surface); }
+.sub { margin: 8px 0 0; color: var(--muted); font-size: var(--t-label); line-height: 1.4; }
 .status { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; }
 .fresh { margin: 0; font-size: var(--t-label); color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .health-btn {
@@ -121,20 +173,34 @@ body {
 }
 .icon-btn:active { transform: scale(.97); }
 
-/* tabs */
+/* Pressable 3D (Save, tabs, Filter, area chips): the thick bottom edge is a hard shadow, not a
+   border, so pressing never shifts layout. Cards and everything else stay flat. */
+.filter-btn, .tab, #areas .chip, .act[data-act="save"] {
+  box-shadow: 0 4px 0 var(--edge);
+  transition: transform .08s, box-shadow .08s;
+}
+.filter-btn:active, .tab:active, #areas .chip:active, .act[data-act="save"]:active {
+  transform: translateY(4px); box-shadow: 0 0 0 var(--edge);
+}
+
+/* tabs: the sticky bar is solid so cards never show the dot grid through it. The extra bottom
+   padding holds the 3D edge. */
 .tabs {
   position: sticky; top: 0; z-index: 5;
   display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px;
-  padding: 8px 0; background: var(--bg);
+  padding: 8px 0 12px; background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
+/* "Ending soon" and "New openings" may wrap to two lines, never overflow. Red is NOT the selected
+   colour: red means promo. */
 .tab {
   min-height: 44px; padding: 4px 2px;
-  border: 0; border-radius: var(--r-ctl);
-  background: var(--neutral-bg); color: var(--neutral-fg);
-  font: inherit; font-size: var(--t-label); font-weight: 700; line-height: 1.15; cursor: pointer;
+  border: 1px solid var(--line); border-radius: var(--r-ctl);
+  background: var(--surface); color: var(--text);
+  font: 400 var(--t-label)/1.1 var(--display); cursor: pointer;
 }
-.tab[aria-selected="true"] { background: var(--red); color: var(--on-red); }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--on-ink); border-color: var(--ink); transform: rotate(-1.5deg); }
+.tab[aria-selected="true"]:active { transform: rotate(-1.5deg) translateY(4px); }
 
 /* filters */
 .filters { padding: 12px 0 4px; display: grid; gap: 8px; }
@@ -147,8 +213,10 @@ body {
 .search::placeholder { color: var(--muted); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 /* Up to 12 categories: one swipeable row, so the first deal stays above the fold on a phone.
-   The row scrolls, never the page. */
+   The row scrolls, never the page. The area row has room below for the chips' 3D edge, which
+   overflow would otherwise clip. */
 #chips, #areas { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 2px; }
+#areas { padding-bottom: 6px; }
 #chips::-webkit-scrollbar, #areas::-webkit-scrollbar { display: none; }
 #chips .chip, #areas .chip { flex: 0 0 auto; white-space: nowrap; }
 .chip {
@@ -167,7 +235,8 @@ body {
   margin: 4px 0 0; padding: 12px 14px;
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
 }
-.bday-head { margin: 0; font-size: var(--t-label); font-weight: 700; }
+.bday-head { margin: 0; display: flex; align-items: center; gap: 8px; font-size: var(--t-label); font-weight: 700; }
+.bday-head .mascot { width: 36px; height: 36px; flex: none; }
 .bday-note { margin-left: 6px; font-weight: 500; color: var(--muted); font-size: var(--t-caption); }
 .bday-pick { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-top: 8px; }
 /* 16px or iOS zooms the page on focus. */
@@ -185,20 +254,39 @@ body {
 /* cards */
 /* minmax(0, 1fr), not the implicit auto track: a card whose footer holds a long nowrap source name
    ("Great Deals Singapore (Eat & Drink)" + three buttons) otherwise sizes the track to its
-   min-content and pushes every card 60px past a 375px screen (found 2026-10-11). */
-.list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-top: 8px; }
+   min-content and pushes every card 60px past a 375px screen (found 2026-10-11). The gap and the
+   top padding leave room for a sticker poking above its card. */
+.list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; padding-top: 18px; }
+/* Flat white paper. No colour bar: the filled .kind tag carries red/blue AND the words. */
 .card {
+  position: relative;
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 14px; box-shadow: var(--shadow);
-  border-left: 6px solid var(--red);
+  padding: 16px 14px 14px; box-shadow: var(--shadow);
 }
-.card.opening { border-left-color: var(--blue); }
-.eyebrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: var(--t-caption); color: var(--muted); }
-/* The type pill repeats the border colour WITH words, so colour is never the only signal. */
+/* Tilt by element type, so the "Show more" button never counts. Rotation is static, not motion. */
+.card:nth-of-type(4n+2) { transform: rotate(.6deg); }
+.card:nth-of-type(4n+4) { transform: rotate(-.6deg); }
+/* One piece of tape, top Hot card only (app.js adds .taped). */
+.card.taped::before {
+  content: ""; position: absolute; top: -9px; left: 22px; width: 64px; height: 18px;
+  background: var(--tape); transform: rotate(-4deg); pointer-events: none;
+}
+/* Fluent Emoji 3D, die-cut with a white outline. The eyebrow keeps clear of it (padding below). */
+.sticker {
+  position: absolute; top: -18px; right: 10px; width: 48px; height: 48px;
+  transform: rotate(10deg); pointer-events: none;
+  filter: drop-shadow(2px 0 0 var(--die)) drop-shadow(-2px 0 0 var(--die))
+    drop-shadow(0 2px 0 var(--die)) drop-shadow(0 -2px 0 var(--die))
+    drop-shadow(0 3px 3px rgba(0, 0, 0, .18));
+}
+.card:nth-of-type(even) .sticker { transform: rotate(-12deg); }
+.eyebrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; padding-right: 56px; font-size: var(--t-caption); color: var(--muted); }
+/* The filled tag carries red/blue WITH words, so colour is never the only signal. */
 .kind {
-  padding: 2px 8px; border-radius: var(--r-tag);
+  display: inline-block; padding: 3px 8px 2px; border-radius: var(--r-tag);
   background: var(--red); color: #fff;
-  font-weight: 700; text-transform: uppercase; letter-spacing: .08em; line-height: 1.35;
+  font: 400 var(--t-label)/1.2 var(--display); letter-spacing: .01em;
+  transform: rotate(-2deg);
 }
 .card.opening .kind { background: var(--blue); }
 .merch { font-size: var(--t-label); font-weight: 700; color: var(--text); }
@@ -239,9 +327,25 @@ a.src:hover { text-decoration: underline; }
   border: 1px solid var(--line); border-radius: var(--r-ctl);
   background: var(--surface); color: var(--text); font: inherit; font-size: var(--t-label); font-weight: 700; cursor: pointer;
 }
+/* Save sparkles are children of the button and must show outside it. */
+.act { position: relative; overflow: visible; }
 .more-btn { background: var(--neutral-bg); color: var(--neutral-fg); border-color: transparent; font-size: var(--t-label); }
 .more-btn[aria-expanded="true"] { background: var(--text); color: var(--bg); }
-.act[aria-pressed="true"] { background: var(--yellow-bg); color: var(--yellow-fg); border-color: var(--yellow-fg); }
+.act[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+/* Save burst: 6 four-point sparkles fly from the button centre to --x/--y (set inline by app.js,
+   through the CSSOM, so CSP is untouched) and fade. App.js never creates them under reduced motion. */
+.burst {
+  position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; pointer-events: none;
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+  animation: burst .6s ease-out forwards;
+}
+.burst.b1 { background: #ffc828; }
+.burst.b2 { background: var(--red); }
+.burst.b3 { background: var(--blue); }
+@keyframes burst {
+  from { transform: translate(-50%, -50%) scale(.4); opacity: 1; }
+  to { transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1); opacity: 0; }
+}
 .src-list { list-style: none; margin: 4px 0 0; padding: 0; font-size: var(--t-label); }
 .src-list a { display: flex; align-items: center; min-height: 44px; color: var(--link); font-weight: 700; text-decoration: none; border-top: 1px dashed var(--line); }
 .src-extra { padding: 8px 0; color: var(--muted); border-top: 1px dashed var(--line); }
@@ -257,6 +361,7 @@ a.src:hover { text-decoration: underline; }
 /* states */
 .state { margin-top: 24px; padding: 24px 16px; text-align: center; border: 2px dashed var(--line); border-radius: var(--radius); color: var(--muted); }
 .state strong { display: block; color: var(--text); font-size: var(--t-body-lg); font-weight: 700; margin-bottom: 4px; }
+.state .mascot { display: block; width: 64px; height: 64px; margin: 0 auto 8px; }
 .state.err { border-color: var(--red); }
 .state.err strong { color: var(--red-fg); }
 .state .icon-btn { margin-top: 12px; }
@@ -291,6 +396,9 @@ a.src:hover { text-decoration: underline; }
 .tour-card.bottom { bottom: calc(16px + env(safe-area-inset-bottom)); }
 .tour-card.top { top: calc(16px + env(safe-area-inset-top)); }
 .tour-card.mid { top: 22%; }
+/* The mascot only greets on the centred steps (welcome); a spotlight step needs the room. */
+.tour-mascot { display: none; width: 48px; height: 48px; margin: 0 auto 6px; }
+.tour-card.mid .tour-mascot { display: block; }
 .tour-n { margin: 0; font-size: var(--t-caption); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
 .tour-t { margin: 4px 0 6px; font-size: var(--t-body-lg); line-height: 1.25; font-weight: 700; letter-spacing: -.01em; }
 .tour-b { margin: 0 0 4px; font-size: var(--t-body); line-height: 1.5; }
@@ -307,7 +415,19 @@ a.src:hover { text-decoration: underline; }
 @media (min-width: 600px) {
   .tab { font-size: var(--t-body); }
 }
+/* Below 360px (iPhone SE 1st gen) the Bagel wordmark + mascot ran 30px under ? / Refresh.
+   Wrap is the safety net if a font renders wider still. */
+@media (max-width: 359px) {
+  .brand-row { flex-wrap: wrap; }
+  .brand-lockup .mascot { width: 32px; height: 32px; }
+  .brand { font-size: 1.3rem; }
+}
 
+/* Last on purpose: a @media block adds no specificity, so it must follow the rules it overrides.
+   The named movers use !important too, so their position cannot matter. Tilt and rotation are
+   static and stay; so does the press offset, which is a state, not an animation. */
 @media (prefers-reduced-motion: reduce) {
+  .bob, .burst, .tab, .act, .filter-btn, .chip { animation: none !important; transition: none !important; }
+  .burst { display: none; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
