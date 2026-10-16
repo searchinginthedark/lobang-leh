@@ -804,6 +804,12 @@
   var TOUR_GAP = 20 * 60 * 1000;
   var KEY_TOUR = 'lobang:tour';
   var KEY_SEEN = 'lobang:seen';
+  // The new-since baseline in use. A reopen within NEW_STICK of the last open keeps it, so a quick
+  // close + reopen (or an iOS reload) does not wipe the new deals unseen; NEW_MAX stops a chain of
+  // reopens holding one baseline for days.
+  var KEY_BASE = 'lobang:base';
+  var NEW_STICK = 2 * 60 * 60 * 1000;
+  var NEW_MAX = 12 * 60 * 60 * 1000;
   var tour = { at: -1, from: 'hot', back: null, raf: 0, counted: [], steps: [], clicking: false };
 
   function tourTarget(k) {
@@ -902,8 +908,9 @@
   // Returns whether the tour should open itself once the deals have loaded.
   function tourInit() {
     // Read first so the new-since count works even when there is no tour to run.
-    var now = Date.now(), seen = Number(sGet(KEY_SEEN)) || 0;
-    lastSeen = seen;
+    var now = Date.now(), seen = Number(sGet(KEY_SEEN)) || 0, base = Number(sGet(KEY_BASE)) || 0;
+    lastSeen = seen && base && base <= seen && now - seen < NEW_STICK && now - base < NEW_MAX ? base : seen;
+    if (lastSeen) sSet(KEY_BASE, String(lastSeen));
     tour.steps = [].slice.call(document.querySelectorAll('#tour-steps li'));
     if (!tour.steps.length) return false;
     $('tour-next').addEventListener('click', function () { tourStep(1); });

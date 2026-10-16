@@ -1,4 +1,4 @@
-const CACHE = 'lobang-v11';
+const CACHE = 'lobang-v12';
 const ASSETS = ['./', './app.css', './app.js', './manifest.webmanifest', './icon-192.png',
   './fonts/PlusJakartaSans-latin.woff2', './fonts/BagelFatOne-latin.woff2',
   './stickers/restaurant.png', './stickers/bakery-dessert.png', './stickers/buffet.png',

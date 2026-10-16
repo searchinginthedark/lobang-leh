@@ -111,6 +111,9 @@ NON_FNB = _rx([
     # "A Little Boost for Your Foodie Adventures" (slimming treatments, said only in the body).
     r"storage (?:tools?|containers?|bags?|boxes)", r"kitchenware", r"cookware", r"slimming", r"facials?",
     r"spa treatments?", r"beauty treatments?",
+    # Travel fairs and theme-park deals ("Klook Travel Fest ... 1-for-1 Disneyland and USJ", misslobang_deals
+    # 2026-10-16: food only via a goodie-bag McNuggets voucher in the excerpt). Not bare "Klook": it sells meals too.
+    r"travel (?:fests?|fairs?|festivals?)", r"disneyland", r"universal studios", r"usj", r"tour packages?",
 ])
 
 # ---- Singapore relevance ----------------------------------------------------
