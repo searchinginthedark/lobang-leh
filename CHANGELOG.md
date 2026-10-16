@@ -1,3 +1,8 @@
+## v2026.10.16
+
+- fix: new-since survives a quick reopen; veto travel fairs
+- feat: new-since bubble shows which deals are new; retire dbs_dining
+
 ## v2026.10.13
 
 - feat: Sticker Scrapbook restyle with Juicy accents
