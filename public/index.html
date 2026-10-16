@@ -38,8 +38,9 @@
         <button type="button" id="refresh" class="icon-btn" aria-label="Refresh deals">Refresh</button>
       </div>
     </div>
-    <!-- Filled by app.js from lobang:seen; stays hidden on a first visit or when nothing is new. -->
-    <p class="bubble" id="newsince" hidden></p>
+    <!-- Filled by app.js from lobang:seen; stays hidden on a first visit or when nothing is new.
+         Tapping it shows only those deals (each card is also marked Just in). -->
+    <button type="button" class="bubble" id="newsince" aria-pressed="false" hidden></button>
     <p class="sub">Got a good deal! Singapore food promos and new openings.</p>
     <!-- One row (UX audit 2026-10-08): freshness, source health and the Filter button, so the
          first deal starts near the top third of a phone screen instead of 69% down. -->
@@ -109,7 +110,7 @@
   </div>
   <ol id="tour-steps" hidden>
     <li data-target="" data-view=""><b>Welcome to LobangLeh</b><span>Singapore food promos and new openings, collected from food sites and Telegram deal channels several times a day. Food and drinks only.</span></li>
-    <li data-target="fresh" data-view=""><b>Is this up to date?</b><span>This line says when deals were last collected. An orange Stale tag means a collection was missed. Tap the sources count beside it to see which sites answered. When deals arrived since your last visit, the speech bubble under the name says how many.</span></li>
+    <li data-target="fresh" data-view=""><b>Is this up to date?</b><span>This line says when deals were last collected. An orange Stale tag means a collection was missed. Tap the sources count beside it to see which sites answered. When deals arrived since your last visit, the speech bubble under the name says how many: tap it to see only those, and each one carries a Just in tag.</span></li>
     <li data-target="tabs" data-view=""><b>Five views</b><span>Hot: the best deals first. Ending soon: only deals with a stated end date, soonest first. New openings: new outlets, newest first. Birthday: free birthday treats and when each can be claimed. Saved: the deals you saved on this phone.</span></li>
     <li data-target="bday-box" data-view="birthday"><b>Your birthday</b><span>Pick your birthday month and day, and perks you can claim today come first, each with its dates: the day itself, days before or after, or the whole month. It stays on this phone.</span></li>
     <li data-target="filter-btn" data-view=""><b>Narrow it down</b><span>Tap Filter to search a brand, dish or mall, pick a category or an area, or keep only 1-for-1 or Free deals. An area shows only posts that name a place, so chain-wide deals drop out. While a filter is on, a Showing line above the deals names it, and Clear filters shows everything again.</span></li>

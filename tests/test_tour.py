@@ -25,13 +25,13 @@ JS = read("public", "app.js")
 # Every control a user can reach: ids of buttons/inputs/selects in the page, the views, and the
 # classes of buttons app.js builds per card or list.
 FLOW = {
-    "page": {"tourbtn", "refresh", "health-btn", "filter-btn", "q", "t-1for1", "t-free", "clear", "bday-m", "bday-d"},
+    "page": {"tourbtn", "newsince", "refresh","health-btn", "filter-btn", "q", "t-1for1", "t-free", "clear", "bday-m", "bday-d"},
     "views": {"hot", "ending", "new", "birthday", "saved"},
     "js_buttons": {"summary-btn", "more-btn", "act", "show-more", "chip", "icon-btn"},
 }
 # Labels the tour text must mention, so a renamed tab or filter cannot slip past it.
 MUST_MENTION = ["Hot", "Ending soon", "New openings", "Birthday", "Saved", "1-for-1", "Free", "Clear filters",
-                "Show more", "Save", "Share", "Promo", "New opening", "+3", "area", "MRT"]
+                "Show more", "Save", "Share", "Promo", "New opening", "+3", "area", "MRT", "Just in"]
 
 
 def tour_block():
@@ -102,7 +102,7 @@ class TourFollowsFlow(unittest.TestCase):
         # The labels it names must still be real UI text.
         for label in ("Hot", "Ending soon", "New openings", "Birthday", "Saved", "1-for-1", "Free", "Clear filters"):
             self.assertIn(">" + label + "<", HTML, "tour names '%s' but the page no longer shows it" % label)
-        for label in ("Show ", "'Save'", "'Share'", "'New opening'", "'Promo'"):
+        for label in ("Show ", "'Save'", "'Share'", "'New opening'", "'Promo'", "'Just in'"):
             self.assertIn(label, JS)
 
 

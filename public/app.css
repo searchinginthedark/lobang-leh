@@ -136,11 +136,19 @@ body {
   0%, 100% { transform: rotate(-4deg); }
   50% { transform: rotate(4deg) translateY(-2px); }
 }
-/* "N new lobang since you last looked". Text, not a control, so flat: the 3D edge means "pressable". */
+/* "N new lobang since you last looked · Show". A control since 2026-10-16: tapping it filters to
+   those deals. Kept flat (a speech bubble, not a 3D block); the underlined action word says "tap". */
 .bubble {
-  position: relative; display: inline-block; margin: 12px 0 0; padding: 6px 10px;
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-ctl);
-  font-size: var(--t-label); font-weight: 700; line-height: 1.4;
+  position: relative; display: inline-block; margin: 12px 0 0; padding: 6px 10px; min-height: 44px;
+  background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: var(--r-ctl);
+  font: inherit; font-size: var(--t-label); font-weight: 700; line-height: 1.4; text-align: left; cursor: pointer;
+  text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px;
+}
+.bubble[aria-pressed="true"] { border-color: var(--text); }
+/* Marks a deal the bubble counted. Outlined so it never reads as a second kind tag. */
+.just-in {
+  display: inline-block; padding: 2px 7px 1px; border: 1.5px solid var(--text); border-radius: var(--r-tag);
+  font-size: var(--t-caption); font-weight: 800; line-height: 1.3; color: var(--text); text-transform: uppercase; letter-spacing: .04em;
 }
 .bubble::before, .bubble::after {
   content: ""; position: absolute; left: 14px; width: 0; height: 0;

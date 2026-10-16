@@ -276,6 +276,9 @@ sources:
     ua: browser
     note: "measured 2026-10-03: 80 items capped, ~21 F&B by classifier, newest 2026-10-03; 4.2 MB page, not newest-first (hence the 60-day filter)"
   - name: dbs_dining
+    # DISABLED 2026-10-16 (user ruling): bank card dining offers did not add value, and its
+    # failures kept the header at 32/33 sources. Parser + tests kept in case it is revived.
+    disabled: true
     type: scrape
     parser: dbs_dining
     url: https://www.dbs.com.sg/personal/promotion/cards-wonderful-dining

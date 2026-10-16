@@ -49,7 +49,8 @@
   // Cards rendered per page. Hot held ~170 cards in one scroll; best-first means the
   // first page is the part worth reading, and "Show more" keeps the rest one tap away.
   var PAGE = 12;
-  var state = { view: 'hot', q: '', cat: '', area: '', f1: false, free: false, shown: PAGE };
+  // fresh: only deals first seen since the previous visit (set by the new-since bubble; never persisted).
+  var state = { view: 'hot', q: '', cat: '', area: '', f1: false, free: false, fresh: false, shown: PAGE };
   var saved = {};
   var data = null;
   var loading = false;
@@ -366,7 +367,10 @@
   }
 
   // ---------- filtering / views ----------
+  function isFresh(d) { return !!lastSeen && ts(d.first_seen) > lastSeen; }
+
   function matches(d) {
+    if (state.fresh && !isFresh(d)) return false;
     if (state.cat && d.category !== state.cat) return false;
     if (state.area && !placesOf(d).some(function (p) { return p.region === state.area; })) return false;
     if (state.f1 && !hasTag(d, '1-for-1')) return false;
@@ -384,8 +388,9 @@
     var all = (data && data.deals) || [];
     var list = all.filter(matches);
     if (state.view === 'hot') {
-      // Birthday perks are standing offers, not news: they live in their own view.
-      list = list.filter(function (d) { return !hasTag(d, 'birthday'); });
+      // Birthday perks are standing offers, not news: they live in their own view. The
+      // new-since filter keeps them, so the bubble's count and the list always agree.
+      if (!state.fresh) list = list.filter(function (d) { return !hasTag(d, 'birthday'); });
     } else if (state.view === 'birthday') {
       list = sortBirthday(list.filter(function (d) { return hasTag(d, 'birthday'); }));
     } else if (state.view === 'ending') {
@@ -422,6 +427,8 @@
     var merch = merchantsOf(d);
     var eb = el('div', 'eyebrow');
     eb.appendChild(el('span', 'kind', d.kind === 'opening' ? 'New opening' : bday ? 'Birthday' : 'Promo'));
+    // Marks the deals the new-since bubble counted, so they can be found in any view.
+    if (isFresh(d)) eb.appendChild(el('span', 'just-in', 'Just in'));
     if (merch.length) eb.appendChild(el('span', 'merch', merch.join(' + ')));
     c.appendChild(eb);
     c.appendChild(el('h2', 'title', d.title || merch.join(' + ') || 'Untitled'));
@@ -632,12 +639,11 @@
   function renderNewSince() {
     var b = $('newsince');
     if (!b) return;
-    var n = 0;
-    if (lastSeen) {
-      ((data && data.deals) || []).forEach(function (d) { if (ts(d.first_seen) > lastSeen) n++; });
-    }
+    var n = ((data && data.deals) || []).filter(isFresh).length;
     b.hidden = !n;
-    if (n) b.textContent = n + ' new lobang since you last looked';
+    if (!n && state.fresh) state.fresh = false;
+    if (n) b.textContent = n + ' new lobang since you last looked · ' + (state.fresh ? 'Show all' : 'Show');
+    b.setAttribute('aria-pressed', String(state.fresh));
   }
 
   function renderChips() {
@@ -689,6 +695,7 @@
     // The panel is usually shut, so an active filter is always named above the list: a
     // filtered feed must never pass for a thin one.
     var on = [];
+    if (state.fresh) on.push('New since your last visit');
     if (state.cat) on.push(CATS[state.cat] || state.cat);
     if (state.area) on.push(state.area + ' (named places only)');
     if (state.f1) on.push('1-for-1');
@@ -947,11 +954,20 @@
     $('t-1for1').addEventListener('click', function () { state.f1 = !state.f1; savePrefs(); rerender(); });
     $('t-free').addEventListener('click', function () { state.free = !state.free; savePrefs(); rerender(); });
     $('clear').addEventListener('click', function () {
-      state.q = ''; state.cat = ''; state.area = ''; state.f1 = false; state.free = false;
+      state.q = ''; state.cat = ''; state.area = ''; state.f1 = false; state.free = false; state.fresh = false;
       $('q').value = '';
       savePrefs();
       renderChips();
+      renderNewSince();
       rerender();
+    });
+    // The bubble is the way in to what it counts: the new deals, in Hot order, birthday perks included.
+    $('newsince').addEventListener('click', function () {
+      state.fresh = !state.fresh;
+      if (state.fresh && state.view !== 'hot') document.querySelector('.tab[data-view="hot"]').click();
+      renderNewSince();
+      rerender();
+      if (state.fresh) $('list').scrollIntoView({ block: 'start', behavior: 'smooth' });
     });
     MONTHS.forEach(function (name, i) { $('bday-m').add(new Option(name, String(i + 1))); });
     var bd0 = bdayGet();
