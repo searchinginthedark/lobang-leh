@@ -1,3 +1,8 @@
+## v2026.10.17
+
+- Add feature map + coverage test for headless verification
+- Add ruff config enforcing encoding= on every open() (PLW1514)
+
 ## v2026.10.16
 
 - fix: new-since survives a quick reopen; veto travel fairs
