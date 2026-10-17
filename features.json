@@ -1,0 +1,205 @@
+{
+  "app": "LobangLeh",
+  "about": "Feature map: what the app does, how a user reaches each feature, and how to prove it works. Run: python ../memory/tools/verify/verify.py . (from this folder). Add a feature here in the same commit that adds its control; verify.py --coverage fails on any control id no feature mentions.",
+  "root": "public",
+  "viewport": "375x812",
+  "setup": ["localStorage.setItem('lobang:tour','off')"],
+  "ready": "document.querySelectorAll('#list .card').length > 0",
+  "ignore_controls": [],
+  "features": [
+    {
+      "id": "load",
+      "name": "Deals load on open, newest collection time shown",
+      "reach": "Open the app. Header line reads 'Updated N ago'; Hot is the default view.",
+      "steps": [],
+      "expect": [
+        "document.getElementById('fresh-text').textContent.startsWith('Updated')",
+        "document.querySelectorAll('#list .card').length > 0",
+        "document.getElementById('state').hidden",
+        "document.querySelector('.tab[data-view=hot]').getAttribute('aria-selected') === 'true'",
+        "!document.getElementById('refresh').disabled"
+      ]
+    },
+    {
+      "id": "views",
+      "name": "Five views switch from the tab row",
+      "reach": "Tap Hot / Ending soon / New openings / Birthday / Saved under the header.",
+      "steps": [["click", ".tab[data-view=new]"]],
+      "expect": [
+        "document.querySelector('.tab[data-view=new]').getAttribute('aria-selected') === 'true'",
+        "document.querySelector('.tab[data-view=hot]').getAttribute('aria-selected') === 'false'",
+        "[...document.querySelectorAll('#list .card')].every(c => c.classList.contains('opening'))"
+      ]
+    },
+    {
+      "id": "ending",
+      "name": "Ending soon: only deals with a stated end date",
+      "reach": "Tap the Ending soon tab.",
+      "steps": [["click", ".tab[data-view=ending]"]],
+      "expect": [
+        "document.querySelector('.tab[data-view=ending]').getAttribute('aria-selected') === 'true'",
+        "document.querySelectorAll('#list .card').length > 0 ? [...document.querySelectorAll('#list .card')].every(c => c.querySelector('.valid')) : !document.getElementById('state').hidden"
+      ]
+    },
+    {
+      "id": "birthday",
+      "name": "Birthday view: pick month and day, kept on this phone",
+      "reach": "Tap the Birthday tab, then the Month (#bday-m) and Day (#bday-d) pickers.",
+      "steps": [["click", ".tab[data-view=birthday]"], ["select", "#bday-m", "3"], ["select", "#bday-d", "15"]],
+      "expect": [
+        "!document.getElementById('bday-box').hidden",
+        "!!localStorage.getItem('lobang:bday')",
+        "document.getElementById('bday-d').value === '15'"
+      ]
+    },
+    {
+      "id": "search",
+      "name": "Search narrows the list; Clear filters restores it",
+      "reach": "Tap Filter (#filter-btn), type in the search box (#q). The Showing line names the filter; Clear filters (#clear) resets.",
+      "steps": [["click", "#filter-btn"], ["fill", "#q", "zzqqnomatch"], ["wait_js", "!document.getElementById('state').hidden"]],
+      "expect": [
+        "document.querySelectorAll('#list .card').length === 0",
+        "!document.getElementById('active').hidden",
+        "document.getElementById('active-text').textContent.includes('zzqqnomatch')",
+        "document.getElementById('filter-btn').textContent === 'Filter · 1'"
+      ]
+    },
+    {
+      "id": "clear",
+      "name": "Clear filters brings every deal back",
+      "reach": "With any filter on, tap Clear filters (#clear) on the Showing line.",
+      "steps": [["click", "#filter-btn"], ["fill", "#q", "zzqqnomatch"], ["wait_js", "!document.getElementById('active').hidden"], ["click", "#clear"]],
+      "expect": [
+        "document.querySelectorAll('#list .card').length > 0",
+        "document.getElementById('active').hidden",
+        "document.getElementById('q').value === ''"
+      ]
+    },
+    {
+      "id": "quick-filters",
+      "name": "1-for-1 and Free quick filters",
+      "reach": "Tap Filter, then the 1-for-1 (#t-1for1) and Free (#t-free) chips.",
+      "steps": [["click", "#filter-btn"], ["click", "#t-1for1"], ["click", "#t-free"]],
+      "expect": [
+        "document.getElementById('t-1for1').getAttribute('aria-pressed') === 'true'",
+        "document.getElementById('t-free').getAttribute('aria-pressed') === 'true'",
+        "document.getElementById('active-text').textContent.includes('1-for-1')",
+        "document.getElementById('filter-btn').textContent === 'Filter · 2'"
+      ]
+    },
+    {
+      "id": "category",
+      "name": "Category chip filters by food type",
+      "reach": "Tap Filter, then a category chip in the first chip row.",
+      "requires": "!!document.querySelector('#chips .chip')",
+      "steps": [["click", "#filter-btn"], ["click_first", "#chips .chip"]],
+      "expect": [
+        "document.querySelector('#chips .chip').getAttribute('aria-pressed') === 'true'",
+        "!document.getElementById('active').hidden"
+      ]
+    },
+    {
+      "id": "save",
+      "name": "Save a deal; it appears in the Saved view",
+      "reach": "Tap Save on any card's footer row, then the Saved tab.",
+      "steps": [["click_first", "#list .card [data-act=save]"], ["click", ".tab[data-view=saved]"]],
+      "expect": [
+        "JSON.parse(localStorage.getItem('lobang:saved') || '[]').length === 1",
+        "document.querySelectorAll('#list .card').length === 1",
+        "document.querySelector('#list .card [data-act=save]').getAttribute('aria-pressed') === 'true'"
+      ]
+    },
+    {
+      "id": "share",
+      "name": "Share copies the link where the share sheet is missing",
+      "reach": "Tap Share on a card. Phones open the share sheet; elsewhere the link is copied and a toast says so.",
+      "steps": [
+        ["js", "Object.defineProperty(navigator, 'share', {value: undefined, configurable: true}); Object.defineProperty(navigator, 'clipboard', {value: {writeText: () => Promise.resolve()}, configurable: true}); 1"],
+        ["click_first", "#list .card [data-act=share]"],
+        ["wait_js", "document.getElementById('toast').textContent.length > 0"]
+      ],
+      "expect": ["document.getElementById('toast').textContent === 'Link copied'"]
+    },
+    {
+      "id": "more-sources",
+      "name": "+N lists the other sites that covered a deal",
+      "reach": "Tap the +N button beside the source link on a card.",
+      "requires": "!!document.querySelector('#list .more-btn')",
+      "steps": [["click_first", "#list .more-btn"]],
+      "expect": [
+        "document.querySelector('#list .more-btn').getAttribute('aria-expanded') === 'true'",
+        "!document.querySelector('#list .more-btn').closest('.card').querySelector('.src-list').hidden"
+      ]
+    },
+    {
+      "id": "summary",
+      "name": "Tap the grey text to read the full summary",
+      "reach": "Tap a card's grey summary text.",
+      "requires": "!!document.querySelector('#list .summary-btn')",
+      "steps": [["click_first", "#list .summary-btn"]],
+      "expect": ["document.querySelector('#list .summary-btn').getAttribute('aria-expanded') === 'true'"]
+    },
+    {
+      "id": "show-more",
+      "name": "Show more loads the next 12",
+      "reach": "Scroll to the bottom of a view and tap 'Show 12 more'.",
+      "requires": "!!document.getElementById('tour-more')",
+      "steps": [["js", "window.__n = document.querySelectorAll('#list .card').length"], ["click", "#tour-more"]],
+      "expect": ["document.querySelectorAll('#list .card').length > window.__n"]
+    },
+    {
+      "id": "sources-health",
+      "name": "Source health list: which sites answered",
+      "reach": "Tap the 'N/M sources' button (#health-btn) on the status row.",
+      "requires": "!document.getElementById('health-btn').hidden",
+      "steps": [["click", "#health-btn"]],
+      "expect": [
+        "!document.getElementById('health-list').hidden",
+        "document.querySelectorAll('#health-list li').length > 1"
+      ]
+    },
+    {
+      "id": "refresh",
+      "name": "Refresh reloads deals without an error",
+      "reach": "Tap Refresh (#refresh) in the header.",
+      "steps": [["click", "#refresh"], ["wait_js", "!document.getElementById('refresh').disabled"]],
+      "expect": [
+        "document.querySelectorAll('#list .card').length > 0",
+        "!document.getElementById('toast').textContent.includes('failed')"
+      ]
+    },
+    {
+      "id": "new-since",
+      "name": "New-since bubble filters to deals that arrived since the last visit",
+      "reach": "Reopen the app after new deals were collected; tap the speech bubble (#newsince) under the name.",
+      "setup": ["localStorage.setItem('lobang:seen', String(Date.now() - 5 * 86400000))"],
+      "requires": "!document.getElementById('newsince').hidden",
+      "steps": [["click", "#newsince"]],
+      "expect": [
+        "document.getElementById('newsince').getAttribute('aria-pressed') === 'true'",
+        "document.getElementById('active-text').textContent.includes('New since')",
+        "[...document.querySelectorAll('#list .card')].every(c => c.querySelector('.just-in'))"
+      ]
+    },
+    {
+      "id": "tour",
+      "name": "Guided tour: open, step, untick, skip",
+      "reach": "Tap ? (#tourbtn). Next (#tour-next) / Back (#tour-back) step through; 'Do not show again' (#tour-off); Skip (#tour-skip) closes.",
+      "steps": [
+        ["click", "#tourbtn"],
+        ["click", "#tour-next"],
+        ["js", "window.__n2 = document.getElementById('tour-n').textContent"],
+        ["click", "#tour-back"],
+        ["click", "#tour-off"],
+        ["js", "window.__off = localStorage.getItem('lobang:tour')"],
+        ["click", "#tour-skip"]
+      ],
+      "expect": [
+        "window.__n2.startsWith('2 of')",
+        "window.__off === null",
+        "document.getElementById('tour').hidden",
+        "document.querySelector('.tab[data-view=hot]').getAttribute('aria-selected') === 'true'"
+      ]
+    }
+  ]
+}
