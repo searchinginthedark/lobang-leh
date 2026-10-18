@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generated_at": "2026-10-18T13:35:04+08:00",
+  "generated_at": "2026-10-18T13:36:59+08:00",
   "model": "potion-retrieval-32M/pca256/int8",
   "dim": 256,
   "vectors": [
