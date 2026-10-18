@@ -1,7 +1,8 @@
 # Data contract: `public/deals.json`
 
 Written by the collector (`python -m lobang.fetch`), read by the static page in `public/`.
-The page never fetches anything else except `./deals.json`. Nothing in this file is
+The page fetches `./deals.json` on every open; `./details.json`, `./vectors.json` and the search
+model in `./embed/` only on demand (see below). Nothing in these files is
 LLM-generated: every title, summary and link comes from a fetched source.
 
 ```json
@@ -71,6 +72,46 @@ LLM-generated: every title, summary and link comes from a fetched source.
 - `links` holds at most 6 entries, newest first; `publishers` is the full distinct count.
 - Expired deals (`valid_until` before today SGT) are already removed by the collector.
 - `health.ok == 0` never reaches this file: the collector refuses to write it.
+
+## `attrs` (every deal) and `full`
+
+```json
+"attrs": {"cost": "free", "price": null, "needs": ["member", "min-spend"], "min_spend": 30,
+          "checked": true, "ease": 76},
+"full": true
+```
+
+Structured attributes read from the post's own words by `lobang/attrs.py` (deterministic, no LLM):
+- `cost`: what the deal gives: `free` (headline says free), `1-for-1`, `pct-off`, `cheap`, or `null`.
+- `price`: the lowest `$` price in the headline, or `null`.
+- `needs`: what the reader must do or be, in this order, from this vocabulary only: `contest` (lucky
+  draw), `eligible` (students, seniors…), `card` (a specific bank card), `member`, `app`, `min-spend`,
+  `purchase`, `group`, `booking`, `first-n` (explicit cap), `social`, `delivery`, `code`, `one-day`,
+  `days`, `hours`. Unknown values must be ignored by the page.
+- `checked`: the post had enough text to look. `needs: []` with `checked: false` means UNKNOWN,
+  never "no catch"; the page shows nothing for it.
+- `ease`: 100 minus the cost of `needs`. Promos move in Hot by it (`attrs.ease_points`); the page's
+  Easy to claim filter keeps promos with `checked`, `ease >= 80` and no `contest`.
+- The loose `member` / `app-only` / `card` tags are kept only when `needs` agrees.
+- `full: true`: `details.json` holds more of the post than `summary`. Absent otherwise.
+
+## `public/details.json` and `public/vectors.json`
+
+Written by the same collect as `deals.json`, fetched by the page only when needed (first card
+expanded, first search typed). Either may be missing or older than `deals.json`: the page then
+falls back to the summary and to word search, never to an error.
+
+```json
+{"schema": 1, "generated_at": "...", "details": [{"id": "d_3f9a1c2b7e", "body": "Para one.\nPara two.\n…"}]}
+{"schema": 1, "generated_at": "...", "model": "potion-retrieval-32M/pca256/int8", "dim": 256,
+ "vectors": [{"id": "d_3f9a1c2b7e", "v": "<base64 of 256 signed bytes: the unit vector x127>"}]}
+```
+
+- `body`: the post's full text, one paragraph per line, at most 5,000 chars; a final line `…` means
+  the collector clipped it. Display only: the classifier never reads it.
+- `v`: the deal's embedding (`lobang.embed.deal_text`). The page embeds the query with the same
+  model (`public/embed.js` + `public/embed/`) and ranks by cosine. Changing the model means
+  rebuilding `public/embed/` (`tools/build_embed_model.py`) and bumping `sw.js` CACHE.
 
 ## `birthday` (only on deals tagged `birthday`)
 

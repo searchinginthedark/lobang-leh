@@ -14,7 +14,8 @@ _TAG = re.compile(r"<[^>]+>")
 _WS = re.compile(r"\s+")
 # WordPress appends this to every excerpt; it is boilerplate, not content.
 _WP_FOOTER = re.compile(r"\s*The post .{0,300}? appeared first on .{0,120}?\.?\s*$", re.I | re.S)
-_READ_MORE = re.compile(r"\s*(\[(…|\.\.\.)\]|Continue reading.*|Read more.*)$", re.I | re.S)
+# "[…]" / "[...]", or a lone "[" where a feed cut its own marker short (SingPromos, 2026-10-18).
+_READ_MORE = re.compile(r"\s*(\[(…|\.\.\.)\]|\[\s*|Continue reading.*|Read more.*)$", re.I | re.S)
 
 
 def strip_html(s):
@@ -26,6 +27,49 @@ def strip_html(s):
     s = _WP_FOOTER.sub("", s)
     s = _READ_MORE.sub("", s)
     return s.replace(" ", " ").strip()
+
+
+_DROP = re.compile(r"(?is)<(script|style|noscript|iframe|svg|form)\b.*?</\1\s*>|<!--.*?-->")
+_BLOCK = re.compile(r"(?i)<br\s*/?>|</?(?:p|div|h[1-6]|li|tr|blockquote|figure|figcaption|section|article|ul|ol|table)\b[^>]*>")
+_LI = re.compile(r"(?i)<li\b[^>]*>")
+_SPACES = re.compile(r"[ \t\r\f\v ]+")
+BODY_MAX = 5000
+
+
+def body_text(s, n=BODY_MAX):
+    """The post's own text for reading in full: paragraphs kept (one per line), boilerplate and
+    markup dropped, clipped at a paragraph boundary to `n` chars. Display only: the classifier
+    reads `summary`, so a richer body can never change what a post is classified as."""
+    if not s:
+        return ""
+    s = _DROP.sub(" ", s)
+    s = _LI.sub("\n• ", s)
+    s = _BLOCK.sub("\n", s)
+    s = _TAG.sub(" ", s)
+    s = html.unescape(s)
+    s = _WP_FOOTER.sub("", s)
+    s = _READ_MORE.sub("", s)
+    lines = []
+    for line in s.split("\n"):
+        line = _SPACES.sub(" ", line).strip()
+        if line and line != "•" and (not lines or line != lines[-1]):
+            lines.append(line)
+    out, size = [], 0
+    for line in lines:
+        if size + len(line) > n:
+            if not out:
+                out.append(clip(line, n))
+            else:
+                out.append("…")
+            break
+        out.append(line)
+        size += len(line) + 1
+    return "\n".join(out)
+
+
+def tidy_tail(s):
+    """Drop a trailing read-more marker from text stored before strip_html learned it."""
+    return _READ_MORE.sub("", s or "")
 
 
 def one_line(s):

@@ -322,6 +322,20 @@ body {
   display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .summary-btn[aria-expanded="true"] .summary { display: block; }
+/* The full post replaces the summary once loaded (.has-full); a paragraph per line the source wrote. */
+.full { display: none; }
+.summary-btn[aria-expanded="true"].has-full .summary { display: none; }
+.summary-btn[aria-expanded="true"].has-full .full { display: block; }
+.para { display: block; overflow-wrap: anywhere; }
+.para + .para { margin-top: 8px; }
+.para.cont { color: var(--muted); }
+.more-hint { display: block; margin-top: 2px; color: var(--link); font-weight: 700; font-size: var(--t-caption); }
+.more-hint::after { content: "\00a0\25BE"; }
+.summary-btn[aria-expanded="true"] .more-hint::after { content: "\00a0\25B4"; }
+/* What the post says it takes. Plain text like .where: it is a fact about the deal, not a perk. */
+.needs { margin: 6px 0 0; font-size: var(--t-label); line-height: 1.4; color: var(--muted); }
+.needs.easy { color: var(--green-fg); font-weight: 600; }
+.needs.warn { color: var(--yellow-fg); font-weight: 600; }
 /* footer: one row = read link (takes the slack, truncates) + "+N" + Save + Share */
 .actions { display: flex; align-items: center; gap: 6px; margin-top: 8px; border-top: 1px solid var(--line); padding-top: 6px; }
 .src {

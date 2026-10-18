@@ -15,17 +15,18 @@ import urllib.parse
 import feedparser
 
 from . import net
-from .textutil import SGT, clip, from_struct, one_line, parse_iso, sha, strip_html
+from .textutil import SGT, body_text, clip, from_struct, one_line, parse_iso, sha, strip_html
 
 GNEWS = "https://news.google.com/rss/search?q={q}&hl=en-SG&gl=SG&ceid=SG:en"
 GNEWS_WINDOW = "when:7d"
 
 
-def _item(src, title, url, summary, published, publisher=None):
+def _item(src, title, url, summary, published, publisher=None, body=None):
     title = one_line(html.unescape(title or ""))
     if not title or not url:
         return None
-    return {
+    raw = summary or ""
+    it = {
         "id": sha(url),
         "source": src["name"],
         "publisher": publisher or src.get("publisher") or src["name"],
@@ -40,9 +41,15 @@ def _item(src, title, url, summary, published, publisher=None):
         "sg_source": src.get("type") != "gnews",
         "title": clip(title, 220),
         "url": url,
-        "summary": clip(strip_html(summary or ""), 600),
+        "summary": clip(strip_html(raw), 600),
         "published": published,
     }
+    # The full post text, for the expanded card only: `summary` stays the classifier's input, so
+    # this can never change a classification. Kept only when it says more than the summary.
+    full = body_text(body or raw)
+    if len(one_line(full)) > len(it["summary"]):
+        it["body"] = full
+    return it
 
 
 def _feed(body):
@@ -61,7 +68,9 @@ def parse_rss(src, body):
     for e in feed.entries:
         pub = from_struct(e.get("published_parsed") or e.get("updated_parsed"))
         summary = e.get("summary") or ""
-        it = _item(src, e.get("title"), e.get("link"), summary, pub)
+        # content:encoded is the whole post; `summary` is often a 20-word excerpt ending "[…]".
+        content = (e.get("content") or [{}])[0].get("value") or ""
+        it = _item(src, e.get("title"), e.get("link"), summary, pub, body=content)
         if it:
             out.append(it)
     return out
@@ -131,7 +140,7 @@ def parse_telegram(src, body):
         dt = _TG_TIME.search(block)
         pub = parse_iso(dt.group(1)).astimezone(SGT) if dt and parse_iso(dt.group(1)) else None
         url = "https://t.me/" + post
-        it = _item(src, lines[0], url, " ".join(lines[1:]), pub)
+        it = _item(src, lines[0], url, " ".join(lines[1:]), pub, body=tm.group(1))
         if it:
             out.append(it)
     return out
@@ -158,7 +167,7 @@ def run_module(src):
         if pub is not None and pub.tzinfo is None:
             pub = pub.replace(tzinfo=SGT)
         it = _item(src, r.get("title"), r.get("url"), r.get("summary") or "",
-                   pub.astimezone(SGT) if pub else None, publisher=r.get("publisher"))
+                   pub.astimezone(SGT) if pub else None, publisher=r.get("publisher"), body=r.get("body"))
         if it:
             if r.get("redeem"):
                 # A labelled redemption window ("Redeem on: Within birthday month."), kept apart

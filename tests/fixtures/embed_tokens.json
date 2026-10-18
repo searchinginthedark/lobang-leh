@@ -1,0 +1,143 @@
+{
+ "model": "minishlab/potion-retrieval-32M",
+ "cases": [
+  {
+   "text": "McDonald's 1-for-1 McSpicy via app till 12 Oct",
+   "ids": [
+    8389,
+    11,
+    61,
+    21,
+    17,
+    1011,
+    17,
+    21,
+    39419,
+    23336,
+    1106,
+    2087,
+    9445,
+    5235,
+    1266,
+    12329
+   ]
+  },
+  {
+   "text": "LiHo: Free bubble tea!! 🧋 (members only)",
+   "ids": [
+    4628,
+    5812,
+    30,
+    1495,
+    10963,
+    4578,
+    5,
+    5,
+    12,
+    1378,
+    1075,
+    13
+   ]
+  },
+  {
+   "text": "Café Mosaic (Carlton Hotel Singapore): 50% off Buffets",
+   "ids": [
+    6674,
+    15067,
+    12,
+    11995,
+    2315,
+    4270,
+    13,
+    30,
+    1759,
+    9,
+    1131,
+    40945
+   ]
+  },
+  {
+   "text": "Häagen-Dazs S$3.90 cones — today only, 10am–2pm",
+   "ids": [
+    56052,
+    1374,
+    17,
+    60362,
+    1021,
+    61,
+    8,
+    23,
+    18,
+    2944,
+    22831,
+    523,
+    1657,
+    1075,
+    16,
+    30019,
+    522,
+    30572
+   ]
+  },
+  {
+   "text": "新开 Hai Di Lao 海底捞 at Jewel Changi #01-36",
+   "ids": [
+    868,
+    14036,
+    3493,
+    17811,
+    908,
+    1018,
+    12719,
+    45608,
+    7,
+    4896,
+    17,
+    3035
+   ]
+  },
+  {
+   "text": "free food",
+   "ids": [
+    1495,
+    1839
+   ]
+  },
+  {
+   "text": "cheap coffee near orchard",
+   "ids": [
+    9042,
+    3163,
+    1385,
+    14629
+   ]
+  },
+  {
+   "text": "japanese ramen new opening",
+   "ids": [
+    1893,
+    32273,
+    1053,
+    2104
+   ]
+  },
+  {
+   "text": "supercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocious",
+   "ids": []
+  },
+  {
+   "text": "Tab\tand\nnewline  spaces nbsp​zwsp",
+   "ids": [
+    20634,
+    1004,
+    1053,
+    3185,
+    6264,
+    36509,
+    1486,
+    8339,
+    1367
+   ]
+  }
+ ]
+}

@@ -77,7 +77,7 @@
     },
     {
       "id": "quick-filters",
-      "name": "1-for-1 and Free quick filters",
+      "name": "1-for-1 and Free quick filters (Easy to claim, #t-easy, has its own feature)",
       "reach": "Tap Filter, then the 1-for-1 (#t-1for1) and Free (#t-free) chips.",
       "steps": [["click", "#filter-btn"], ["click", "#t-1for1"], ["click", "#t-free"]],
       "expect": [
@@ -138,6 +138,62 @@
       "requires": "!!document.querySelector('#list .summary-btn')",
       "steps": [["click_first", "#list .summary-btn"]],
       "expect": ["document.querySelector('#list .summary-btn').getAttribute('aria-expanded') === 'true'"]
+    },
+    {
+      "id": "full-post",
+      "name": "Read the full post text inside the card (loaded from details.json on the first tap)",
+      "reach": "Tap a card's text where it says 'Read the full post'. The post's full text replaces the two-line summary; tap again for Less.",
+      "requires": "[...document.querySelectorAll('#list .more-hint')].some(h => h.textContent === 'Read the full post')",
+      "steps": [
+        ["js", "[...document.querySelectorAll('#list .more-hint')].find(h => h.textContent === 'Read the full post').closest('.summary-btn').setAttribute('data-probe', '1'); 1"],
+        ["click", "#list .summary-btn[data-probe]"],
+        ["wait_js", "!!document.querySelector('#list .summary-btn[data-probe] .full .para:not(.cont)')"]
+      ],
+      "expect": [
+        "document.querySelector('#list .summary-btn[data-probe]').getAttribute('aria-expanded') === 'true'",
+        "document.querySelector('#list .summary-btn[data-probe]').classList.contains('has-full')",
+        "getComputedStyle(document.querySelector('#list .summary-btn[data-probe] .summary')).display === 'none'",
+        "document.querySelector('#list .summary-btn[data-probe] .full').textContent.length > document.querySelector('#list .summary-btn[data-probe] .summary').textContent.length",
+        "document.querySelector('#list .summary-btn[data-probe] .more-hint').textContent === 'Less'"
+      ]
+    },
+    {
+      "id": "needs-line",
+      "name": "Each promo says what it takes (Needs: membership, min spend...) or that the post states nothing",
+      "reach": "Read the line under a promo's tags: 'Needs: ...' or 'No sign-up, code or min spend stated'. Openings and headline-only posts show none.",
+      "requires": "!!document.querySelector('#list .needs')",
+      "steps": [],
+      "expect": [
+        "[...document.querySelectorAll('#list .needs')].every(n => /^(Needs: .+|No sign-up, code or min spend stated)$/.test(n.textContent))",
+        "[...document.querySelectorAll('#list .card.opening .needs')].length === 0"
+      ]
+    },
+    {
+      "id": "easy-filter",
+      "name": "Easy to claim keeps only promos that ask little (attrs.ease >= 80, no lucky draws)",
+      "reach": "Tap Filter, then the Easy to claim chip (#t-easy). The Showing line names it.",
+      "steps": [["click", "#filter-btn"], ["click", "#t-easy"]],
+      "expect": [
+        "document.getElementById('t-easy').getAttribute('aria-pressed') === 'true'",
+        "document.getElementById('active-text').textContent.includes('Easy to claim')",
+        "[...document.querySelectorAll('#list .card')].every(c => !c.classList.contains('opening') && !c.querySelector('.needs.warn') && !!c.querySelector('.needs'))",
+        "JSON.parse(localStorage.getItem('lobang:prefs')).easy === true"
+      ]
+    },
+    {
+      "id": "semantic-search",
+      "name": "Search by meaning: the query is embedded on the phone and ranked against each deal's vector",
+      "reach": "Tap Filter and type a plain-words query such as 'free food'. After a moment the list re-sorts, best match first, and the Showing line says so.",
+      "steps": [
+        ["click", "#filter-btn"],
+        ["fill", "#q", "free food"],
+        ["wait_js", "document.getElementById('active-text').textContent.includes('best match first')"]
+      ],
+      "expect": [
+        "document.querySelectorAll('#list .card').length > 0",
+        "/free/i.test(document.querySelector('#list .card .title').textContent + document.querySelector('#list .card').textContent)",
+        "document.getElementById('filter-btn').textContent === 'Filter · 1'"
+      ]
     },
     {
       "id": "show-more",

@@ -1,0 +1,6 @@
+Search model: a reduced copy of minishlab/potion-retrieval-32M
+(https://huggingface.co/minishlab/potion-retrieval-32M, snapshot 6fc8051f), licensed MIT by
+its authors (Minish Lab), per the model card's "license: mit".
+
+Changes: PCA from 512 to 256 dimensions and int8 quantisation per token row, by
+tools/build_embed_model.py in this repository. The vocabulary is the model's own.

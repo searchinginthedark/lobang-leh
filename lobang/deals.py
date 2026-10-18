@@ -10,9 +10,10 @@ import re
 from collections import Counter
 from datetime import date
 
+from . import attrs as A
 from .classify import fold
 from .places import merge as merge_places
-from .textutil import clip, parse_iso, sha
+from .textutil import clip, parse_iso, sha, tidy_tail
 
 TIER_RANK = {"deals": 0, "media": 1, "news": 2, "social": 3}
 STRONG = ("1-for-1", "free", "pct-off", "cheap")
@@ -179,8 +180,11 @@ def aggregate(deal):
     order = sorted(ms, key=lambda m: (TIER_RANK.get(m["tier"], 9), m.get("published") or m["fetched"]))
     lead = order[0]
     deal["title"] = lead["title"]
-    summaries = [m["summary"] for m in order if m.get("summary")]
-    deal["summary"] = clip(summaries[0], 280) if summaries else ""
+    texted = [m for m in order if m.get("summary") or m.get("body")]
+    deal["summary"] = clip(tidy_tail(texted[0].get("summary") or texted[0]["body"]), 280) if texted else ""
+    # The same post's full text (its body, else its uncut summary) for the expanded card and the
+    # attribute reader. Older ledger rows have no body: their 600-char summary is what there is.
+    deal["body"] = tidy_tail(texted[0].get("body") or texted[0].get("summary") or "") if texted else ""
 
     mcount = Counter()
     first = {}
@@ -226,6 +230,13 @@ def aggregate(deal):
     return deal
 
 
+def deal_attrs(deal):
+    """lobang.attrs on a deal: its headline, plus the summary and full text of its lead post."""
+    text = deal.get("body") or deal.get("summary") or ""
+    return A.extract(deal["title"], text, deal.get("tags") or (), deal.get("birthday"), deal.get("pct"),
+                     (deal.get("valid_from"), deal.get("valid_until")))
+
+
 def score(deal, today):
     """0-100. Deterministic for a given deal and date."""
     tags = set(deal["tags"])
@@ -256,8 +267,10 @@ def score(deal, today):
     s += {"deals": 4, "media": 4, "news": 2}.get(deal.get("best_tier"), 0)
     if not deal["merchants"]:
         s -= 8
-    if "card" in tags:
-        s -= 5
+    # What it takes to claim (lobang.attrs): walk-in deals rise, bank-card / sign-up / lucky-draw
+    # deals sink. Openings have no conditions to weigh. Replaces the flat "card -5" (2026-10-18).
+    if deal["kind"] == "promo":
+        s += A.ease_points(deal_attrs(deal))
     until = deal.get("valid_until")
     if until:
         left = (date.fromisoformat(until) - today).days
@@ -303,8 +316,16 @@ def is_live(deal, today):
     return (today - pub).days <= stale
 
 
+# Condition tags the classifier sets from loose words ("members" anywhere in an excerpt), and the
+# lobang.attrs need that states the same thing strictly. The card shows both, so the loose tag is
+# kept only when the strict reader agrees: "Members" beside "No sign-up stated" was IKEA's free
+# coffee on 2026-10-18.
+TAG_NEED = {"member": "member", "app-only": "app", "card": "card"}
+
+
 def public(deal, today):
-    tags = [t for t in deal["tags"]]
+    a = deal_attrs(deal)
+    tags = [t for t in deal["tags"] if t not in TAG_NEED or TAG_NEED[t] in a["needs"]]
     if deal.get("valid_until") == today.isoformat() and "ends-today" not in tags:
         tags.append("ends-today")
     out = {
@@ -321,7 +342,7 @@ def public(deal, today):
         "first_seen": deal["first_seen"],
         "last_seen": deal["last_seen"],
         "score": score(deal, today),
-        "summary": deal["summary"],
+        "summary": deal.get("summary") or "",
         "publishers": deal["publishers"],
         "links": deal["links"],
     }
@@ -331,4 +352,14 @@ def public(deal, today):
         out["places"] = deal["places"]
     if deal.get("birthday"):
         out["birthday"] = deal["birthday"]
+    out["attrs"] = a
+    if detail(deal):
+        out["full"] = True   # details.json holds more text than `summary`
     return out
+
+
+def detail(deal):
+    """The deal's full text for public/details.json, or None when the card's summary already
+    holds all of it (no point fetching what is on screen)."""
+    body = deal.get("body") or ""
+    return body if len(body.replace("\n", " ")) > len(deal.get("summary") or "") else None

@@ -75,13 +75,14 @@
   <!-- Folded behind the Filter button; #active says what is filtered whenever the panel is shut. -->
   <section class="filters" id="filters" aria-label="Filters" hidden>
     <label class="sr" for="q">Search deals</label>
-    <input type="search" id="q" class="search" placeholder="Search merchant, deal or detail" autocomplete="off">
+    <input type="search" id="q" class="search" placeholder="Search: try “free food” or a mall" autocomplete="off" enterkeyhint="search">
     <div class="chips" id="chips" role="group" aria-label="Category"></div>
     <!-- Area chips: only cards whose post names a mall, food centre, MRT or neighbourhood. -->
     <div class="chips" id="areas" role="group" aria-label="Area" hidden></div>
     <div class="chips" role="group" aria-label="Quick filters">
       <button type="button" class="chip" id="t-1for1" aria-pressed="false">1-for-1</button>
       <button type="button" class="chip" id="t-free" aria-pressed="false">Free</button>
+      <button type="button" class="chip" id="t-easy" aria-pressed="false">Easy to claim</button>
     </div>
   </section>
   <p class="active-f" id="active" hidden><span id="active-text"></span> <button type="button" class="chip chip-clear" id="clear">Clear filters</button></p>
@@ -111,14 +112,15 @@
   <ol id="tour-steps" hidden>
     <li data-target="" data-view=""><b>Welcome to LobangLeh</b><span>Singapore food promos and new openings, collected from food sites and Telegram deal channels several times a day. Food and drinks only.</span></li>
     <li data-target="fresh" data-view=""><b>Is this up to date?</b><span>This line says when deals were last collected. An orange Stale tag means a collection was missed. Tap the sources count beside it to see which sites answered. When deals arrived since your last visit, the speech bubble under the name says how many: tap it to see only those, and each one carries a Just in tag.</span></li>
-    <li data-target="tabs" data-view=""><b>Five views</b><span>Hot: the best deals first. Ending soon: only deals with a stated end date, soonest first. New openings: new outlets, newest first. Birthday: free birthday treats and when each can be claimed. Saved: the deals you saved on this phone.</span></li>
+    <li data-target="tabs" data-view=""><b>Five views</b><span>Hot: the best deals first, and deals you can simply walk in and claim rank above ones that need a bank card, an app sign-up or a lucky draw. Ending soon: only deals with a stated end date, soonest first. New openings: new outlets, newest first. Birthday: free birthday treats and when each can be claimed. Saved: the deals you saved on this phone.</span></li>
     <li data-target="bday-box" data-view="birthday"><b>Your birthday</b><span>Pick your birthday month and day, and perks you can claim today come first, each with its dates: the day itself, days before or after, or the whole month. It stays on this phone.</span></li>
-    <li data-target="filter-btn" data-view=""><b>Narrow it down</b><span>Tap Filter to search a brand, dish or mall, pick a category or an area, or keep only 1-for-1 or Free deals. An area shows only posts that name a place, so chain-wide deals drop out. While a filter is on, a Showing line above the deals names it, and Clear filters shows everything again.</span></li>
-    <li data-target="tour-first-card" data-view="hot"><b>Reading a card</b><span>The label says what it is: a red Promo or blue New opening label. The sticker shows the kind of food. The brand sits beside it when we recognise one. A pin line under the headline says where, with the nearest MRT, when the post names a place. Tags sum up the deal, and an end date only shows when the post states one. Tap the grey text to read more.</span></li>
+    <li data-target="filter-btn" data-view=""><b>Narrow it down</b><span>Tap Filter to search. Search goes by meaning, so free food also finds complimentary cake, best match first; a brand or mall name works too. Pick a category or an area, or keep only 1-for-1, Free or Easy to claim deals (nothing much to sign up for or spend). An area shows only posts that name a place, so chain-wide deals drop out. While a filter is on, a Showing line above the deals names it, and Clear filters shows everything again.</span></li>
+    <li data-target="tour-first-card" data-view="hot"><b>Reading a card</b><span>The label says what it is: a red Promo or blue New opening label. The sticker shows the kind of food. The brand sits beside it when we recognise one. A pin line under the headline says where, with the nearest MRT, when the post names a place. Tags sum up the deal, and an end date only shows when the post states one. A Needs line lists what the post says it takes, such as membership or a min spend. Tap the text to read the full post right here.</span></li>
     <li data-target="tour-first-actions" data-view="hot"><b>Act on it</b><span>Tap the source name to read the full post. A number like +3 lists the other sites that covered it. Save keeps it in the Saved view; Share sends the link. Each view shows 12 deals; Show more at the bottom loads the next 12.</span></li>
     <li data-target="tourbtn" data-view=""><b>That's it</b><span>Tap the ? button any time to see this tour again.</span></li>
   </ol>
 </div>
+<script src="embed.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

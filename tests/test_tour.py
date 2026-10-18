@@ -25,13 +25,15 @@ JS = read("public", "app.js")
 # Every control a user can reach: ids of buttons/inputs/selects in the page, the views, and the
 # classes of buttons app.js builds per card or list.
 FLOW = {
-    "page": {"tourbtn", "newsince", "refresh","health-btn", "filter-btn", "q", "t-1for1", "t-free", "clear", "bday-m", "bday-d"},
+    "page": {"tourbtn", "newsince", "refresh","health-btn", "filter-btn", "q", "t-1for1", "t-free", "t-easy", "clear",
+             "bday-m", "bday-d"},
     "views": {"hot", "ending", "new", "birthday", "saved"},
     "js_buttons": {"summary-btn", "more-btn", "act", "show-more", "chip", "icon-btn"},
 }
 # Labels the tour text must mention, so a renamed tab or filter cannot slip past it.
 MUST_MENTION = ["Hot", "Ending soon", "New openings", "Birthday", "Saved", "1-for-1", "Free", "Clear filters",
-                "Show more", "Save", "Share", "Promo", "New opening", "+3", "area", "MRT", "Just in"]
+                "Show more", "Save", "Share", "Promo", "New opening", "+3", "area", "MRT", "Just in",
+                "Easy to claim", "Needs", "meaning", "full post"]
 
 
 def tour_block():
@@ -100,9 +102,11 @@ class TourFollowsFlow(unittest.TestCase):
         for label in MUST_MENTION:
             self.assertIn(label, text, "tour never mentions '%s'" % label)
         # The labels it names must still be real UI text.
-        for label in ("Hot", "Ending soon", "New openings", "Birthday", "Saved", "1-for-1", "Free", "Clear filters"):
+        for label in ("Hot", "Ending soon", "New openings", "Birthday", "Saved", "1-for-1", "Free", "Easy to claim",
+                      "Clear filters"):
             self.assertIn(">" + label + "<", HTML, "tour names '%s' but the page no longer shows it" % label)
-        for label in ("Show ", "'Save'", "'Share'", "'New opening'", "'Promo'", "'Just in'"):
+        for label in ("Show ", "'Save'", "'Share'", "'New opening'", "'Promo'", "'Just in'", "'Needs: '",
+                      "'Read the full post'"):
             self.assertIn(label, JS)
 
 

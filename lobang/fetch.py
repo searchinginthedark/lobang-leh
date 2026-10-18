@@ -9,6 +9,7 @@ never published as "no deals").
 from __future__ import annotations
 
 import argparse
+import base64
 import gzip
 import io
 import json
@@ -20,6 +21,7 @@ from datetime import timedelta
 import yaml
 
 from . import deals as D
+from . import embed as E
 from .classify import Lexicon, classify
 from .sources import fetch
 from .textutil import iso, now_sgt, parse_iso
@@ -190,16 +192,33 @@ def run(dry_run=False, only=None, as_json=False):
 
     deal_list = D.prune(deal_list, reclassify)
     D.assign([r for r in fresh if r["cls"]], deal_list)
+    # Full post text arrived after most stored members were ingested: fill it in from any feed
+    # that still lists the post, so live cards gain their full description without a re-ingest.
+    bodies = {it["id"]: it["body"] for res in results for it in res["items"] if it.get("body")}
     for d in deal_list:
+        for m in d["members"]:
+            if not m.get("body") and m["id"] in bodies:
+                m["body"] = bodies[m["id"]]
         if any(m["id"] in listed for m in d["members"]):
             d["last_listed"] = iso(now)
+        # Re-derived every run, so a change to aggregation (or a backfilled body) reaches every card.
+        D.aggregate(d)
     keep_after = now - timedelta(days=D.STATE_KEEP_DAYS)
     deal_list = [d for d in deal_list
                  if parse_iso(d.get("last_listed") or d["last_seen"]) >= keep_after
                  or parse_iso(d["last_seen"]) >= keep_after]
 
-    live = [D.public(d, today) for d in deal_list if D.is_live(d, today)]
+    live_state = [d for d in deal_list if D.is_live(d, today)]
+    live = [D.public(d, today) for d in live_state]
     D.hot_sort(live, now)
+    details = [{"id": d["id"], "body": b} for d in live_state for b in [D.detail(d)] if b]
+    details.sort(key=lambda r: r["id"])
+    model = E.Model.load()
+    vectors = []
+    for d in sorted(live_state, key=lambda d: d["id"]):
+        v = model.encode(E.deal_text(d))
+        if v:
+            vectors.append({"id": d["id"], "v": base64.b64encode(E.quantize(v)).decode("ascii")})
     out = {
         "schema": 1,
         "generated_at": iso(now),
@@ -232,6 +251,13 @@ def run(dry_run=False, only=None, as_json=False):
     write_json(STATE, {"updated": iso(now), "sources": health})
     os.makedirs(PUBLIC, exist_ok=True)
     write_json(os.path.join(PUBLIC, "deals.json"), out, lines_key="deals")
+    # Loaded by the page only when needed (a card expanded, a search typed), so the first paint
+    # still waits on deals.json alone. Contract: docs/contract.md.
+    write_json(os.path.join(PUBLIC, "details.json"),
+               {"schema": 1, "generated_at": iso(now), "details": details}, lines_key="details")
+    write_json(os.path.join(PUBLIC, "vectors.json"),
+               {"schema": 1, "generated_at": iso(now), "model": E.MODEL, "dim": E.DIM, "vectors": vectors},
+               lines_key="vectors")
     return 0
 
 

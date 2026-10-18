@@ -1,5 +1,8 @@
-const CACHE = 'lobang-v12';
-const ASSETS = ['./', './app.css', './app.js', './manifest.webmanifest', './icon-192.png',
+const CACHE = 'lobang-v13';
+// embed/ (the search model: vocab.txt + t/<k>.bin shards) is NOT precached: ~16 MB in all, of
+// which a query needs a few shards. They are cached as they are fetched (cache-first below) and
+// never change unless the model does, which needs a CACHE bump here.
+const ASSETS = ['./', './app.css', './app.js', './embed.js', './manifest.webmanifest', './icon-192.png',
   './fonts/PlusJakartaSans-latin.woff2', './fonts/BagelFatOne-latin.woff2',
   './stickers/restaurant.png', './stickers/bakery-dessert.png', './stickers/buffet.png',
   './stickers/hawker.png', './stickers/fast-food.png', './stickers/delivery.png',
@@ -37,7 +40,8 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
-  if (req.mode === 'navigate' || url.pathname.endsWith('/deals.json')) {
+  // The three files each collect rewrites: always the network's copy, the cache only offline.
+  if (req.mode === 'navigate' || /\/(deals|details|vectors)\.json$/.test(url.pathname)) {
     e.respondWith(networkFirst(req));
     return;
   }

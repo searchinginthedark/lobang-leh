@@ -50,7 +50,19 @@
   // first page is the part worth reading, and "Show more" keeps the rest one tap away.
   var PAGE = 12;
   // fresh: only deals first seen since the previous visit (set by the new-since bubble; never persisted).
-  var state = { view: 'hot', q: '', cat: '', area: '', f1: false, free: false, fresh: false, shown: PAGE };
+  // easy: only promos whose post states few or no conditions (attrs.ease, see lobang/attrs.py).
+  var state = { view: 'hot', q: '', cat: '', area: '', f1: false, free: false, easy: false, fresh: false, shown: PAGE };
+
+  // What a deal asks of you (deal.attrs.needs, lobang/attrs.py NEEDS), in display order.
+  var NEED_LABEL = {
+    'contest': 'Lucky draw, not a sure thing', 'eligible': 'Eligibility rules (students, seniors…)',
+    'card': 'A specific bank card', 'member': 'Membership or sign-up', 'app': 'The app',
+    'min-spend': 'Min spend', 'purchase': 'A purchase', 'group': 'A group or min pax', 'booking': 'Booking ahead',
+    'first-n': 'Limited redemptions', 'social': 'A social media post', 'delivery': 'Delivery app only',
+    'code': 'A promo code', 'one-day': 'One day only', 'days': 'Set days only', 'hours': 'Set hours only'
+  };
+  // Same threshold as lobang/attrs.py EASY_MIN (tests/test_attrs.py checks they agree).
+  var EASY_MIN = 80;
   var saved = {};
   var data = null;
   var loading = false;
@@ -74,6 +86,7 @@
         if (AREAS.indexOf(p.area) >= 0) state.area = p.area;
         state.f1 = p.f1 === true;
         state.free = p.free === true;
+        state.easy = p.easy === true;
       }
     } catch (e) { /* ignore */ }
     try {
@@ -82,7 +95,7 @@
     } catch (e) { /* ignore */ }
   }
   function savePrefs() {
-    sSet(KEY_PREFS, JSON.stringify({ view: state.view, q: state.q, cat: state.cat, area: state.area, f1: state.f1, free: state.free }));
+    sSet(KEY_PREFS, JSON.stringify({ view: state.view, q: state.q, cat: state.cat, area: state.area, f1: state.f1, free: state.free, easy: state.easy }));
   }
   function saveSaved() { sSet(KEY_SAVED, JSON.stringify(Object.keys(saved))); }
 
@@ -193,6 +206,153 @@
     var s = 'Till ' + fmtDate(d.valid_until);
     if (left != null && left > 0) s += ' · ' + left + (left === 1 ? ' day left' : ' days left');
     return { text: s, cls: '' };
+  }
+
+  // ---------- what it takes (docs/contract.md, "attrs") ----------
+  function attrsOf(d) {
+    var a = d.attrs && typeof d.attrs === 'object' ? d.attrs : null;
+    if (!a) return null;
+    return {
+      needs: (Array.isArray(a.needs) ? a.needs : []).filter(function (n) { return NEED_LABEL[n]; }),
+      ease: typeof a.ease === 'number' ? a.ease : null,
+      checked: a.checked === true,
+      min_spend: typeof a.min_spend === 'number' ? a.min_spend : null
+    };
+  }
+  // Mirrors lobang/attrs.py is_easy, promos only: an opening has nothing to claim.
+  function isEasy(d) {
+    var a = attrsOf(d);
+    return d.kind === 'promo' && !!a && a.checked && a.ease != null && a.ease >= EASY_MIN && a.needs.indexOf('contest') < 0;
+  }
+  // "Needs: Membership or sign-up · Min spend $30", or a plain "nothing stated" line. Nothing at all
+  // when the post's text was too short to tell: unknown is never shown as easy.
+  function needsLine(d) {
+    var a = attrsOf(d);
+    if (!a || d.kind !== 'promo') return null;
+    if (!a.needs.length) return a.checked ? { text: 'No sign-up, code or min spend stated', cls: 'easy' } : null;
+    var parts = a.needs.map(function (n) {
+      return n === 'min-spend' && a.min_spend != null ? 'Min spend $' + a.min_spend : NEED_LABEL[n];
+    });
+    return { text: 'Needs: ' + parts.join(' · '), cls: a.needs.indexOf('contest') >= 0 ? 'warn' : '' };
+  }
+
+  // ---------- full post text (public/details.json, fetched on the first expand) ----------
+  var details = { map: null, promise: null };
+  function loadDetails() {
+    if (details.map) return Promise.resolve(details.map);
+    if (!details.promise) {
+      details.promise = fetch('./details.json', { cache: 'no-cache' }).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      }).then(function (j) {
+        var m = {};
+        (j && Array.isArray(j.details) ? j.details : []).forEach(function (x) {
+          if (x && typeof x.id === 'string' && typeof x.body === 'string') m[x.id] = x.body;
+        });
+        details.map = m;
+        return m;
+      });
+      details.promise.catch(function () { details.promise = null; });   // retry on the next tap
+    }
+    return details.promise;
+  }
+  // One block per paragraph the source wrote; a trailing "…" means the collector clipped it.
+  function fillFull(box, body, pub) {
+    clear(box);
+    var lines = body.split('\n').filter(function (l) { return l.trim(); });
+    var cut = lines.length && lines[lines.length - 1] === '…';
+    if (cut) lines.pop();
+    lines.forEach(function (l) { box.appendChild(el('span', 'para', l)); });
+    if (cut) box.appendChild(el('span', 'para cont', 'Continues on ' + (pub || 'the source') + '.'));
+  }
+
+  // ---------- semantic search (public/embed.js + public/vectors.json) ----------
+  // The query is embedded on the phone and compared with every deal's vector (made in CI by the
+  // same model). A word that literally appears still counts, so a mall or brand name is never lost.
+  // Measured on the live feed 2026-10-18: an unrelated query tops out at 0.24; "free food" finds 21.
+  var REL_MIN = 0.34;      // below this is noise
+  var REL_FRAC = 0.5;      // and at least half the best score, so a strong query keeps only close ones
+  var WORD_BOOST = 0.2;    // added in proportion to the query words found as WHOLE words ("food" is not in "foodpanda")
+  function wordRx(w) {
+    return new RegExp('(^|[^a-z0-9])' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + 's?(?![a-z0-9])');
+  }
+  var sem = { model: null, vecs: null, vecsPromise: null, rel: null, relQ: null, seq: 0, timer: 0, failed: false };
+
+  function semModel() {
+    if (!sem.model && typeof LobangEmbed !== 'undefined') {
+      sem.model = LobangEmbed.create(
+        function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); }); },
+        function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); }); }
+      );
+    }
+    return sem.model;
+  }
+  function semVectors() {
+    if (sem.vecs) return Promise.resolve(sem.vecs);
+    if (!sem.vecsPromise) {
+      sem.vecsPromise = fetch('./vectors.json', { cache: 'no-cache' }).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      }).then(function (j) {
+        var m = {};
+        (j && Array.isArray(j.vectors) ? j.vectors : []).forEach(function (x) {
+          if (x && typeof x.id === 'string' && typeof x.v === 'string') {
+            try { m[x.id] = LobangEmbed.decode(x.v); } catch (e) { /* skip a bad row */ }
+          }
+        });
+        sem.vecs = m;
+        return m;
+      });
+      sem.vecsPromise.catch(function () { sem.vecsPromise = null; });
+    }
+    return sem.vecsPromise;
+  }
+  function hayOf(d) {
+    var where = placesOf(d).map(function (p) { return p.name + ' ' + (p.mrt || ''); }).join(' ');
+    return (merchantsOf(d).join(' ') + ' ' + (d.title || '') + ' ' + (d.summary || '') + ' ' + where).toLowerCase();
+  }
+  function lexHit(d, q) { return hayOf(d).indexOf(q) >= 0; }
+
+  // Debounced: typing "free food" embeds once, not seven times. A newer query wins any race.
+  function semSchedule() {
+    clearTimeout(sem.timer);
+    var q = state.q.trim().toLowerCase();
+    if (!q) { sem.rel = null; sem.relQ = null; return; }
+    if (sem.relQ === q && sem.rel) return;
+    sem.timer = setTimeout(function () { semRun(q); }, 250);
+  }
+  function semRun(q) {
+    var m = semModel();
+    if (!m || !data) return;
+    var my = ++sem.seq;
+    Promise.all([m.encode(q), semVectors()]).then(function (res) {
+      if (my !== sem.seq || state.q.trim().toLowerCase() !== q) return;
+      var qv = res[0], vecs = res[1], words = q.split(/\s+/).filter(Boolean).map(wordRx), scored = [], best = 0;
+      ((data && data.deals) || []).forEach(function (d) {
+        var v = vecs[d.id], hay = hayOf(d);
+        var cos = qv && v ? LobangEmbed.cosine(qv, v) : 0;
+        var found = words.filter(function (rx) { return rx.test(hay); }).length;
+        var s = cos + WORD_BOOST * (words.length ? found / words.length : 0);
+        scored.push({ id: d.id, s: s, cos: cos, lex: hay.indexOf(q) >= 0 });
+        if (s > best) best = s;
+      });
+      var cut = Math.max(REL_MIN, best * REL_FRAC), rel = {};
+      // A literal hit always stays (and ranks by the same score); the rest must clear the cut.
+      scored.forEach(function (x) { if (x.lex || x.s >= cut) rel[x.id] = x.s + (x.lex ? WORD_BOOST : 0); });
+      sem.rel = rel;
+      sem.relQ = q;
+      sem.failed = false;
+      rerender();
+    }).catch(function () {
+      // Offline, or the model files are missing: the word match already on screen stays.
+      if (my !== sem.seq) return;
+      sem.failed = true;
+      renderControls();
+    });
+  }
+  function semActive() {
+    var q = state.q.trim().toLowerCase();
+    return !!q && sem.relQ === q && !!sem.rel;
   }
 
   // ---------- birthday perks (docs/contract.md, "birthday") ----------
@@ -375,11 +535,12 @@
     if (state.area && !placesOf(d).some(function (p) { return p.region === state.area; })) return false;
     if (state.f1 && !hasTag(d, '1-for-1')) return false;
     if (state.free && !hasTag(d, 'free')) return false;
+    if (state.easy && !isEasy(d)) return false;
     var q = state.q.trim().toLowerCase();
     if (q) {
-      var where = placesOf(d).map(function (p) { return p.name + ' ' + (p.mrt || ''); }).join(' ');
-      var hay = (merchantsOf(d).join(' ') + ' ' + (d.title || '') + ' ' + (d.summary || '') + ' ' + where).toLowerCase();
-      if (hay.indexOf(q) < 0) return false;
+      // By meaning once the query is embedded; by the words typed until then (or if it cannot be).
+      if (semActive()) return Object.prototype.hasOwnProperty.call(sem.rel, d.id);
+      if (!lexHit(d, q)) return false;
     }
     return true;
   }
@@ -403,6 +564,10 @@
       list.sort(function (a, b) { return ts(b.first_seen) - ts(a.first_seen); });
     } else if (state.view === 'saved') {
       list = list.filter(function (d) { return saved[d.id]; });
+    }
+    // A search is a question: its best answers come first, in whichever view it was asked.
+    if (semActive()) {
+      list = list.slice().sort(function (a, b) { return (sem.rel[b.id] || 0) - (sem.rel[a.id] || 0); });
     }
     return list;
   }
@@ -459,20 +624,44 @@
       if (typeof bday.said === 'string' && bday.said) c.appendChild(el('p', 'bday-said', 'Source says: “' + bday.said + '”'));
     }
 
-    if (d.summary) {
-      var sb = el('button', 'summary-btn');
-      sb.type = 'button';
-      sb.setAttribute('aria-expanded', 'false');
-      sb.appendChild(el('span', 'summary', d.summary));
-      sb.addEventListener('click', function () {
-        sb.setAttribute('aria-expanded', sb.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
-      });
-      c.appendChild(sb);
-    }
+    var nl = needsLine(d);
+    if (nl) c.appendChild(el('p', 'needs' + (nl.cls ? ' ' + nl.cls : ''), nl.text));
 
     var links = (Array.isArray(d.links) ? d.links : []).map(function (l) {
       return { url: l && safeUrl(l.url), pub: l && l.publisher, title: l && l.title };
     }).filter(function (l) { return l.url; });
+
+    if (d.summary) {
+      // Collapsed: two lines of the summary. Expanded: the post's full text when the collector has
+      // it (d.full; fetched once from details.json), else the whole summary.
+      var sb = el('button', 'summary-btn');
+      sb.type = 'button';
+      sb.setAttribute('aria-expanded', 'false');
+      sb.appendChild(el('span', 'summary', d.summary));
+      var full = el('span', 'full');
+      sb.appendChild(full);
+      var hint = el('span', 'more-hint', d.full === true ? 'Read the full post' : 'More');
+      hint.setAttribute('aria-hidden', 'true');
+      sb.appendChild(hint);
+      var leadPub = links[0] && links[0].pub;
+      sb.addEventListener('click', function () {
+        var open = sb.getAttribute('aria-expanded') !== 'true';
+        sb.setAttribute('aria-expanded', String(open));
+        hint.textContent = open ? 'Less' : (d.full === true ? 'Read the full post' : 'More');
+        if (!open || d.full !== true || full.firstChild) return;
+        full.appendChild(el('span', 'para cont', 'Loading the full post…'));
+        sb.classList.add('has-full');
+        loadDetails().then(function (m) {
+          if (typeof m[d.id] === 'string') fillFull(full, m[d.id], leadPub);
+          else { clear(full); sb.classList.remove('has-full'); }
+        }).catch(function () {
+          clear(full);
+          sb.classList.remove('has-full');
+          toast('Could not load the full post');
+        });
+      });
+      c.appendChild(sb);
+    }
     var total = Math.max(typeof d.publishers === 'number' ? d.publishers : 0, links.length);
 
     // One footer row: the newest source as the read link, "+N" for the rest, then actions.
@@ -692,6 +881,7 @@
     });
     $('t-1for1').setAttribute('aria-pressed', String(state.f1));
     $('t-free').setAttribute('aria-pressed', String(state.free));
+    $('t-easy').setAttribute('aria-pressed', String(state.easy));
     // The panel is usually shut, so an active filter is always named above the list: a
     // filtered feed must never pass for a thin one.
     var on = [];
@@ -700,7 +890,10 @@
     if (state.area) on.push(state.area + ' (named places only)');
     if (state.f1) on.push('1-for-1');
     if (state.free) on.push('Free');
-    if (state.q.trim()) on.push('“' + state.q.trim() + '”');
+    if (state.easy) on.push('Easy to claim');
+    if (state.q.trim()) {
+      on.push('“' + state.q.trim() + '”' + (semActive() ? ', best match first' : sem.failed ? ', exact words only' : ''));
+    }
     var fb = $('filter-btn');
     fb.textContent = on.length ? 'Filter · ' + on.length : 'Filter';
     fb.classList.toggle('on', on.length > 0);
@@ -771,6 +964,10 @@
       if (!j || !Array.isArray(j.deals)) throw new Error('Unexpected file format');
       j.deals = j.deals.filter(function (d) { return d && typeof d === 'object' && typeof d.id === 'string'; });
       data = j;
+      // A new collection means new full texts and vectors: drop the cached ones, re-run any search.
+      details.map = null; details.promise = null;
+      sem.vecs = null; sem.vecsPromise = null; sem.rel = null; sem.relQ = null;
+      semSchedule();
       renderHeader();
       renderNewSince();
       renderChips();
@@ -956,12 +1153,15 @@
     $('q').addEventListener('input', function (e) {
       state.q = e.target.value;
       savePrefs();
-      rerender();
+      rerender();      // word match now; semSchedule re-ranks by meaning a moment later
+      semSchedule();
     });
     $('t-1for1').addEventListener('click', function () { state.f1 = !state.f1; savePrefs(); rerender(); });
     $('t-free').addEventListener('click', function () { state.free = !state.free; savePrefs(); rerender(); });
+    $('t-easy').addEventListener('click', function () { state.easy = !state.easy; savePrefs(); rerender(); });
     $('clear').addEventListener('click', function () {
-      state.q = ''; state.cat = ''; state.area = ''; state.f1 = false; state.free = false; state.fresh = false;
+      state.q = ''; state.cat = ''; state.area = ''; state.f1 = false; state.free = false; state.easy = false; state.fresh = false;
+      semSchedule();
       $('q').value = '';
       savePrefs();
       renderChips();
