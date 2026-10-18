@@ -1,3 +1,7 @@
+## v2026.10.18.2
+
+- Free tag from the headline only, not an excerpt's side perk
+
 ## v2026.10.18
 
 - Full post text, what-it-takes ranking, and search by meaning
