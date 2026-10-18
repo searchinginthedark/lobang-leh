@@ -454,7 +454,11 @@ def classify(item, lex, ref):
     if pm and 5 <= int(pm.group(1)) <= 95:
         pct = int(pm.group(1))
         tags.append("pct-off")
-    free = bool(FREE.search(text)) and not NOT_FREE.search(text)
+    # Headline only, like attrs._cost: an excerpt's side perk ("free wine tastings" at a 15%-off wine
+    # fair, a "free upsize" on a kopi package) put a Free badge on deals that are not free. Telegram
+    # excepted: the body is the post.
+    free_text = text if item.get("post_body") else title
+    free = bool(FREE.search(free_text)) and not NOT_FREE.search(free_text)
     if free:
         tags.append("free")
     # Headline only: excerpts quote menu prices ("cold foam add-on $1") that are not deals.

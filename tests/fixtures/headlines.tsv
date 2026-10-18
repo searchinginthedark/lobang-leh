@@ -2,7 +2,8 @@
 # outcome it SHOULD have, before the rule that fixes it. tests/test_headlines.py runs them all.
 # Add the near-misses the fix must NOT catch too, or the next rule change can over-correct.
 #
-# expect  drop | promo | opening
+# expect  drop | promo | opening, optionally followed by tag checks: "promo +free" must carry
+#         the free tag, "promo -free" must not (the badge a card shows)
 # flags   comma list or "-": fnb (food-only publisher), post (Telegram: the body is the post),
 #         gnews (not an SG source), scope (source scope: promo, a deal channel)
 # title, summary: as the source gave them; summary may be "-"
@@ -66,3 +67,6 @@ opening	fnb	17 New Cafes & Restaurants In October 2026 – 24-Hour Matcha House 
 drop	-	Klook Travel Fest 2026 at Suntec City, 17-18 Oct: Free Entry, 1-for-1 Disneyland and USJ Flash Deals, Goodie Bags for the First 150	1-for-1 flash deals Klook's Travel Fest returns as a Flee Market Edition at Suntec City Atrium (Tower 1 & 2) this Saturday and Sunday, 17-18 October 2026, 10am to 9pm. Entry is free with a Klook entrance pass, which also gets you a Yeo's drink and up to $50 in Shopee vouchers, and the first 150 pass holders each day take home a goodie bag with a McDonald's 4pc McNuggets voucher, a $50 Dyson voucher and IRVINS fish skin. On stage, Klook drops one flash deal every two hours: 1-for-1 Shanghai Disneyland (Sat 11am), Hong Kong Disneyland (Sun 11am), Universal Studios Japan (3pm both days)…
 drop	-	NATAS Travel Fair 2026 at Expo: 1-for-1 Japan Tour Packages and Free Luggage	Goodie bags with a McDonald's voucher and IRVINS salted egg fish skin for the first 100 visitors each day.
 promo	-	Klook Dining Deals: 1-for-1 Buffets at Marina Bay Sands Hotels This Weekend	-
+promo +free	fnb	PastaMania Singapore’s Children’s Day Deal Gives Kids a FREE Meal on October 2	Kids aged 10 and below dine free at PastaMania. Visit Great Deals Singapore for the full post.
+promo -free	-	Toast Box Nanyang Kopi Package: 80 Cups for $138 or 40 for $72, Till 31 Oct 2026	From $1.73/cup Toast Box's Nanyang Kopi Package is back for its 21st anniversary, on sale until Saturday 31 October 2026. The 40-cup package is $72 (U.P. $88) and adds a free upsize on 5 cups; the 80-cup package is $138 (U.P. $176) and adds a free Soft French Breadsticks and medium hot drink set plus 2 free curry puffs with an Asian Delight set. That is $1.80 or $1.73 a cup against the usual $2.20 for a small hot kopi or teh. Buy it in the BreadTalk Group Rewards app (the first 15,000 app buyers also get a free banana cake slice) or at most Toast Box outlets. The catch: the vouchers cover…
+promo -free	-	Cold Storage International Wine Fair 2026: Extra 15% Off 6 Bottles, 20% Off 12 at Suntec City, 15-28 Oct	Extra 15%-20% off Cold Storage's International Wine Fair is back from 15 to 28 October 2026, and its hub is the Cold Storage store at Suntec City (#B1-154-156), where any 6 bottles of wine get an additional 15% off and any 12 get 20% off. The ad also prices 90+ point wines from $25.90 (M. Chapoutier Tournon Shiraz, was $28.90) and premium sakes from $44.90, with free wine tastings, sake tastings and cheese pairings on Friday to Sunday. DBS/POSB cards take S$12 off a $120 receipt. The catch: the 15%/20% multi-buy is Suntec only and excludes sparkling, beer and spirits; online it is 15% off 6…

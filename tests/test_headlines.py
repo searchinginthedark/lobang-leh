@@ -35,7 +35,11 @@ class LabelledHeadlines(unittest.TestCase):
         rs = rows()
         self.assertGreater(len(rs), 0)
         for expect, flags, title, _ in rs:
-            self.assertIn(expect, ("drop", "promo", "opening"), title)
+            kind, *checks = expect.split(" ")
+            self.assertIn(kind, ("drop", "promo", "opening"), title)
+            self.assertFalse(checks and kind == "drop", title)
+            for chk in checks:
+                self.assertRegex(chk, r"^[+-][\w-]+$", title)
             fl = set() if flags == "-" else set(flags.split(","))
             self.assertLessEqual(fl, FLAGS, title)
         titles = [r[2] for r in rs]
@@ -48,12 +52,18 @@ class LabelledHeadlines(unittest.TestCase):
                     "fnb_only": "fnb" in fl, "post_body": "post" in fl, "sg_source": "gnews" not in fl,
                     "publisher": "Fixture", "scope": "promo" if "scope" in fl else "mixed"}
             c = classify(item, LEX, REF)
+            kind, *checks = expect.split(" ")
             with self.subTest(title=title):
-                if expect == "drop":
+                if kind == "drop":
                     self.assertIsNone(c, "should drop, got %s" % (c and c["kind"]))
                 else:
-                    self.assertIsNotNone(c, "should be %s, was dropped" % expect)
-                    self.assertEqual(c["kind"], expect)
+                    self.assertIsNotNone(c, "should be %s, was dropped" % kind)
+                    self.assertEqual(c["kind"], kind)
+                    for chk in checks:
+                        if chk[0] == "+":
+                            self.assertIn(chk[1:], c["tags"])
+                        else:
+                            self.assertNotIn(chk[1:], c["tags"])
 
 
 if __name__ == "__main__":

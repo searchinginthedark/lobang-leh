@@ -165,9 +165,19 @@ class Classify(unittest.TestCase):
         self.assertIn("1-for-1", c["tags"])
 
     def test_excerpt_strong_signal_tags_but_does_not_decide(self):
-        # The excerpt's free cookie may tag the card; it must not turn an opening into a promo.
-        c = cls("Elijah Pies Opens Its Joo Chiat Flagship on 12 Sept 2026", "a free cookie with every pie", fnb_only=True)
+        # The excerpt's free cookie must not turn an opening into a promo. Its 20% off may tag the card,
+        # but "free" is the headline's word only: an excerpt's side perk is not a Free deal (2026-10-18).
+        c = cls("Elijah Pies Opens Its Joo Chiat Flagship on 12 Sept 2026", "a free cookie and 20% off every pie",
+                fnb_only=True)
         self.assertEqual(c["kind"], "opening")
+        self.assertIn("pct-off", c["tags"])
+        self.assertNotIn("free", c["tags"])
+
+    def test_telegram_body_free_still_tags(self):
+        # A Telegram post's title is just its first line; the body is the post.
+        c = classify({"title": "🍣 Sushiro 🍣", "summary": "Free tamago sushi with every $30 spend, today only",
+                      "fnb_only": True, "post_body": True, "sg_source": True, "publisher": "X", "scope": "promo"},
+                     LEX, REF)
         self.assertIn("free", c["tags"])
 
     def test_food_words_in_excerpt_alone_do_not_make_fnb(self):
