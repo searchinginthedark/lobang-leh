@@ -1,3 +1,7 @@
+## v2026.10.18
+
+- Full post text, what-it-takes ranking, and search by meaning
+
 ## v2026.10.17
 
 - Add feature map + coverage test for headless verification
