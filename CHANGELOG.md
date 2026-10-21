@@ -1,3 +1,7 @@
+## v2026.10.21
+
+- ci: cut GHA backup crons to one daily safety net
+
 ## v2026.10.18.2
 
 - Free tag from the headline only, not an excerpt's side perk
