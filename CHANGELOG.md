@@ -1,3 +1,7 @@
+## v2026.10.21.3
+
+- Easy to claim means a real walk-in discount; report a wrong card
+
 ## v2026.10.21.2
 
 - Drop haze mask handouts; read a Telegram post's leading event date
