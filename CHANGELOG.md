@@ -1,3 +1,7 @@
+## v2026.10.21.2
+
+- Drop haze mask handouts; read a Telegram post's leading event date
+
 ## v2026.10.21
 
 - Flag undated promos nobody has posted about for 5+ days
