@@ -33,7 +33,7 @@ FLOW = {
 # Labels the tour text must mention, so a renamed tab or filter cannot slip past it.
 MUST_MENTION = ["Hot", "Ending soon", "New openings", "Birthday", "Saved", "1-for-1", "Free", "Clear filters",
                 "Show more", "Save", "Share", "Promo", "New opening", "+3", "area", "MRT", "Just in",
-                "Easy to claim", "Needs", "meaning", "full post"]
+                "Easy to claim", "Needs", "meaning", "full post", "flag", "copy them"]
 
 
 def tour_block():
@@ -106,7 +106,7 @@ class TourFollowsFlow(unittest.TestCase):
                       "Clear filters"):
             self.assertIn(">" + label + "<", HTML, "tour names '%s' but the page no longer shows it" % label)
         for label in ("Show ", "'Save'", "'Share'", "'New opening'", "'Promo'", "'Just in'", "'Needs: '",
-                      "'Read the full post'"):
+                      "'Read the full post'", "'Report a problem'", "'Copy reports'"):
             self.assertIn(label, JS)
 
 

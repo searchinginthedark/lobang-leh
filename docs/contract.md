@@ -94,7 +94,8 @@ Structured attributes read from the post's own words by `lobang/attrs.py` (deter
 - `checked`: the post had enough text to look. `needs: []` with `checked: false` means UNKNOWN,
   never "no catch"; the page shows nothing for it.
 - `ease`: 100 minus the cost of `needs`. Promos move in Hot by it (`attrs.ease_points`); the page's
-  Easy to claim filter keeps promos with `checked`, `ease >= 80` and no `contest`.
+  Easy to claim filter keeps promos with `checked`, `cost` of `free`, `1-for-1` or `pct-off`, and
+  no `needs` beyond timing (`hours`, `days`, `one-day`).
 - The loose `member` / `app-only` / `card` tags are kept only when `needs` agrees.
 - `full: true`: `details.json` holds more of the post than `summary`. Absent otherwise.
 

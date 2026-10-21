@@ -121,6 +121,38 @@
       "expect": ["document.getElementById('toast').textContent === 'Link copied'"]
     },
     {
+      "id": "report",
+      "name": "Report a card (Ended / Not food / Wrong details), kept on this phone",
+      "reach": "Tap the flag on a card's footer row, then a reason. The card's flag stays pressed.",
+      "steps": [
+        ["click_first", "#list .card [data-act=report]"],
+        ["click_first", "#list .card .report-row [data-reason=ended]"]
+      ],
+      "expect": [
+        "Object.keys(JSON.parse(localStorage.getItem('lobang:reports') || '{}')).length === 1",
+        "Object.values(JSON.parse(localStorage.getItem('lobang:reports'))).every(r => r.r === 'ended')",
+        "document.querySelector('#list .card [data-act=report]').getAttribute('aria-pressed') === 'true'",
+        "document.querySelector('#list .card .report-row').hidden"
+      ]
+    },
+    {
+      "id": "report-copy",
+      "name": "Copy reports from the sources list, one tab-separated line each",
+      "reach": "After reporting a card, tap the sources count; the last line offers Copy reports.",
+      "steps": [
+        ["js", "window.__copied = ''; Object.defineProperty(navigator, 'clipboard', {value: {writeText: t => { window.__copied = t; return Promise.resolve(); }}, configurable: true}); 1"],
+        ["click_first", "#list .card [data-act=report]"],
+        ["click_first", "#list .card .report-row [data-reason=not-food]"],
+        ["click", "#health-btn"],
+        ["click_first", "#health-list .h-reports .act"],
+        ["wait_js", "window.__copied.length > 0"]
+      ],
+      "expect": [
+        "window.__copied.split('\\t')[0] === 'not-food'",
+        "document.getElementById('toast').textContent === 'Reports copied'"
+      ]
+    },
+    {
       "id": "more-sources",
       "name": "+N lists the other sites that covered a deal",
       "reach": "Tap the +N button beside the source link on a card.",
@@ -170,7 +202,7 @@
     },
     {
       "id": "easy-filter",
-      "name": "Easy to claim keeps only promos that ask little (attrs.ease >= 80, no lucky draws)",
+      "name": "Easy to claim keeps only real discounts you just walk in for (free, 1-for-1 or % off; nothing asked beyond timing)",
       "reach": "Tap Filter, then the Easy to claim chip (#t-easy). The Showing line names it.",
       "steps": [["click", "#filter-btn"], ["click", "#t-easy"]],
       "expect": [

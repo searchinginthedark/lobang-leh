@@ -61,8 +61,9 @@
     'first-n': 'Limited redemptions', 'social': 'A social media post', 'delivery': 'Delivery app only',
     'code': 'A promo code', 'one-day': 'One day only', 'days': 'Set days only', 'hours': 'Set hours only'
   };
-  // Same threshold as lobang/attrs.py EASY_MIN (tests/test_attrs.py checks they agree).
-  var EASY_MIN = 80;
+  // Same lists as lobang/attrs.py EASY_COSTS / EASY_NEEDS (tests/test_attrs.py checks they agree).
+  var EASY_COSTS = ['free', '1-for-1', 'pct-off'];
+  var EASY_NEEDS = ['hours', 'days', 'one-day'];
   var saved = {};
   var data = null;
   var loading = false;
@@ -229,7 +230,9 @@
   // Mirrors lobang/attrs.py is_easy, promos only: an opening has nothing to claim.
   function isEasy(d) {
     var a = attrsOf(d);
-    return d.kind === 'promo' && !!a && a.checked && a.ease != null && a.ease >= EASY_MIN && a.needs.indexOf('contest') < 0;
+    var raw = d.attrs && Array.isArray(d.attrs.needs) ? d.attrs.needs : [];
+    return d.kind === 'promo' && !!a && a.checked && EASY_COSTS.indexOf(d.attrs.cost) >= 0 &&
+      raw.every(function (n) { return EASY_NEEDS.indexOf(n) >= 0; });
   }
   // "Needs: Membership or sign-up · Min spend $30", or a plain "nothing stated" line. Nothing at all
   // when the post's text was too short to tell: unknown is never shown as easy.
@@ -721,9 +724,84 @@
     sh.addEventListener('click', function () { share(d, links[0] && links[0].url); });
     act.appendChild(sv);
     act.appendChild(sh);
+    var rp = reportControls(d, links[0] && links[0].url);
+    act.appendChild(rp.btn);
     c.appendChild(act);
     if (list) c.appendChild(list);
+    c.appendChild(rp.row);
     return c;
+  }
+
+  // ---------- reports: "this card is wrong", kept on this phone ----------
+  // No server: the reader's taps become fixture rows only when copied from the sources list into a
+  // session (Copy reports). Newest REPORT_MAX kept.
+  var KEY_REPORTS = 'lobang:reports';   // {deal id: {r: reason, t: title, u: url, at: ISO}}
+  var REPORT_MAX = 60;
+  var REASONS = [['ended', 'Ended'], ['not-food', 'Not food'], ['wrong', 'Wrong details']];
+  function readReports() { return readObj(KEY_REPORTS); }
+  function writeReports(o) {
+    var ids = Object.keys(o).sort(function (a, b) { return ts(o[b].at) - ts(o[a].at); });
+    var out = {};
+    ids.slice(0, REPORT_MAX).forEach(function (k) { out[k] = o[k]; });
+    sSet(KEY_REPORTS, JSON.stringify(out));
+  }
+  function reportControls(d, url) {
+    var btn = el('button', 'act', '⚑');
+    btn.type = 'button';
+    btn.setAttribute('data-act', 'report');
+    btn.setAttribute('aria-label', 'Report a problem');
+    btn.title = 'Report a problem';
+    var row = el('div', 'report-row');
+    row.hidden = true;
+    function sync() {
+      var r = readReports()[d.id];
+      btn.setAttribute('aria-pressed', String(!!r));
+      row.querySelectorAll('.chip').forEach(function (ch) {
+        ch.setAttribute('aria-pressed', String(!!r && r.r === ch.getAttribute('data-reason')));
+      });
+    }
+    row.appendChild(el('span', 'report-q', 'What is wrong?'));
+    REASONS.forEach(function (rs) {
+      var ch = el('button', 'chip', rs[1]);
+      ch.type = 'button';
+      ch.setAttribute('data-reason', rs[0]);
+      ch.addEventListener('click', function () {
+        var o = readReports();
+        // Tapping the chosen reason again withdraws the report.
+        if (o[d.id] && o[d.id].r === rs[0]) { delete o[d.id]; toast('Report removed'); }
+        else { o[d.id] = { r: rs[0], t: d.title || '', u: url || '', at: new Date().toISOString() }; toast('Reported. Copy reports from the sources list'); }
+        writeReports(o);
+        sync();
+        row.hidden = true;
+        btn.setAttribute('aria-expanded', 'false');
+        renderHeader();
+      });
+      row.appendChild(ch);
+    });
+    btn.setAttribute('aria-expanded', 'false');
+    btn.addEventListener('click', function () {
+      var open = row.hidden;
+      row.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+    });
+    sync();
+    return { btn: btn, row: row };
+  }
+  // One line per report, tab-separated, ready to paste into a session: reason, id, title, link.
+  function reportsText() {
+    var o = readReports();
+    return Object.keys(o).map(function (k) {
+      var r = o[k];
+      return [r.r, k, String(r.t || '').replace(/\s+/g, ' '), r.u || ''].join('\t');
+    }).join('\n');
+  }
+  function copyReports() {
+    var text = reportsText();
+    var fail = function () { toast('Could not copy the reports'); };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { toast('Reports copied'); }, fail);
+      else fail();
+    } catch (e) { fail(); }
   }
 
   // Six sparkles fly out of the Save button. Motion preference is read per click, and under
@@ -825,6 +903,20 @@
         ul.appendChild(li);
       });
       ul.appendChild(el('li', 'h-usage', usageText()));
+      var nrep = Object.keys(readReports()).length;
+      if (nrep) {
+        var rl = el('li', 'h-usage h-reports');
+        rl.appendChild(el('span', null, nrep + (nrep === 1 ? ' report' : ' reports') + ' on this phone '));
+        var cb = el('button', 'act', 'Copy reports');
+        cb.type = 'button';
+        cb.addEventListener('click', copyReports);
+        var xb = el('button', 'act', 'Clear');
+        xb.type = 'button';
+        xb.addEventListener('click', function () { writeReports({}); toast('Reports cleared'); renderHeader(); render(); });
+        rl.appendChild(cb);
+        rl.appendChild(xb);
+        ul.appendChild(rl);
+      }
     } else {
       h.hidden = true;
       healthOpen(false);

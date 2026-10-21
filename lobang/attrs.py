@@ -253,8 +253,12 @@ def ease_points(a):
 
 
 # Used by the page's "Easy to claim" filter and by tests: what "easy" means, in one place.
-EASY_MIN = 80
+# A real discount, and nothing asked beyond turning up at the right time. "ease >= 80" kept 106 of
+# 142 promos (2026-10-21), mostly because a plain price ("$5.50 loaded fries") asks nothing either,
+# so the chip filtered almost nothing. This keeps 22 of 143, each one a deal you just walk in for.
+EASY_COSTS = ("free", "1-for-1", "pct-off")
+EASY_NEEDS = ("hours", "days", "one-day")   # when, not what: never a hurdle
 
 
 def is_easy(a):
-    return a["checked"] and a["ease"] >= EASY_MIN and "contest" not in a["needs"]
+    return a["checked"] and a["cost"] in EASY_COSTS and all(n in EASY_NEEDS for n in a["needs"])

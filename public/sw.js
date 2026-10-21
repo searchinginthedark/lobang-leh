@@ -1,4 +1,4 @@
-const CACHE = 'lobang-v14';
+const CACHE = 'lobang-v15';
 // embed/ (the search model: vocab.txt + t/<k>.bin shards) is NOT precached: ~16 MB in all, of
 // which a query needs a few shards. They are cached as they are fetched (cache-first below) and
 // never change unless the model does, which needs a CACHE bump here.

@@ -136,10 +136,29 @@ class Ease(unittest.TestCase):
         self.assertFalse(A.is_easy(a))
         self.assertLess(A.ease_points(a), -15)
 
+    # Review 2026-10-21: the chip kept 106 of 142 promos; a price with no hurdle is not "easy to claim".
+    def test_easy_needs_a_real_discount(self):
+        base = {"checked": True, "needs": [], "ease": 100}
+        self.assertTrue(A.is_easy(dict(base, cost="1-for-1")))
+        self.assertTrue(A.is_easy(dict(base, cost="free")))
+        self.assertTrue(A.is_easy(dict(base, cost="pct-off")))
+        self.assertFalse(A.is_easy(dict(base, cost="cheap")))   # "$4.50 matcha from her HDB window"
+        self.assertFalse(A.is_easy(dict(base, cost=None)))      # "$5.50 loaded fries"
+
+    def test_easy_allows_timing_not_hurdles(self):
+        base = {"checked": True, "cost": "1-for-1", "ease": 93}
+        self.assertTrue(A.is_easy(dict(base, needs=["days", "hours"])))   # ChaPanda Tuesdays
+        for hurdle in ("app", "member", "min-spend", "code", "card", "contest", "first-n"):
+            self.assertFalse(A.is_easy(dict(base, needs=[hurdle])), hurdle)
+        self.assertFalse(A.is_easy({"checked": False, "cost": "free", "needs": [], "ease": 100}))
+
     def test_page_threshold_matches(self):
         with open(os.path.join(ROOT, "public", "app.js"), encoding="utf-8") as fh:
             js = fh.read()
-        self.assertEqual(int(re.search(r"var EASY_MIN = (\d+);", js).group(1)), A.EASY_MIN)
+        for name, py in (("EASY_COSTS", A.EASY_COSTS), ("EASY_NEEDS", A.EASY_NEEDS)):
+            m = re.search(r"var %s = \[([^\]]*)\];" % name, js)
+            self.assertIsNotNone(m, name)
+            self.assertEqual(re.findall(r"'([\w-]+)'", m.group(1)), list(py), name)
         for n in A.NEEDS:
             self.assertIn("'%s':" % n, js, "app.js NEED_LABEL lacks %s" % n)
 
