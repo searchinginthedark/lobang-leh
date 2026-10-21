@@ -13,6 +13,17 @@ const D = require('./_digest');
 
 const SEND_TIMEOUT_MS = 6000;
 
+// Why the store failed, as a code that can never echo the URL or token: "Failed to parse URL from
+// <url>" would print the URL, so messages are classified, not passed through.
+function storeReason(e) {
+  const m = String((e && e.message) || '');
+  if (/^redis \d{3}$/.test(m)) return 'http_' + m.slice(6);
+  if (/parse URL|Invalid URL/i.test(m)) return 'bad_url';
+  if (e && (e.name === 'TimeoutError' || e.name === 'AbortError')) return 'timeout';
+  if (/^redis /.test(m)) return 'redis_error';
+  return 'network';
+}
+
 function body(req) {
   if (req.body && typeof req.body === 'object') return req.body;
   try { return JSON.parse(req.body || '{}'); } catch (e) { return {}; }
@@ -26,7 +37,7 @@ module.exports = async (req, res) => {
       const raw = await cmd('GET', D.KEYS.last);
       return res.status(200).json({ ok: true, last: raw ? JSON.parse(raw) : null });
     } catch (e) {
-      return res.status(200).json({ ok: false, degraded: 'store_unavailable' });
+      return res.status(200).json({ ok: false, degraded: 'store_unavailable', reason: storeReason(e) });
     }
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
@@ -46,6 +57,6 @@ module.exports = async (req, res) => {
     });
     return res.status(200).json(out);
   } catch (e) {
-    return res.status(200).json({ ok: false, degraded: 'store_unavailable' });
+    return res.status(200).json({ ok: false, degraded: 'store_unavailable', reason: storeReason(e) });
   }
 };
