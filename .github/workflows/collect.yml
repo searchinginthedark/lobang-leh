@@ -9,11 +9,11 @@ on:
     # GitHub DROPS many scheduled triggers (measured in news-radar and hydrate:
     # ~1 run/day landed against 4 scheduled). Treat these as a safety net; the
     # reliable driver is an external cron POSTing workflow_dispatch (README).
-    # UTC. SG deal posts land through the SG day, so: 08:00, 12:00, 17:00, 21:00 SGT.
-    - cron: "0 0 * * *"
-    - cron: "0 4 * * *"
-    - cron: "0 9 * * *"
-    - cron: "0 13 * * *"
+    # ONE daily safety net since 2026-10-21 (was 00/04/09/13 UTC, duplicating
+    # cron-job.org): backups are not free, private repos share 2,000 Actions
+    # minutes a month, and fleet-watchdog projected the account past it.
+    # fleet-watchdog alarms if collect.yml has no success in 30 h.
+    - cron: "0 4 * * *"   # UTC = 12:00 SGT
   workflow_dispatch:
     inputs:
       source:
