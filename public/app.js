@@ -1282,6 +1282,7 @@
     $('bday-m').addEventListener('change', function () { fillDays(+$('bday-m').value); bdaySet(); rerender(); });
     $('bday-d').addEventListener('change', function () { bdaySet(); rerender(); });
     $('refresh').addEventListener('click', load);
+    $('digest-btn').addEventListener('click', toggleDigest);
     $('filter-btn').addEventListener('click', function () {
       var open = $('filters').hidden;
       $('filters').hidden = !open;
@@ -1306,6 +1307,79 @@
         navigator.serviceWorker.register('./sw.js').catch(function () { /* ignore */ });
       });
     }
+    digestInit();
+  }
+
+  // ---------- morning digest (api/digest.js, lobang/digest.py) ----------
+  // One push a day around 8am: the 3 best deals first seen in the last 24 hours. The page only
+  // enrols this phone; CI picks the deals and the server sends them.
+  var VAPID_PUBLIC = 'BJDNXtpu2DBbm8j2m2qCx6cPF41dxUbopL6jR7yaFvjK60to4gwxDV7F_LUcldawpkDipjcMOqXAr9nwkxNV4x8';
+  var KEY_DIGEST = 'lobang:digest';   // when this phone last re-sent its subscription (ms)
+  var DIGEST_RESYNC_MS = 7 * 86400000;
+  function pushSupported() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+  function isIOS() { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+  function standalone() { return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; }
+  function digestSub() {
+    if (!pushSupported()) return Promise.resolve(null);
+    return navigator.serviceWorker.getRegistration().then(function (reg) {
+      return reg ? reg.pushManager.getSubscription() : null;
+    }).catch(function () { return null; });
+  }
+  function paintDigest(on) {
+    var b = $('digest-btn');
+    b.setAttribute('aria-pressed', String(on));
+    b.title = on ? 'Morning digest is on' : 'Morning digest';
+  }
+  function keyBytes(b64) {
+    var pad = '===='.slice((b64.length % 4) || 4);
+    var raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+    var out = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+    return out;
+  }
+  function postSub(method, payload) {
+    return fetch('/api/subscribe', { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(function (r) { if (!r.ok) throw new Error('subscribe ' + r.status); return r; });
+  }
+  function toggleDigest() {
+    var b = $('digest-btn');
+    if (isIOS() && !standalone()) { toast('On iPhone: tap Share, Add to Home Screen, then turn this on in the app'); return; }
+    if (!pushSupported()) { toast('This browser cannot show notifications'); return; }
+    if (Notification.permission === 'denied') { toast('Notifications are blocked for this app in your settings'); return; }
+    b.disabled = true;
+    digestSub().then(function (sub) {
+      if (sub) {
+        return postSub('DELETE', { endpoint: sub.endpoint }).catch(function () { /* the next send prunes it */ })
+          .then(function () { return sub.unsubscribe(); })
+          .then(function () { paintDigest(false); toast('Morning digest off'); });
+      }
+      return Notification.requestPermission().then(function (p) {
+        if (p !== 'granted') { toast('Notifications were not allowed'); return; }
+        return navigator.serviceWorker.ready.then(function (reg) {
+          return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(VAPID_PUBLIC) });
+        }).then(function (s) {
+          // Only "on" once the server has it: a phone that thinks it is enrolled when it is not
+          // just stops hearing, and nobody notices.
+          return postSub('POST', { sub: s.toJSON() }).then(function () {
+            sSet(KEY_DIGEST, String(Date.now()));
+            paintDigest(true);
+            toast('Morning digest on: the top 3 new deals around 8am');
+          }, function (err) { return s.unsubscribe().then(function () { throw err; }); });
+        });
+      });
+    }).catch(function () {
+      toast('Could not change the morning digest. Try again');
+    }).then(function () { b.disabled = false; });
+  }
+  // Paint the bell, and re-send a live subscription weekly so a server-side prune heals itself.
+  function digestInit() {
+    paintDigest(false);
+    digestSub().then(function (sub) {
+      paintDigest(!!sub);
+      if (sub && Date.now() - (+sGet(KEY_DIGEST) || 0) > DIGEST_RESYNC_MS) {
+        postSub('POST', { sub: sub.toJSON() }).then(function () { sSet(KEY_DIGEST, String(Date.now())); }, function () { /* next open */ });
+      }
+    });
   }
 
   init();

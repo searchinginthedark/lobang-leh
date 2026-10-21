@@ -59,3 +59,11 @@ jobs:
           git commit -m "data: collect $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3; do git pull --rebase origin main && git push && exit 0; sleep 5; done
           exit 1
+
+      - name: Morning digest
+        # The first collect between 08:00 and 13:00 SGT pushes the day's top 3 new deals; the
+        # endpoint's per-day lock makes every later call a no-op. Never fails the job.
+        continue-on-error: true
+        env:
+          DIGEST_SECRET: ${{ secrets.DIGEST_SECRET }}
+        run: python -m lobang.digest

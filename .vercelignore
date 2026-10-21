@@ -1,6 +1,10 @@
 # What gets UPLOADED to Vercel. An allowlist: the page is static and committed
-# to public/ by CI, so Vercel needs nothing else (no build step, never serve the
-# repo root - news-radar once served its whole source tree that way).
+# to public/ by CI (no build step, never serve the repo root - news-radar once
+# served its whole source tree that way). api/ + package files are the morning
+# digest's two functions and their one dependency (web-push), since 2026-10-21.
 /*
 !/public
 !/vercel.json
+!/api
+!/package.json
+!/package-lock.json

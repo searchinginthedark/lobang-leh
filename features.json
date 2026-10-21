@@ -153,6 +153,21 @@
       ]
     },
     {
+      "id": "digest",
+      "name": "Bell turns the morning digest on: permission, push subscription, POST /api/subscribe (push stack stubbed)",
+      "reach": "Tap the bell in the header and allow notifications. On iPhone the app must be on the Home Screen first.",
+      "steps": [
+        ["js", "Object.defineProperty(window, 'Notification', {value: {permission: 'default', requestPermission: () => Promise.resolve('granted')}, configurable: true}); window.PushManager = window.PushManager || function () {}; var cur = null; var fake = {endpoint: 'https://push.example/x', toJSON: function () { return {endpoint: this.endpoint, keys: {p256dh: 'p', auth: 'a'}}; }, unsubscribe: function () { cur = null; return Promise.resolve(true); }}; var reg = {pushManager: {getSubscription: function () { return Promise.resolve(cur); }, subscribe: function () { cur = fake; return Promise.resolve(fake); }}}; Object.defineProperty(navigator, 'serviceWorker', {value: {ready: Promise.resolve(reg), getRegistration: function () { return Promise.resolve(reg); }, register: function () { return Promise.resolve(reg); }}, configurable: true}); var f = window.fetch; window.__sub = null; window.fetch = function (u, o) { if (/api\\/subscribe/.test(u)) { window.__sub = o; return Promise.resolve(new Response('{\"ok\":true}', {status: 200})); } return f(u, o); }; 1"],
+        ["click", "#digest-btn"],
+        ["wait_js", "document.getElementById('digest-btn').getAttribute('aria-pressed') === 'true'"]
+      ],
+      "expect": [
+        "window.__sub.method === 'POST'",
+        "JSON.parse(window.__sub.body).sub.endpoint === 'https://push.example/x'",
+        "document.getElementById('toast').textContent.startsWith('Morning digest on')"
+      ]
+    },
+    {
       "id": "more-sources",
       "name": "+N lists the other sites that covered a deal",
       "reach": "Tap the +N button beside the source link on a card.",

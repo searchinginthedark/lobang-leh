@@ -25,7 +25,7 @@ JS = read("public", "app.js")
 # Every control a user can reach: ids of buttons/inputs/selects in the page, the views, and the
 # classes of buttons app.js builds per card or list.
 FLOW = {
-    "page": {"tourbtn", "newsince", "refresh","health-btn", "filter-btn", "q", "t-1for1", "t-free", "t-easy", "clear",
+    "page": {"tourbtn", "digest-btn", "newsince", "refresh","health-btn", "filter-btn", "q", "t-1for1", "t-free", "t-easy", "clear",
              "bday-m", "bday-d"},
     "views": {"hot", "ending", "new", "birthday", "saved"},
     "js_buttons": {"summary-btn", "more-btn", "act", "show-more", "chip", "icon-btn"},
@@ -33,7 +33,7 @@ FLOW = {
 # Labels the tour text must mention, so a renamed tab or filter cannot slip past it.
 MUST_MENTION = ["Hot", "Ending soon", "New openings", "Birthday", "Saved", "1-for-1", "Free", "Clear filters",
                 "Show more", "Save", "Share", "Promo", "New opening", "+3", "area", "MRT", "Just in",
-                "Easy to claim", "Needs", "meaning", "full post", "flag", "copy them"]
+                "Easy to claim", "Needs", "meaning", "full post", "flag", "copy them", "bell", "morning digest", "Home Screen"]
 
 
 def tour_block():
@@ -106,7 +106,7 @@ class TourFollowsFlow(unittest.TestCase):
                       "Clear filters"):
             self.assertIn(">" + label + "<", HTML, "tour names '%s' but the page no longer shows it" % label)
         for label in ("Show ", "'Save'", "'Share'", "'New opening'", "'Promo'", "'Just in'", "'Needs: '",
-                      "'Read the full post'", "'Report a problem'", "'Copy reports'"):
+                      "'Read the full post'", "'Report a problem'", "'Copy reports'", "'Morning digest on"):
             self.assertIn(label, JS)
 
 

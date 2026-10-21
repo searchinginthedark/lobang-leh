@@ -1,0 +1,8 @@
+{
+  "name": "lobang-leh",
+  "private": true,
+  "description": "Only for api/ (the morning digest). The page itself has no build and no dependencies.",
+  "dependencies": {
+    "web-push": "^3.6.7"
+  }
+}
