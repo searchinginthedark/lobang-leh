@@ -5,7 +5,8 @@
 Classifies every item in data/items.jsonl plus every stored deal member twice, once with the
 rules in the working tree and once with the rules at REV (extracted with `git archive`, never
 checked out), and prints each headline whose outcome differs: DROPPED, ADDED, KIND (promo vs
-opening), TAGS (kind unchanged, tags differ) or PLACES (only the place line differs). Exit 0 always; read the list. Run it before committing any change to lobang/classify.py,
+opening), TAGS (kind unchanged, tags differ), PLACES (only the place line differs) or DATES (only
+valid_from/valid_until differ: the card's "Till" line and when it expires). Exit 0 always; read the list. Run it before committing any change to lobang/classify.py,
 lobang/birthday.py, lobang/places.py, config/merchants.yml, config/places.yml or config/sources.yml, and put every surprise into
 tests/fixtures/headlines.tsv.
 """
@@ -55,8 +56,9 @@ def classify_all(root, items):
                 it["birthday_only"] = bool(by_name[m["source"]].get("birthday_only"))
             when = parse_iso(m.get("published")) or parse_iso(m["fetched"])
             c = classify(it, lex, when.date())
-            out[m["id"]] = ((c["kind"], sorted(c["tags"]), [p["name"] for p in c.get("places") or []])
-                            if c else (None, [], []))
+            out[m["id"]] = ((c["kind"], sorted(c["tags"]), [p["name"] for p in c.get("places") or []],
+                             [c.get("valid_from"), c.get("valid_until")])
+                            if c else (None, [], [], [None, None]))
         return out
     finally:
         sys.path.remove(root)
@@ -84,11 +86,14 @@ def main(argv):
 
     by_id = {m["id"]: m for m in items}
     rows = []
-    for i, (nk, ntags, nplaces) in new.items():
-        ok, otags, oplaces = old.get(i, (None, [], []))
-        if ok == nk and list(otags) == list(ntags) and list(oplaces) == list(nplaces):
+    for i, (nk, ntags, nplaces, ndates) in new.items():
+        ok, otags, oplaces, odates = old.get(i, (None, [], [], [None, None]))
+        same = ok == nk and list(otags) == list(ntags)
+        if same and list(oplaces) == list(nplaces) and list(odates) == list(ndates):
             continue
-        if ok == nk and list(otags) == list(ntags):
+        if same and list(oplaces) == list(nplaces):
+            what = "DATES %s..%s" % (ndates[0] or "?", ndates[1] or "?")
+        elif same:
             # The card's place line (config/places.yml) is user-visible as well.
             what = "PLACES %s" % (" / ".join(nplaces) or "none")
         elif ok == nk:

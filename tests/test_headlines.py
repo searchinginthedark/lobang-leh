@@ -39,7 +39,7 @@ class LabelledHeadlines(unittest.TestCase):
             self.assertIn(kind, ("drop", "promo", "opening"), title)
             self.assertFalse(checks and kind == "drop", title)
             for chk in checks:
-                self.assertRegex(chk, r"^[+-][\w-]+$", title)
+                self.assertRegex(chk, r"^(?:[+-][\w-]+|until=(?:none|\d{4}-\d\d-\d\d))$", title)
             fl = set() if flags == "-" else set(flags.split(","))
             self.assertLessEqual(fl, FLAGS, title)
         titles = [r[2] for r in rs]
@@ -60,7 +60,10 @@ class LabelledHeadlines(unittest.TestCase):
                     self.assertIsNotNone(c, "should be %s, was dropped" % kind)
                     self.assertEqual(c["kind"], kind)
                     for chk in checks:
-                        if chk[0] == "+":
+                        if chk.startswith("until="):
+                            want = chk[len("until="):]
+                            self.assertEqual(c["valid_until"], None if want == "none" else want)
+                        elif chk[0] == "+":
                             self.assertIn(chk[1:], c["tags"])
                         else:
                             self.assertNotIn(chk[1:], c["tags"])

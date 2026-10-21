@@ -114,6 +114,9 @@ NON_FNB = _rx([
     # Travel fairs and theme-park deals ("Klook Travel Fest ... 1-for-1 Disneyland and USJ", misslobang_deals
     # 2026-10-16: food only via a goodie-bag McNuggets voucher in the excerpt). Not bare "Klook": it sells meals too.
     r"travel (?:fests?|fairs?|festivals?)", r"disneyland", r"universal studios", r"usj", r"tour packages?",
+    # Haze handouts ("Free N95 masks in Singapore ... during haze", sethlui_food 2026-10-16). Not bare
+    # "mask": a Halloween mask with a Happy Meal is still a meal deal.
+    r"n95", r"(?:face|surgical) masks?", r"haze shelters?",
 ])
 
 # ---- Singapore relevance ----------------------------------------------------
@@ -276,6 +279,12 @@ ON_DAY = re.compile(r"(?:\bon\s+" + _WD + r"|\(\s*" + _WD + r")(?:" + DATE_DM + 
 DAY_ONLY = re.compile(r"(?<!\d)(?:" + DATE_DM + r"|" + DATE_MD + r")\s*only\b")
 ANY_DATE = re.compile(r"(?<!\d)(?:" + DATE_DM + r"|" + DATE_MD + r")")
 THIS_WEEKEND = _rx([r"this weekend", r"this sat(?:urday)?(?: and|\s*&)\s*sun(?:day)?"])
+# A Telegram post whose body OPENS with one date and a time is that day's event: "17 Oct, 12-6pm
+# Bukit Timah, Clarke Quay" (Chia Puddies pop-up, tg_kiasufoodies 2026-10-16). Leading only: a date
+# later in the body ("new menu launched 17 Oct") is not the deal's day.
+_TIME = r"\d{1,2}(?:[:.]\d\d)?\s*(?:am|pm)"
+LEAD_DAY = re.compile(r"^\W*" + _WD + r"(?:" + DATE_DM + r"|" + DATE_MD + r")\s*[,:\-]?\s*(?:"
+                      + _TIME + r"|\d{1,2}(?:[:.]\d\d)?\s*(?:-|to)\s*" + _TIME + r")")
 
 
 def _mkdate(day, mon, year, ref):
@@ -562,6 +571,10 @@ def classify(item, lex, ref):
     # A birthday roundup's prose carries blackout dates ("except 21st-31st December") that are
     # not an end date, so a birthday perk takes its validity from the headline only.
     vfrom, vuntil = extract_validity(title if bday else text, ref)
+    if item.get("post_body") and not bday and vfrom is None and vuntil is None:
+        lm = LEAD_DAY.match(summary)
+        if lm:
+            vfrom = vuntil = _alt_date(lm.groups(), ref)
     famous = any(lex.by_name[n].get("famous") for n in merchants)
     # Where: the headline's places, else the excerpt's ("now open at Funan"). Merchant names are
     # NOT masked: the only lexicon merchants that contain a place ARE that place (Lau Pa Sat,
