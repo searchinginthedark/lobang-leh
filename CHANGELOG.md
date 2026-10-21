@@ -1,3 +1,7 @@
+## v2026.10.21.4
+
+- Morning digest: one push a day with the top 3 new deals
+
 ## v2026.10.21.3
 
 - Easy to claim means a real walk-in discount; report a wrong card
