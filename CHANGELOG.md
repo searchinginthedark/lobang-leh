@@ -1,3 +1,7 @@
+## v2026.10.21.5
+
+- Digest status names why the store failed, without echoing config
+
 ## v2026.10.21.4
 
 - Morning digest: one push a day with the top 3 new deals
