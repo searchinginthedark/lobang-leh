@@ -1,5 +1,6 @@
 ## v2026.10.21
 
+- Flag undated promos nobody has posted about for 5+ days
 - ci: cut GHA backup crons to one daily safety net
 
 ## v2026.10.18.2
