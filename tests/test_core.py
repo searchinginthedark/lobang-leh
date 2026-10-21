@@ -375,6 +375,39 @@ class Score(unittest.TestCase):
         strong = {"id": "b", "score": 72, "last_seen": iso(now - timedelta(hours=20))}
         self.assertGreater(D.hot_rank(strong, now), D.hot_rank(weak, now))
 
+    # Devil's-advocate review 2026-10-21: 54 of 142 live promos had no end date and no new post
+    # for 7+ days (HEYTEA 1-for-1 last seen 14 Oct), shown exactly like a deal posted that morning.
+    def test_undated_promo_unseen_5_days_is_unconfirmed(self):
+        d = self.deal("KFC 1-for-1 Zinger", when=T0 - timedelta(days=5))
+        self.assertTrue(D.public(d, REF).get("unconfirmed"))
+
+    def test_undated_promo_seen_4_days_ago_is_not_flagged(self):
+        d = self.deal("KFC 1-for-1 Zinger", when=T0 - timedelta(days=4))
+        self.assertNotIn("unconfirmed", D.public(d, REF))
+
+    def test_dated_promo_never_unconfirmed(self):
+        d = self.deal("KFC 1-for-1 Zinger till 20 Oct", when=T0 - timedelta(days=6))
+        self.assertNotIn("unconfirmed", D.public(d, REF))
+
+    def test_opening_never_unconfirmed(self):
+        d = self.deal("Viral Japanese bakery I'm Donut? opens first Singapore outlet", when=T0 - timedelta(days=6))
+        self.assertEqual(d["kind"], "opening")
+        self.assertNotIn("unconfirmed", D.public(d, REF))
+
+    def test_birthday_perk_never_unconfirmed(self):
+        d = self.deal("KFC 1-for-1 Zinger", when=T0 - timedelta(days=6))
+        d["tags"].append("birthday")   # standing offers with their own view
+        self.assertNotIn("unconfirmed", D.public(d, REF))
+
+    def test_unconfirmed_sinks_below_equal_confirmed(self):
+        now = datetime(2026, 10, 8, 8, tzinfo=SGT)
+        seen = iso(now - timedelta(days=5))
+        dated = {"id": "a", "score": 70, "last_seen": seen}
+        undated = {"id": "b", "score": 70, "last_seen": seen, "unconfirmed": True}
+        fresh_weak = {"id": "c", "score": 30, "last_seen": iso(now - timedelta(hours=2))}
+        self.assertLess(D.hot_rank(undated, now), D.hot_rank(dated, now))
+        self.assertLess(D.hot_rank(undated, now), D.hot_rank(fresh_weak, now))
+
     def test_ends_today_tag_added_at_publish(self):
         d = self.deal("LiHO free topping today only")
         self.assertIn("ends-today", D.public(d, REF)["tags"])

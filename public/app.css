@@ -314,6 +314,11 @@ body {
 .b-warn { background: var(--yellow-bg); color: var(--yellow-fg); }
 .valid { margin: 10px 0 0; font-size: var(--t-label); font-weight: 600; }
 .valid.today { color: var(--red-fg); }
+/* Undated and unposted for 5+ days: muted headline and sticker, words on the line say why.
+   Colour, not opacity, so text contrast stays at the --muted level. */
+.valid.maybe { color: var(--yellow-fg); }
+.card.unconfirmed .title { color: var(--muted); }
+.card.unconfirmed .sticker { filter: grayscale(1) drop-shadow(0 3px 3px rgba(0, 0, 0, .18)); }
 .summary-btn {
   display: block; width: 100%; margin: 8px 0 0; padding: 4px 0; min-height: 44px;
   background: none; border: 0; color: var(--text); font: inherit; font-size: var(--t-label); line-height: 1.5; text-align: left; cursor: pointer;

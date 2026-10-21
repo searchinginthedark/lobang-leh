@@ -13,7 +13,7 @@ from datetime import date
 from . import attrs as A
 from .classify import fold
 from .places import merge as merge_places
-from .textutil import clip, parse_iso, sha, tidy_tail
+from .textutil import SGT, clip, parse_iso, sha, tidy_tail
 
 TIER_RANK = {"deals": 0, "media": 1, "news": 2, "social": 3}
 STRONG = ("1-for-1", "free", "pct-off", "cheap")
@@ -39,6 +39,11 @@ OPENING_STALE_DAYS = 30
 STATE_KEEP_DAYS = 45      # how long a deal stays matchable after its last new item
 HOT_DECAY_PER_DAY = 8     # Hot order: points lost per day since a deal last got new coverage
 HOT_GRACE_DAYS = 0.5
+# An undated promo with no new post this long "may have ended": flagged, faded and sunk, not hidden,
+# since PROMO_STALE_DAYS still decides when it goes (review 2026-10-21: 54/142 promos were 7+ days
+# unseen with no end date, shown like that morning's deals).
+UNSEEN_DAYS = 5
+UNCONFIRMED_PENALTY = 25
 
 
 def norm_publisher(p):
@@ -293,7 +298,8 @@ def hot_rank(pub, now):
     `published`, keeps an old deal up while new posts still cover it. 8/day was measured on that
     feed: 12/day let 48-score listicles onto page one, 6/day kept a 4.5-day-old card there."""
     days = (now - parse_iso(pub["last_seen"])).total_seconds() / 86400.0
-    return pub["score"] - HOT_DECAY_PER_DAY * max(0.0, days - HOT_GRACE_DAYS)
+    r = pub["score"] - HOT_DECAY_PER_DAY * max(0.0, days - HOT_GRACE_DAYS)
+    return r - UNCONFIRMED_PENALTY if pub.get("unconfirmed") else r
 
 
 def hot_sort(live, now):
@@ -314,6 +320,16 @@ def is_live(deal, today):
     pub = parse_iso(deal["published"]).date()
     stale = OPENING_STALE_DAYS if deal["kind"] == "opening" else PROMO_STALE_DAYS
     return (today - pub).days <= stale
+
+
+def unconfirmed(deal, today):
+    """True for a promo whose end date nobody stated and that no new post has covered for
+    UNSEEN_DAYS. Birthday perks and listed standing offers are ongoing by nature."""
+    if deal["kind"] != "promo" or deal.get("valid_until") or "birthday" in deal["tags"]:
+        return False
+    if deal.get("last_listed"):
+        return False
+    return (today - parse_iso(deal["last_seen"]).astimezone(SGT).date()).days >= UNSEEN_DAYS
 
 
 # Condition tags the classifier sets from loose words ("members" anywhere in an excerpt), and the
@@ -353,6 +369,8 @@ def public(deal, today):
     if deal.get("birthday"):
         out["birthday"] = deal["birthday"]
     out["attrs"] = a
+    if unconfirmed(deal, today):
+        out["unconfirmed"] = True
     if detail(deal):
         out["full"] = True   # details.json holds more text than `summary`
     return out

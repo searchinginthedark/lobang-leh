@@ -198,9 +198,16 @@
     return out;
   }
 
-  // null when the source states no end date: an empty line beats a guess.
+  // null when the source states no end date: an empty line beats a guess. The collector flags an
+  // undated promo nobody has posted about for 5+ days (deals.unconfirmed): say so, never hide it.
   function validity(d) {
-    if (!d.valid_until) return null;
+    if (!d.valid_until) {
+      if (d.unconfirmed !== true || typeof d.last_seen !== 'string') return null;
+      var ago = daysLeft(d.last_seen.slice(0, 10));
+      if (ago == null) return null;
+      ago = -ago;
+      return { text: 'Last posted ' + ago + (ago === 1 ? ' day' : ' days') + ' ago · may have ended', cls: 'maybe' };
+    }
     var left = daysLeft(d.valid_until);
     if (left === 0 || hasTag(d, 'ends-today')) return { text: 'Ends today', cls: 'today' };
     var s = 'Till ' + fmtDate(d.valid_until);
@@ -574,7 +581,7 @@
 
   // ---------- rendering ----------
   function card(d) {
-    var c = el('article', 'card' + (d.kind === 'opening' ? ' opening' : ''));
+    var c = el('article', 'card' + (d.kind === 'opening' ? ' opening' : '') + (d.unconfirmed === true ? ' unconfirmed' : ''));
     var bday = hasTag(d, 'birthday') && d.birthday && typeof d.birthday === 'object' ? d.birthday : null;
     // Decorative; a missing file just drops the image (listener, not onerror: CSP).
     var stk = document.createElement('img');

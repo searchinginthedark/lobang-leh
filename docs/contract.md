@@ -66,8 +66,11 @@ LLM-generated: every title, summary and link comes from a fetched source.
 - `valid_from` / `valid_until`: `YYYY-MM-DD` (Singapore date) or `null` when the source
   does not state it. `null` means UNKNOWN, never "no expiry".
 - Times are ISO-8601 with `+08:00`.
+- `unconfirmed` (optional, `true` or absent): a promo with no `valid_until`, no `birthday` tag
+  and no new post for 5+ SG days (`deals.unconfirmed`). It MAY have ended; it is still listed
+  until the 14-day undated window closes. The card says "may have ended" and is muted.
 - `deals` is pre-sorted for the Hot view: `score` minus 8 points per day since `last_seen`
-  (12 hours' grace), highest first (`deals.hot_rank`). `score` itself is 0-100, deterministic,
+  (12 hours' grace), minus 25 more when `unconfirmed`, highest first (`deals.hot_rank`). `score` itself is 0-100, deterministic,
   and does not include that decay.
 - `links` holds at most 6 entries, newest first; `publishers` is the full distinct count.
 - Expired deals (`valid_until` before today SGT) are already removed by the collector.
