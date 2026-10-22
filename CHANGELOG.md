@@ -1,3 +1,7 @@
+## v2026.10.22
+
+- ci: drop the last GHA backup cron from collect.yml
+
 ## v2026.10.21.5
 
 - Digest status names why the store failed, without echoing config
