@@ -5,15 +5,17 @@ name: lobangleh collect
 run-name: "collect (${{ github.event.inputs.source || 'gha-cron' }})"
 
 on:
-  schedule:
-    # GitHub DROPS many scheduled triggers (measured in news-radar and hydrate:
+  # NO GHA schedule since 2026-10-22: cron-job.org is the only scheduler, and
+  # fleet-watchdog alarms if collect.yml has no success in 30 h. The last daily
+  # backup went to keep the shared private-repo minutes under 2,000. History:
+  #
+  # GitHub DROPS many scheduled triggers (measured in news-radar and hydrate:
     # ~1 run/day landed against 4 scheduled). Treat these as a safety net; the
     # reliable driver is an external cron POSTing workflow_dispatch (README).
     # ONE daily safety net since 2026-10-21 (was 00/04/09/13 UTC, duplicating
     # cron-job.org): backups are not free, private repos share 2,000 Actions
     # minutes a month, and fleet-watchdog projected the account past it.
     # fleet-watchdog alarms if collect.yml has no success in 30 h.
-    - cron: "0 4 * * *"   # UTC = 12:00 SGT
   workflow_dispatch:
     inputs:
       source:
