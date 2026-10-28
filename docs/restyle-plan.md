@@ -8,7 +8,7 @@ This file is the handover for a NEW session. Read it whole before the first edit
 
 ## How to start the new session
 
-1. Open the session in `LobangLeh/` (so the brief and `.claude/launch.json` load).
+1. Open the session in `lobang-leh/` (so the brief and `.claude/launch.json` load).
 2. Set the model to **Opus 5.5** and effort to **high** in the session controls.
 3. First message (paste as is):
 
