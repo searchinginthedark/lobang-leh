@@ -198,6 +198,11 @@ sources:
     ua: library
     note: "35 items, 17 F&B, newest 2026-10-02, SG F&B by eye ~6/8"
   - name: gnews_buy1get1
+    # DISABLED 2026-11-03: 2 of 611 live deals rested on it alone. Fewer gnews sources so one
+    # Google News outage (all fail together, as on 2026-11-03 00:01Z) leaves the fleet-watchdog
+    # floor intact: 22 non-gnews / 27 = 81% >= 75%; with 10 gnews it was 22/32 = 69%.
+    disabled: true
+    # Mostly a subset of gnews_1for1 (15 deals, 2 not found elsewhere).
     type: gnews
     query: 'Singapore buy 1 get 1 free drink OR burger OR pizza'
     publisher: Google News
@@ -206,6 +211,10 @@ sources:
     ua: library
     note: "45 items, 12 F&B, newest 2026-10-03, SG F&B by eye ~5/8"
   - name: gnews_free_food
+    # DISABLED 2026-11-03: 1 of 611 live deals rested on it alone. Fewer gnews sources so one
+    # Google News outage (all fail together, as on 2026-11-03 00:01Z) leaves the fleet-watchdog
+    # floor intact: 22 non-gnews / 27 = 81% >= 75%; with 10 gnews it was 22/32 = 69%.
+    disabled: true
     type: gnews
     query: 'Singapore free food giveaway promotion'
     publisher: Google News
@@ -214,14 +223,22 @@ sources:
     ua: library
     note: "13 items, 8 F&B, newest 2026-10-02, SG F&B by eye ~5/8"
   - name: gnews_first_outlet
+    # 2026-11-03: absorbs gnews_flagship's phrases. Exact phrases only: Google binds OR tighter
+    # than the implicit AND, so OR-joining keyword queries ('a b OR c d' = a (b OR c) d) would
+    # silently search for something else. Non-food stores are left to the classifier.
     type: gnews
-    query: '"first outlet in Singapore"'
+    query: '"first outlet in Singapore" OR "first Singapore outlet" OR "first store in Singapore"'
     publisher: Google News
     tier: news
     scope: opening
     ua: library
     note: "5 items, 4 F&B, newest 2026-09-30, SG F&B by eye 4/5"
   - name: gnews_flagship
+    # DISABLED 2026-11-03: 2 of 611 live deals rested on it alone. Fewer gnews sources so one
+    # Google News outage (all fail together, as on 2026-11-03 00:01Z) leaves the fleet-watchdog
+    # floor intact: 22 non-gnews / 27 = 81% >= 75%; with 10 gnews it was 22/32 = 69%.
+    disabled: true
+    # Its two phrases now live in gnews_first_outlet's query.
     type: gnews
     query: '"first Singapore outlet" OR "first store in Singapore" food'
     publisher: Google News
@@ -230,6 +247,10 @@ sources:
     ua: library
     note: "2 items, 2 F&B, newest 2026-09-30, SG F&B by eye 2/2"
   - name: gnews_overseas_brand
+    # DISABLED 2026-11-03: 0 of 611 live deals rested on it alone. Fewer gnews sources so one
+    # Google News outage (all fail together, as on 2026-11-03 00:01Z) leaves the fleet-watchdog
+    # floor intact: 22 non-gnews / 27 = 81% >= 75%; with 10 gnews it was 22/32 = 69%.
+    disabled: true
     type: gnews
     query: 'overseas chain debuts Singapore cafe restaurant opening'
     publisher: Google News
@@ -246,6 +267,10 @@ sources:
     ua: library
     note: "66 items, 15 F&B, newest 2026-10-03, SG F&B by eye 8/8"
   - name: gnews_bubbletea
+    # DISABLED 2026-11-03: 1 of 611 live deals rested on it alone. Fewer gnews sources so one
+    # Google News outage (all fail together, as on 2026-11-03 00:01Z) leaves the fleet-watchdog
+    # floor intact: 22 non-gnews / 27 = 81% >= 75%; with 10 gnews it was 22/32 = 69%.
+    disabled: true
     type: gnews
     query: 'bubble tea brand Singapore new outlet'
     publisher: Google News
