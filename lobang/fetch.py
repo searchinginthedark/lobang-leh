@@ -23,7 +23,7 @@ import yaml
 from . import deals as D
 from . import embed as E
 from .classify import Lexicon, classify
-from .sources import fetch
+from .sources import fetch, gnews_reset
 from .textutil import iso, now_sgt, parse_iso
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -131,8 +131,16 @@ def run(dry_run=False, only=None, as_json=False):
     today = now.date()
     lex = Lexicon.load(os.path.join(CFG, "merchants.yml"))
     sources = load_sources(only)
-    with ThreadPoolExecutor(max_workers=8) as pool:
-        results = list(pool.map(fetch, sources))   # map keeps config order: deterministic
+    gnews_reset()
+    # gnews runs serialised in its own lane (lobang.sources._gnews_get); results are put
+    # back in config order so the run stays deterministic.
+    lane = [s for s in sources if s["type"] == "gnews"]
+    rest = [s for s in sources if s["type"] != "gnews"]
+    with ThreadPoolExecutor(max_workers=1) as gpool, ThreadPoolExecutor(max_workers=8) as pool:
+        gres = gpool.map(fetch, lane)
+        got = dict(zip(map(id, rest), pool.map(fetch, rest)))
+        got.update(zip(map(id, lane), gres))
+    results = [got[id(s)] for s in sources]
 
     prev = {s["name"]: s for s in load_json(STATE, {}).get("sources", [])}
     health = []

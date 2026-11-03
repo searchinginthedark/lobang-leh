@@ -1,3 +1,7 @@
+## v2026.11.03
+
+- collect: retry transient fetch errors; serialise Google News with a breaker
+
 ## v2026.10.22
 
 - ci: drop the last GHA backup cron from collect.yml

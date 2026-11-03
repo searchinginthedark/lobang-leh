@@ -10,6 +10,8 @@ import html
 import importlib
 import os
 import re
+import threading
+import time
 import urllib.parse
 
 import feedparser
@@ -19,6 +21,39 @@ from .textutil import SGT, body_text, clip, from_struct, one_line, parse_iso, sh
 
 GNEWS = "https://news.google.com/rss/search?q={q}&hl=en-SG&gl=SG&ceid=SG:en"
 GNEWS_WINDOW = "when:7d"
+# Every gnews source hits one host. With the 8-worker pool they used to land on
+# news.google.com within the same second from one runner IP - the burst most likely to
+# draw a 503/429 - and then fail together. One lane, spaced out, instead (lobang.fetch
+# also gives them their own worker, so queued gnews sources never starve the pool).
+GNEWS_LOCK = threading.Lock()
+GNEWS_GAP = 1.5             # seconds between consecutive gnews requests
+GNEWS_TRIPPED_TIMEOUT = 10  # once Google is down this run: one short attempt each
+_gnews = {"last": 0.0, "down": False}
+
+
+def gnews_reset():
+    _gnews.update(last=0.0, down=False)
+
+
+def _gnews_get(url, ua):
+    """Breaker: if one query exhausted its retries, Google is down for this run, so the rest
+    get a single short attempt. Without it a hanging Google costs 10 x 3 x 25 s, past the
+    collect job's 10-minute timeout, and the whole run (not just gnews) is lost."""
+    with GNEWS_LOCK:
+        wait = _gnews["last"] + GNEWS_GAP - time.monotonic()
+        if wait > 0:
+            time.sleep(wait)
+        kw = {"delays": (), "timeout": GNEWS_TRIPPED_TIMEOUT} if _gnews["down"] else {}
+        try:
+            body = net.get(url, ua=ua, **kw)
+        except net.FetchError as exc:
+            if exc.transient:
+                _gnews["down"] = True
+            raise
+        finally:
+            _gnews["last"] = time.monotonic()
+        _gnews["down"] = False
+        return body
 
 
 def _item(src, title, url, summary, published, publisher=None, body=None):
@@ -183,7 +218,7 @@ def fetch(src):
         if kind == "rss":
             items = parse_rss(src, net.get(src["url"], ua=src.get("ua", "browser")))
         elif kind == "gnews":
-            items = parse_gnews(src, net.get(gnews_url(src["query"]), ua=src.get("ua", "browser")))
+            items = parse_gnews(src, _gnews_get(gnews_url(src["query"]), src.get("ua", "browser")))
         elif kind == "telegram":
             url = "https://t.me/s/" + src["channel"]
             items = parse_telegram(src, net.get(url, ua=src.get("ua", "browser")))
