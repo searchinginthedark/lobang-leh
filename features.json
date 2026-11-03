@@ -68,7 +68,7 @@
       "id": "clear",
       "name": "Clear filters brings every deal back",
       "reach": "With any filter on, tap Clear filters (#clear) on the Showing line.",
-      "steps": [["click", "#filter-btn"], ["fill", "#q", "zzqqnomatch"], ["wait_js", "!document.getElementById('active').hidden"], ["click", "#clear"]],
+      "steps": [["click", "#filter-btn"], ["fill", "#q", "zzqqnomatch"], ["wait_js", "!document.getElementById('active').hidden"], ["click", "#filters-done"], ["wait_js", "document.getElementById('filters').hidden"], ["click", "#clear"]],
       "expect": [
         "document.querySelectorAll('#list .card').length > 0",
         "document.getElementById('active').hidden",
@@ -307,6 +307,19 @@
         "window.__z === 'true,fixed,true'",
         "!document.documentElement.classList.contains('zoom-lock')",
         "document.querySelector('#list .summary-btn').getAttribute('aria-expanded') === 'false'"
+      ]
+    },
+    {
+      "id": "filter-sheet",
+      "name": "iOS look: Filter opens a bottom sheet over a dimmed, locked page; Done closes it",
+      "reach": "In the iOS look tap Filter. The sheet rises with a grabber; drag its header up for the tall height, down (or Done, Escape, a tap on the dimmed page) to close.",
+      "requires": "document.documentElement.classList.contains('ios')",
+      "steps": [["click", "#filter-btn"], ["js", "window.__s = [getComputedStyle(document.getElementById('filters')).position, document.getElementById('filters').getAttribute('role'), document.getElementById('sheet-dim').hidden, document.documentElement.classList.contains('sheet-lock')].join(); 1"], ["click", "#filters-done"], ["wait_js", "document.getElementById('filters').hidden"]],
+      "expect": [
+        "window.__s === 'fixed,dialog,false,true'",
+        "document.getElementById('sheet-dim').hidden",
+        "!document.documentElement.classList.contains('sheet-lock')",
+        "document.getElementById('filter-btn').getAttribute('aria-expanded') === 'false'"
       ]
     },
     {

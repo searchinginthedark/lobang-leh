@@ -896,6 +896,70 @@
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && zoomed) zoomed.querySelector('.zoom-close').click();
+      else if (e.key === 'Escape' && !$('filters').hidden && isIOSLook()) $('filters-done').click();
+    });
+  }
+  // Filters panel. Sticker look: shown in place. iOS look: a bottom sheet (.presentationDetents
+  // [.medium, .large]) over a dimmed, locked page; it slides away before it is hidden.
+  var sheetTimer = 0;
+  function filtersOpen(open) {
+    var f = $('filters');
+    // Mid-close counts as closed, so a quick re-tap reopens it instead of being swallowed.
+    if (open === (!f.hidden && !f.classList.contains('closing'))) return;
+    clearTimeout(sheetTimer);
+    var sheet = isIOSLook();
+    $('filter-btn').setAttribute('aria-expanded', String(open));
+    if (open) {
+      f.classList.remove('detent-large', 'closing');
+      f.hidden = false;
+      if (sheet) {
+        $('sheet-dim').classList.remove('closing');
+        $('sheet-dim').hidden = false;
+        document.documentElement.classList.add('sheet-lock');
+        f.setAttribute('role', 'dialog');
+        f.setAttribute('aria-modal', 'true');
+        $('filters-done').focus({ preventScroll: true });
+      }
+      return;
+    }
+    var done = function () {
+      f.hidden = true;
+      f.classList.remove('closing', 'detent-large', 'dragging');
+      f.style.removeProperty('transform');
+      f.removeAttribute('role');
+      f.removeAttribute('aria-modal');
+      $('sheet-dim').hidden = true;
+      $('sheet-dim').classList.remove('closing');
+      document.documentElement.classList.remove('sheet-lock');
+    };
+    if (!sheet || reducedMotion()) { done(); return; }
+    f.classList.add('closing');
+    $('sheet-dim').classList.add('closing');
+    sheetTimer = setTimeout(done, 300);
+  }
+  // Drag the sheet by its header: up 50px for the tall height, down 90px to drop a height or close.
+  function sheetDragInit() {
+    var f = $('filters'), y0 = null, dy = 0;
+    $('sheet-head').addEventListener('touchstart', function (e) {
+      if (!isIOSLook() || e.touches.length !== 1) return;
+      y0 = e.touches[0].clientY; dy = 0;
+      f.classList.add('dragging');
+    }, { passive: true });
+    $('sheet-head').addEventListener('touchmove', function (e) {
+      if (y0 === null) return;
+      dy = e.touches[0].clientY - y0;
+      // Down follows the finger; up resists (rubber band), as a sheet at its top height does.
+      f.style.setProperty('transform', 'translateY(' + (dy > 0 ? dy : dy * .25) + 'px)');
+    }, { passive: true });
+    $('sheet-head').addEventListener('touchend', function () {
+      if (y0 === null) return;
+      y0 = null;
+      f.classList.remove('dragging');
+      var large = f.classList.contains('detent-large');
+      if (dy > 90 && !large) { filtersOpen(false); return; }   // slides on from where the finger let go
+      f.style.removeProperty('transform');
+      if (dy < -50) f.classList.add('detent-large');
+      else if (dy > 90) f.classList.remove('detent-large');
     });
   }
   // Large title -> inline glass bar once it has scrolled under the top edge.
@@ -1122,6 +1186,7 @@
   function toggleSkin() {
     if (!window.LobangSkin) return;
     var next = window.LobangSkin.get() === 'ios' ? 'sticker' : 'ios';
+    filtersOpen(false);   // an open panel would otherwise change shape under the other look
     window.LobangSkin.set(next);
     paintSkin();
     toast(next === 'ios' ? 'iOS look' : 'Sticker look');
@@ -1416,11 +1481,12 @@
     navCollapseInit();
     paintSkin();
     paintDate();
-    $('filter-btn').addEventListener('click', function () {
-      var open = $('filters').hidden;
-      $('filters').hidden = !open;
-      $('filter-btn').setAttribute('aria-expanded', String(open));
-    });
+    $('filter-btn').addEventListener('click', function () { filtersOpen($('filters').hidden); });
+    $('filters-done').addEventListener('click', function () { filtersOpen(false); $('filter-btn').focus({ preventScroll: true }); });
+    $('sheet-dim').addEventListener('click', function () { filtersOpen(false); });
+    // Typing wants room above the keyboard: the sheet goes to its tall height, like a searchable sheet.
+    $('q').addEventListener('focus', function () { if (isIOSLook()) $('filters').classList.add('detent-large'); });
+    sheetDragInit();
     $('health-btn').addEventListener('click', function () {
       healthOpen($('health-list').hidden);
     });

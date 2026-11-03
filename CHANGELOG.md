@@ -1,3 +1,7 @@
+## v2026.11.03.3
+
+- iOS look: Filter opens a bottom sheet (grabber, two heights, drag to resize or close); Done closes the filters in both looks
+
 ## v2026.11.03.2
 
 - iOS look motion: cards zoom to full screen (swipe down to close), sliding tab lens, collapsing title, scroll-in cards, symbol bounces, loading shimmer
