@@ -654,8 +654,7 @@
       hint.setAttribute('aria-hidden', 'true');
       sb.appendChild(hint);
       var leadPub = links[0] && links[0].pub;
-      sb.addEventListener('click', function () {
-        var open = sb.getAttribute('aria-expanded') !== 'true';
+      var expand = function (open) {
         sb.setAttribute('aria-expanded', String(open));
         hint.textContent = open ? 'Less' : (d.full === true ? 'Read the full post' : 'More');
         if (!open || d.full !== true || full.firstChild) return;
@@ -669,8 +668,19 @@
           sb.classList.remove('has-full');
           toast('Could not load the full post');
         });
+      };
+      // iOS look: the card zooms to full screen, already open (App Store Today). Sticker: in place.
+      sb.addEventListener('click', function () {
+        if (isIOSLook()) { if (!c.classList.contains('zoomed')) zoomCard(c, true, expand, sb); return; }
+        expand(sb.getAttribute('aria-expanded') !== 'true');
       });
       c.appendChild(sb);
+      var zc = el('button', 'zoom-close');
+      zc.type = 'button';
+      zc.setAttribute('aria-label', 'Close');
+      zc.appendChild(icon('i-close'));
+      zc.addEventListener('click', function () { zoomCard(c, false, expand, sb); });
+      c.appendChild(zc);
     }
     var total = Math.max(typeof d.publishers === 'number' ? d.publishers : 0, links.length);
 
@@ -716,7 +726,7 @@
       // No render() here: it would rebuild the list and destroy the burst on this button.
       // Only the Saved view must drop the card that was just un-saved.
       if (state.view === 'saved') { render(); return; }
-      if (now) burst(sv);
+      if (now) { burst(sv); bounce(sv); }
     });
     var sh = el('button', 'act', 'Share');
     sh.type = 'button';
@@ -815,6 +825,160 @@
       s.style.setProperty('--y', Math.round(Math.sin(a) * 30) + 'px');
       btn.appendChild(s);
       setTimeout(function (n) { if (n.parentNode) n.parentNode.removeChild(n); }, 700, s);
+    }
+  }
+
+  // ---------- iOS look motion ----------
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  function isIOSLook() { return document.documentElement.classList.contains('ios'); }
+  function reducedMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  function icon(id) {
+    var svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('class', 'ico');
+    svg.setAttribute('aria-hidden', 'true');
+    var u = document.createElementNS(SVG_NS, 'use');
+    u.setAttribute('href', '#' + id);
+    svg.appendChild(u);
+    return svg;
+  }
+  // SF Symbols-style bounce/wiggle: a class that removes itself (CSS defines it for the iOS look only).
+  function bounce(n, cls) {
+    if (!n || reducedMotion()) return;
+    cls = cls || 'bounce';
+    n.classList.remove(cls);
+    void n.getBoundingClientRect();   // restart the animation on a repeat tap
+    n.classList.add(cls);
+    n.addEventListener('animationend', function () { n.classList.remove(cls); }, { once: true });
+  }
+  // Zoom transition (SwiftUI matchedGeometryEffect / .navigationTransition(.zoom)): the same card
+  // element goes fixed and full screen inside a View Transition, so the browser morphs its box from
+  // the list slot to the screen and back. No View Transitions (or reduced motion): it just swaps.
+  var zoomed = null;
+  function zoomCard(c, open, expand, sb) {
+    if (open === !!c.classList.contains('zoomed')) return;
+    var swap = function () {
+      c.classList.toggle('zoomed', open);
+      document.documentElement.classList.toggle('zoom-lock', open);
+      if (open) { c.setAttribute('role', 'dialog'); c.setAttribute('aria-modal', 'true'); }
+      else { c.removeAttribute('role'); c.removeAttribute('aria-modal'); }
+      c.style.removeProperty('transform');
+      c.scrollTop = 0;
+      expand(open);
+      zoomed = open ? c : null;
+    };
+    var after = function () {
+      c.style.removeProperty('view-transition-name');
+      var f = open ? c.querySelector('.zoom-close') : sb;
+      if (f) f.focus({ preventScroll: true });
+    };
+    if (!document.startViewTransition || reducedMotion()) { swap(); after(); return; }
+    c.style.setProperty('view-transition-name', 'zoom-card');
+    document.startViewTransition(swap).finished.then(after, after);
+  }
+  // Swipe down on an open card (scrolled to its top) drags it; let go past 110px to close.
+  function zoomSwipeInit() {
+    var y0 = null, dy = 0;
+    document.addEventListener('touchstart', function (e) {
+      y0 = zoomed && zoomed.scrollTop <= 0 && e.touches.length === 1 ? e.touches[0].clientY : null;
+      dy = 0;
+    }, { passive: true });
+    document.addEventListener('touchmove', function (e) {
+      if (y0 === null || !zoomed) return;
+      dy = Math.max(0, e.touches[0].clientY - y0);
+      if (dy > 0) zoomed.style.setProperty('transform', 'translateY(' + (dy * .6) + 'px) scale(' + (1 - Math.min(dy, 300) / 1500) + ')');
+    }, { passive: true });
+    document.addEventListener('touchend', function () {
+      if (y0 === null || !zoomed) return;
+      var c = zoomed;
+      if (dy > 110) c.querySelector('.zoom-close').click();
+      else c.style.removeProperty('transform');
+      y0 = null;
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && zoomed) zoomed.querySelector('.zoom-close').click();
+      else if (e.key === 'Escape' && !$('filters').hidden && isIOSLook()) $('filters-done').click();
+    });
+  }
+  // Filters panel. Sticker look: shown in place. iOS look: a bottom sheet (.presentationDetents
+  // [.medium, .large]) over a dimmed, locked page; it slides away before it is hidden.
+  var sheetTimer = 0;
+  function filtersOpen(open) {
+    var f = $('filters');
+    // Mid-close counts as closed, so a quick re-tap reopens it instead of being swallowed.
+    if (open === (!f.hidden && !f.classList.contains('closing'))) return;
+    clearTimeout(sheetTimer);
+    var sheet = isIOSLook();
+    $('filter-btn').setAttribute('aria-expanded', String(open));
+    if (open) {
+      f.classList.remove('detent-large', 'closing');
+      f.hidden = false;
+      if (sheet) {
+        $('sheet-dim').classList.remove('closing');
+        $('sheet-dim').hidden = false;
+        document.documentElement.classList.add('sheet-lock');
+        f.setAttribute('role', 'dialog');
+        f.setAttribute('aria-modal', 'true');
+        $('filters-done').focus({ preventScroll: true });
+      }
+      return;
+    }
+    var done = function () {
+      f.hidden = true;
+      f.classList.remove('closing', 'detent-large', 'dragging');
+      f.style.removeProperty('transform');
+      f.removeAttribute('role');
+      f.removeAttribute('aria-modal');
+      $('sheet-dim').hidden = true;
+      $('sheet-dim').classList.remove('closing');
+      document.documentElement.classList.remove('sheet-lock');
+    };
+    if (!sheet || reducedMotion()) { done(); return; }
+    f.classList.add('closing');
+    $('sheet-dim').classList.add('closing');
+    sheetTimer = setTimeout(done, 300);
+  }
+  // Drag the sheet by its header: up 50px for the tall height, down 90px to drop a height or close.
+  function sheetDragInit() {
+    var f = $('filters'), y0 = null, dy = 0;
+    $('sheet-head').addEventListener('touchstart', function (e) {
+      if (!isIOSLook() || e.touches.length !== 1) return;
+      y0 = e.touches[0].clientY; dy = 0;
+      f.classList.add('dragging');
+    }, { passive: true });
+    $('sheet-head').addEventListener('touchmove', function (e) {
+      if (y0 === null) return;
+      dy = e.touches[0].clientY - y0;
+      // Down follows the finger; up resists (rubber band), as a sheet at its top height does.
+      f.style.setProperty('transform', 'translateY(' + (dy > 0 ? dy : dy * .25) + 'px)');
+    }, { passive: true });
+    $('sheet-head').addEventListener('touchend', function () {
+      if (y0 === null) return;
+      y0 = null;
+      f.classList.remove('dragging');
+      var large = f.classList.contains('detent-large');
+      if (dy > 90 && !large) { filtersOpen(false); return; }   // slides on from where the finger let go
+      f.style.removeProperty('transform');
+      if (dy < -50) f.classList.add('detent-large');
+      else if (dy > 90) f.classList.remove('detent-large');
+    });
+  }
+  // Large title -> inline glass bar once it has scrolled under the top edge.
+  function navCollapseInit() {
+    if (!('IntersectionObserver' in window)) return;
+    new IntersectionObserver(function (es) {
+      var e = es[0];
+      $('nav-inline').classList.toggle('show', !e.isIntersecting && e.boundingClientRect.top < 0);
+    }).observe($('view-title'));
+  }
+  // .redacted(reason: .placeholder): shimmering card shapes until the first deals arrive.
+  function skeleton() {
+    var list = $('list');
+    if (data || list.firstChild) return;
+    for (var i = 0; i < 3; i++) {
+      var c = el('div', 'card skeleton');
+      c.setAttribute('aria-hidden', 'true');
+      ['sk-icon', 'sk-line sk-short', 'sk-line', 'sk-line', 'sk-line sk-mid'].forEach(function (k) { c.appendChild(el('span', k)); });
+      list.appendChild(c);
     }
   }
 
@@ -1001,9 +1165,36 @@
     $('active-text').textContent = 'Showing: ' + on.join(' · ');
     $('bday-box').hidden = state.view !== 'birthday';
     if (state.view === 'birthday') renderBday();
+    // iOS look: the open view's name is the large title (CSS hides it in the Sticker look).
+    var sel = document.querySelector('.tab[aria-selected="true"] .tab-lbl');
+    $('view-title').textContent = sel ? sel.textContent : '';
+    $('nav-inline-title').textContent = sel ? sel.textContent : '';
+    // The tab bar's glass lens slides to the open tab (CSS reads --i).
+    $('tabs').style.setProperty('--i', String(Math.max(0, VIEWS.indexOf(state.view))));
+  }
+
+  // ---------- look: iOS (default) or Sticker. skin.js applies it before first paint ----------
+  function paintSkin() {
+    var ios = !window.LobangSkin || window.LobangSkin.get() === 'ios';
+    var label = ios ? 'Switch to Sticker look' : 'Switch to iOS look';
+    $('skin-btn').setAttribute('aria-label', label);
+    $('skin-btn').title = label;
+  }
+  // iOS look: today's date as the eyebrow over the large title, like the App Store's Today tab.
+  var longDay = new Intl.DateTimeFormat('en-SG', { timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long' });
+  function paintDate() { $('ios-date').textContent = longDay.format(new Date()); }
+  function toggleSkin() {
+    if (!window.LobangSkin) return;
+    var next = window.LobangSkin.get() === 'ios' ? 'sticker' : 'ios';
+    filtersOpen(false);   // an open panel would otherwise change shape under the other look
+    window.LobangSkin.set(next);
+    paintSkin();
+    toast(next === 'ios' ? 'iOS look' : 'Sticker look');
   }
 
   function render() {
+    // A re-render drops an open (zoomed) card from the page; release the scroll lock with it.
+    if (zoomed) { document.documentElement.classList.remove('zoom-lock'); zoomed = null; }
     renderControls();
     var list = $('list');
     clear(list);
@@ -1054,6 +1245,7 @@
   function load() {
     if (loading) return;
     loading = true;
+    skeleton();
     var btn = $('refresh');
     btn.disabled = true;
     fetch('./deals.json', { cache: 'no-cache' }).then(function (r) {
@@ -1245,6 +1437,7 @@
       t.addEventListener('click', function () {
         state.view = t.getAttribute('data-view');
         if (!tour.clicking) countView(state.view);
+        if (!tour.clicking) bounce(t.querySelector('.ico'));
         savePrefs();
         rerender();
       });
@@ -1283,11 +1476,17 @@
     $('bday-d').addEventListener('change', function () { bdaySet(); rerender(); });
     $('refresh').addEventListener('click', load);
     $('digest-btn').addEventListener('click', toggleDigest);
-    $('filter-btn').addEventListener('click', function () {
-      var open = $('filters').hidden;
-      $('filters').hidden = !open;
-      $('filter-btn').setAttribute('aria-expanded', String(open));
-    });
+    $('skin-btn').addEventListener('click', toggleSkin);
+    zoomSwipeInit();
+    navCollapseInit();
+    paintSkin();
+    paintDate();
+    $('filter-btn').addEventListener('click', function () { filtersOpen($('filters').hidden); });
+    $('filters-done').addEventListener('click', function () { filtersOpen(false); $('filter-btn').focus({ preventScroll: true }); });
+    $('sheet-dim').addEventListener('click', function () { filtersOpen(false); });
+    // Typing wants room above the keyboard: the sheet goes to its tall height, like a searchable sheet.
+    $('q').addEventListener('focus', function () { if (isIOSLook()) $('filters').classList.add('detent-large'); });
+    sheetDragInit();
     $('health-btn').addEventListener('click', function () {
       healthOpen($('health-list').hidden);
     });
@@ -1295,6 +1494,7 @@
       if (document.hidden) return;
       countOpen();
       countView(state.view);
+      paintDate();
       if (data) renderHeader();
     });
     countOpen();
@@ -1363,6 +1563,7 @@
           return postSub('POST', { sub: s.toJSON() }).then(function () {
             sSet(KEY_DIGEST, String(Date.now()));
             paintDigest(true);
+            bounce(b.querySelector('.ico'), 'wiggle');
             toast('Morning digest on: the top 3 new deals around 8am');
           }, function (err) { return s.unsubscribe().then(function () { throw err; }); });
         });
