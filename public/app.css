@@ -742,6 +742,96 @@ html.ios {
 .ios #tour-skip { background-color: transparent; color: var(--muted); }
 .ios .tour-next { background-color: var(--tint-fill); color: var(--on-tint); border-color: transparent; }
 
+/* ---------- iOS look: motion (2026-11-03). SwiftUI's most cinematic pieces, rebuilt in CSS. ------
+   --spring is a damped spring (response .55s, damping .78) sampled into linear(), so transitions
+   overshoot and settle like SwiftUI's default .spring; old browsers fall back to the ease above.
+   Everything here is animation or transition, so the reduced-motion block below switches it off. */
+html.ios {
+  --spring: cubic-bezier(.2, .8, .2, 1);
+  --spring: linear(0, .0491, .163, .306, .452, .587, .703, .798, .872, .926, .965, .991, 1.01, 1.02, 1.02, 1.02,
+    1.02, 1.02, 1.01, 1.01, 1.01, 1.01, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+}
+.zoom-close, .nav-inline { display: none; }
+.skeleton { display: none; }
+
+/* 1. Tab bar lens (matchedGeometryEffect): one glass pill slides between tabs on a spring. */
+.ios .tabs::before {
+  content: ""; position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 5);
+  border-radius: 999px; background: var(--fill);
+  transform: translateX(calc(var(--i, 0) * 100%)); transition: transform .6s var(--spring);
+}
+.ios .tab { position: relative; }
+.ios .tab[aria-selected="true"] { background: none; }
+
+/* 2. Symbol effects (.symbolEffect(.bounce) / .wiggle): app.js adds the class for one run. */
+.ios .bounce { animation: sym-bounce .5s var(--spring); }
+.ios .wiggle { animation: sym-wiggle .6s ease-in-out; transform-origin: 50% 15%; }
+.ios #refresh:disabled .ico { animation: sym-spin .9s linear infinite; }
+.ios .burst { display: none; }   /* the Sticker look's sparkles; the iOS look bounces instead */
+@keyframes sym-bounce { 0% { transform: scale(1); } 30% { transform: scale(.82); } 65% { transform: scale(1.14); } 100% { transform: scale(1); } }
+@keyframes sym-wiggle { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(16deg); } 40% { transform: rotate(-14deg); } 60% { transform: rotate(9deg); } 80% { transform: rotate(-5deg); } }
+@keyframes sym-spin { to { transform: rotate(360deg); } }
+
+/* 3. Collapsing large title: an inline glass bar fades in once the large title scrolls away. */
+.ios .nav-inline {
+  display: flex; align-items: flex-end; justify-content: center;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 8;
+  height: calc(44px + env(safe-area-inset-top)); padding-bottom: 11px;
+  background: var(--glass); border-bottom: .5px solid var(--glass-line);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8); backdrop-filter: blur(20px) saturate(1.8);
+  font: 600 var(--t-body)/1.2 var(--font); color: var(--text);
+  opacity: 0; transform: translateY(-6px); pointer-events: none;
+  transition: opacity .25s, transform .4s var(--spring);
+}
+.ios .nav-inline.show { opacity: 1; transform: none; }
+
+/* 4. Scroll transitions (.scrollTransition): cards rise into place as they enter the screen.
+   Scroll-driven animation where supported (Safari 26, Chrome 115+); elsewhere cards just sit. */
+@supports (animation-timeline: view()) {
+  .ios .card:not(.zoomed):not(.skeleton) {
+    animation: card-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 70%;
+  }
+  @keyframes card-rise { from { opacity: .3; transform: translateY(24px) scale(.94); } to { opacity: 1; transform: none; } }
+}
+
+/* 5. Placeholder shimmer (.redacted(reason: .placeholder)) while the first deals load. */
+.ios .skeleton { display: block; min-height: 180px; }
+.ios .skeleton span {
+  display: block; height: 14px; margin: 0 0 12px; border-radius: 7px; width: 100%;
+  background: linear-gradient(90deg, var(--fill) 25%, rgba(118, 118, 128, .05) 50%, var(--fill) 75%) 0 0 / 300% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+.ios .skeleton .sk-icon { float: right; width: 60px; height: 60px; margin: 0 0 8px 12px; border-radius: 14px; }
+.ios .skeleton .sk-short { width: 35%; height: 11px; }
+.ios .skeleton .sk-line:nth-child(3) { height: 20px; width: 60%; }
+.ios .skeleton .sk-mid { width: 45%; }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+
+/* 6. Zoom transition (App Store Today): the card becomes a full-screen page. app.js wraps the
+   swap in a View Transition so the box morphs on --spring; a swipe down drags it back. */
+.ios .card.zoomed {
+  position: fixed; inset: 0; z-index: 25; margin: 0; border-radius: 0; box-shadow: none;
+  overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  padding: calc(64px + env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  transition: transform .3s var(--spring);
+}
+.ios .card.zoomed .sticker { width: 88px; height: 88px; padding: 14px; border-radius: 20px; }
+.ios .card.zoomed .title { font-size: 1.64706rem; line-height: 1.15; }   /* 28px, title1 */
+.ios .card.zoomed .summary-btn { font-size: var(--t-body); color: var(--text); cursor: default; }
+.ios .card.zoomed .more-hint { display: none; }
+.ios .card.zoomed .zoom-close {
+  display: grid; place-items: center; position: fixed; z-index: 1;
+  top: calc(12px + env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right));
+  width: 44px; height: 44px; padding: 0; border: .5px solid var(--glass-line); border-radius: 999px;
+  background: var(--glass); color: var(--text); box-shadow: var(--glass-shadow); cursor: pointer;
+  -webkit-backdrop-filter: blur(20px) saturate(1.8); backdrop-filter: blur(20px) saturate(1.8);
+}
+.ios .zoom-close .ico { width: 20px; height: 20px; stroke-width: 2.4; }
+html.ios.zoom-lock { overflow: hidden; }
+::view-transition-group(zoom-card) { animation-duration: .6s; animation-timing-function: var(--spring); }
+::view-transition-old(zoom-card), ::view-transition-new(zoom-card) { animation-duration: .3s; }
+::view-transition-group(root) { animation-duration: .3s; }
+
 /* Last on purpose: a @media block adds no specificity, so it must follow the rules it overrides.
    The named movers use !important too, so their position cannot matter. Tilt and rotation are
    static and stay; so does the press offset, which is a state, not an animation. */

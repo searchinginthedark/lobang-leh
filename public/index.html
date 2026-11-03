@@ -36,8 +36,11 @@
   <symbol id="i-saved" viewBox="0 0 24 24"><path d="M6.5 3.5h11v17L12 16.6l-5.5 3.9z"/></symbol>
   <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M19.4 12.5A7.5 7.5 0 1 1 17 6.6M19.2 3.6v4.6h-4.6"/></symbol>
   <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6.2 16.5V11a5.8 5.8 0 0 1 11.6 0v5.5l1.7 2.2h-15zM10 21.2h4"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></symbol>
   <symbol id="i-skin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M12 3.4a8.6 8.6 0 0 0 0 17.2z" fill="currentColor" stroke="none"/></symbol>
 </svg>
+<!-- iOS look only: the large title collapses into this glass bar once it scrolls away. -->
+<div class="nav-inline ios-only" id="nav-inline" aria-hidden="true"><span id="nav-inline-title"></span></div>
 <div class="wrap">
   <header class="top">
     <div class="brand-row">
@@ -137,7 +140,7 @@
     <li data-target="tabs" data-view=""><b>Five views</b><span>Hot: the best deals first, and deals you can simply walk in and claim rank above ones that need a bank card, an app sign-up or a lucky draw. Ending soon: only deals with a stated end date, soonest first. New openings: new outlets, newest first. Birthday: free birthday treats and when each can be claimed. Saved: the deals you saved on this phone.</span></li>
     <li data-target="bday-box" data-view="birthday"><b>Your birthday</b><span>Pick your birthday month and day, and perks you can claim today come first, each with its dates: the day itself, days before or after, or the whole month. It stays on this phone.</span></li>
     <li data-target="filter-btn" data-view=""><b>Narrow it down</b><span>Tap Filter to search. Search goes by meaning, so free food also finds complimentary cake, best match first; a brand or mall name works too. Pick a category or an area, or keep only 1-for-1, Free or Easy to claim deals (a real discount you just walk in for: no app, sign-up, code or minimum spend). An area shows only posts that name a place, so chain-wide deals drop out. While a filter is on, a Showing line above the deals names it, and Clear filters shows everything again.</span></li>
-    <li data-target="tour-first-card" data-view="hot"><b>Reading a card</b><span>The label says what it is: a red Promo or blue New opening label. The sticker shows the kind of food. The brand sits beside it when we recognise one. A pin line under the headline says where, with the nearest MRT, when the post names a place. Tags sum up the deal, and an end date only shows when the post states one. A Needs line lists what the post says it takes, such as membership or a min spend. Tap the text to read the full post right here.</span></li>
+    <li data-target="tour-first-card" data-view="hot"><b>Reading a card</b><span>The label says what it is: a red Promo or blue New opening label. The sticker shows the kind of food. The brand sits beside it when we recognise one. A pin line under the headline says where, with the nearest MRT, when the post names a place. Tags sum up the deal, and an end date only shows when the post states one. A Needs line lists what the post says it takes, such as membership or a min spend. Tap the text to read the full post right here; in the iOS look the card opens full screen, and a swipe down or the close button puts it back.</span></li>
     <li data-target="tour-first-actions" data-view="hot"><b>Act on it</b><span>Tap the source name to read the full post. A number like +3 lists the other sites that covered it. Save keeps it in the Saved view; Share sends the link. The flag reports a card that has ended, is not food or has wrong details; reports stay on this phone and the sources list can copy them. Each view shows 12 deals; Show more at the bottom loads the next 12.</span></li>
     <li data-target="tourbtn" data-view=""><b>That's it</b><span>Tap the bell for a morning digest: one notification around 8am with the 3 best new deals. On iPhone, add the app to your Home Screen first. The half-circle button switches between the iOS look and the Sticker look. Tap the ? button any time to see this tour again.</span></li>
   </ol>

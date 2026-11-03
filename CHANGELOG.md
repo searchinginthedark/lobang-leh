@@ -1,3 +1,7 @@
+## v2026.11.03.2
+
+- iOS look motion: cards zoom to full screen (swipe down to close), sliding tab lens, collapsing title, scroll-in cards, symbol bounces, loading shimmer
+
 ## v2026.11.03
 
 - iOS look (after the App Store Today tab) is the new default; the half-circle button switches back to the Sticker look

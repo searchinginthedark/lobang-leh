@@ -298,6 +298,18 @@
       ]
     },
     {
+      "id": "zoom",
+      "name": "iOS look: tapping a card's text zooms it to a full-screen page with the full post; close puts it back",
+      "reach": "In the iOS look, tap a card's grey text. The card morphs to full screen (View Transition), already open. The close button (top right), Escape or a swipe down returns it to the list.",
+      "requires": "document.documentElement.classList.contains('ios') && !!document.querySelector('#list .summary-btn')",
+      "steps": [["click_first", "#list .summary-btn"], ["wait_js", "!!document.querySelector('#list .card.zoomed')"], ["js", "window.__z = [document.documentElement.classList.contains('zoom-lock'), getComputedStyle(document.querySelector('.card.zoomed')).position, document.querySelector('.card.zoomed .summary-btn').getAttribute('aria-expanded')].join(); 1"], ["click", "#list .card.zoomed .zoom-close"], ["wait_js", "!document.querySelector('#list .card.zoomed')"]],
+      "expect": [
+        "window.__z === 'true,fixed,true'",
+        "!document.documentElement.classList.contains('zoom-lock')",
+        "document.querySelector('#list .summary-btn').getAttribute('aria-expanded') === 'false'"
+      ]
+    },
+    {
       "id": "tour",
       "name": "Guided tour: open, step, untick, skip",
       "reach": "Tap ? (#tourbtn). Next (#tour-next) / Back (#tour-back) step through; 'Do not show again' (#tour-off); Skip (#tour-skip) closes.",

@@ -28,12 +28,12 @@ FLOW = {
     "page": {"tourbtn", "digest-btn", "skin-btn", "newsince", "refresh","health-btn", "filter-btn", "q", "t-1for1", "t-free", "t-easy", "clear",
              "bday-m", "bday-d"},
     "views": {"hot", "ending", "new", "birthday", "saved"},
-    "js_buttons": {"summary-btn", "more-btn", "act", "show-more", "chip", "icon-btn"},
+    "js_buttons": {"summary-btn", "more-btn", "act", "show-more", "chip", "icon-btn", "zoom-close"},
 }
 # Labels the tour text must mention, so a renamed tab or filter cannot slip past it.
 MUST_MENTION = ["Hot", "Ending soon", "New openings", "Birthday", "Saved", "1-for-1", "Free", "Clear filters",
                 "Show more", "Save", "Share", "Promo", "New opening", "+3", "area", "MRT", "Just in",
-                "Easy to claim", "Needs", "meaning", "full post", "flag", "copy them", "bell", "morning digest", "Home Screen", "iOS look",
+                "Easy to claim", "Needs", "meaning", "full post", "flag", "copy them", "bell", "morning digest", "Home Screen", "iOS look", "full screen", "swipe down",
                 "Sticker look"]
 
 
