@@ -1,3 +1,7 @@
+## v2026.11.03.4
+
+- collect: retry transient fetch errors; serialise Google News with a breaker
+
 ## v2026.11.03.3
 
 - iOS look: Filter opens a bottom sheet (grabber, two heights, drag to resize or close); Done closes the filters in both looks
