@@ -298,6 +298,20 @@
       ]
     },
     {
+      "id": "skin-back",
+      "name": "Switching from the Sticker look back to iOS",
+      "reach": "In the Sticker look, tap the same header button (#skin-btn). The iOS look returns and lobang:skin is saved as ios.",
+      "setup": ["localStorage.setItem('lobang:skin','sticker')"],
+      "steps": [["js", "window.__was = document.documentElement.classList.contains('ios')"], ["click", "#skin-btn"]],
+      "expect": [
+        "window.__was === false",
+        "document.documentElement.classList.contains('ios')",
+        "localStorage.getItem('lobang:skin') === 'ios'",
+        "document.getElementById('skin-btn').getAttribute('aria-label') === 'Switch to Sticker look'",
+        "document.getElementById('toast').textContent === 'iOS look'"
+      ]
+    },
+    {
       "id": "zoom",
       "name": "iOS look: tapping a card's text zooms it to a full-screen page with the full post; close puts it back",
       "reach": "In the iOS look, tap a card's grey text. The card morphs to full screen (View Transition), already open. The close button (top right), Escape or a swipe down returns it to the list.",
