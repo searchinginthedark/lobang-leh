@@ -23,7 +23,7 @@
     {
       "id": "views",
       "name": "Five views switch from the tab row",
-      "reach": "Tap Hot / Ending soon / New openings / Birthday / Saved under the header.",
+      "reach": "Tap Hot / Ending soon / New openings / Birthday / Saved: the glass tab bar at the bottom in the iOS look, the tab row under the header in the Sticker look.",
       "steps": [["click", ".tab[data-view=new]"]],
       "expect": [
         "document.querySelector('.tab[data-view=new]').getAttribute('aria-selected') === 'true'",
@@ -282,6 +282,19 @@
         "document.getElementById('newsince').getAttribute('aria-pressed') === 'true'",
         "document.getElementById('active-text').textContent.includes('New since')",
         "[...document.querySelectorAll('#list .card')].every(c => c.querySelector('.just-in'))"
+      ]
+    },
+    {
+      "id": "skin",
+      "name": "Two looks: iOS (default) and Sticker, switched from the header and kept on this phone",
+      "reach": "Tap the half-circle button (#skin-btn) in the header. It toggles between the iOS look (bottom tab bar, large title) and the Sticker look; the choice is saved in lobang:skin.",
+      "steps": [["js", "window.__was = document.documentElement.classList.contains('ios')"], ["click", "#skin-btn"]],
+      "expect": [
+        "window.__was === true",
+        "!document.documentElement.classList.contains('ios')",
+        "localStorage.getItem('lobang:skin') === 'sticker'",
+        "document.getElementById('skin-btn').getAttribute('aria-label') === 'Switch to iOS look'",
+        "document.getElementById('toast').textContent === 'Sticker look'"
       ]
     },
     {

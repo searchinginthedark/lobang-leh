@@ -1,3 +1,7 @@
+## v2026.11.03
+
+- iOS look (after the App Store Today tab) is the new default; the half-circle button switches back to the Sticker look
+
 ## v2026.10.22
 
 - ci: drop the last GHA backup cron from collect.yml

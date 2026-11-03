@@ -459,6 +459,289 @@ a.src:hover { text-decoration: underline; }
   .brand { font-size: 1.3rem; }
 }
 
+/* ===================================================================================
+   iOS look (2026-11-03). The default; the Sticker look above is the other mode (skin.js puts
+   .ios on <html>, the half-circle button toggles it). Reference: the App Store's Today tab on
+   iOS 26: grouped background, large title under a date eyebrow, big rounded story cards with an
+   app-icon tile, capsule "Get"-style buttons, a floating Liquid Glass tab bar at the bottom.
+   Colours are Apple's system colours; where the stock value fails WCAG AA for small text (systemBlue
+   4.0:1, secondaryLabel 3.4:1) the Increased Contrast variant or Apple's web link blue is used.
+   The Sticker contract's no-pill rule does not apply here: capsules are the native shape.
+   =================================================================================== */
+.ios-only { display: none; }
+.ico { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+#skin-btn { padding: 0; }
+#skin-btn .ico { width: 22px; height: 22px; display: block; margin: 0 auto; }
+
+html.ios {
+  font-size: 106.25%;                /* 17px, the iOS body size, off Apple devices */
+  font: -apple-system-body;          /* Apple devices: follows the reader's Dynamic Type size */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --display: var(--font);
+  /* iOS text styles at the default size (17px = 1rem): caption 12, footnote 13, subhead 15,
+     body 17, title3 20, title2 22, large title 34. */
+  --t-caption: .70588rem;
+  --t-label: .76471rem;
+  --t-sub: .88235rem;
+  --t-body: 1rem;
+  --t-body-lg: 1.17647rem;
+  --t-title: 1.29412rem;
+  --t-large: 2rem;
+
+  --bg: #f2f2f7;                     /* systemGroupedBackground */
+  --surface: #ffffff;
+  --text: #000000;
+  --ink: #000000;
+  --on-ink: #ffffff;
+  --muted: #6c6c70;                  /* secondaryLabel, increased contrast: 5.1:1 on white */
+  --line: #c6c6c8;                   /* opaque separator */
+  --edge: transparent;
+  --fill: rgba(118, 118, 128, .12);  /* tertiarySystemFill: capsules, search field */
+  --tile: #f2f2f7;                   /* behind the sticker "app icon" */
+  --red: #d70015;                    /* systemRed, increased contrast */
+  --blue: #0066cc;
+  --brand: #d70015;
+  --link: #0066cc;                   /* tint: 5.6:1 on white */
+  --tint-fill: #0066cc;              /* filled buttons; white text 5.6:1 */
+  --on-tint: #ffffff;
+  --focus: #0066cc;
+  --green-bg: rgba(52, 199, 89, .15);
+  --green-fg: #1f7a35;
+  --yellow-bg: rgba(255, 149, 0, .16);
+  --yellow-fg: #a62c00;
+  --red-bg: rgba(255, 59, 48, .12);
+  --red-fg: #c00013;
+  --neutral-bg: rgba(118, 118, 128, .12);
+  --neutral-fg: #3a3a3c;
+  --glass: rgba(255, 255, 255, .8);
+  --glass-line: rgba(0, 0, 0, .08);
+  --glass-shadow: 0 8px 30px rgba(0, 0, 0, .12);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 10px 28px rgba(0, 0, 0, .07);
+  --radius: 20px;
+  --ease: cubic-bezier(.2, .8, .2, 1);   /* close to UIKit's default spring */
+}
+@media (prefers-color-scheme: dark) {
+  html.ios {
+    --bg: #000000;
+    --surface: #1c1c1e;              /* secondarySystemGroupedBackground */
+    --text: #ffffff;
+    --ink: #ffffff;
+    --on-ink: #000000;
+    --muted: #98989f;
+    --line: #38383a;
+    --fill: rgba(118, 118, 128, .24);
+    --tile: #2c2c2e;
+    --red: #ff6961;                  /* systemRed, dark increased contrast */
+    --blue: #409cff;
+    --brand: #ff6961;
+    --link: #409cff;
+    --tint-fill: #0071e3;            /* white text 4.6:1 */
+    --focus: #409cff;
+    --green-bg: rgba(48, 209, 88, .2);
+    --green-fg: #30db5b;
+    --yellow-bg: rgba(255, 159, 10, .2);
+    --yellow-fg: #ffb340;
+    --red-bg: rgba(255, 69, 58, .22);
+    --red-fg: #ff8a84;
+    --neutral-bg: rgba(118, 118, 128, .24);
+    --neutral-fg: #ebebf5;
+    --glass: rgba(30, 30, 32, .78);
+    --glass-line: rgba(255, 255, 255, .1);
+    --glass-shadow: 0 8px 30px rgba(0, 0, 0, .5);
+    --shadow: none;
+  }
+}
+
+.ios body { background: var(--bg); line-height: 1.4; }
+.ios .ios-only { display: revert; }
+.ios .sticker-only { display: none; }
+.ios .wrap {
+  padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+}
+
+/* Navigation bar: brand + date eyebrow left, a glass toolbar capsule right, then the large title. */
+.ios .top { padding: calc(10px + env(safe-area-inset-top)) 0 0; }
+.ios .brand-row { flex-wrap: nowrap; align-items: center; gap: 12px; }
+.ios .brand-lockup .mascot { display: none; }
+.ios .brand-text { min-width: 0; }
+.ios .brand {
+  display: block; transform: none;
+  font: 700 var(--t-label)/1.25 var(--font); letter-spacing: .02em; text-transform: uppercase; color: var(--brand);
+}
+.ios .ios-date {
+  display: block; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font: 600 var(--t-label)/1.25 var(--font); letter-spacing: .02em; text-transform: uppercase; color: var(--muted);
+}
+.ios .top-btns {
+  gap: 0; padding: 2px; border-radius: 999px;
+  background: var(--glass); border: .5px solid var(--glass-line); box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8); backdrop-filter: blur(20px) saturate(1.8);
+}
+.ios .top-btns .icon-btn {
+  min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 999px;
+  background: none; color: var(--text); display: grid; place-items: center;
+}
+.ios .top-btns .ico { width: 22px; height: 22px; }
+.ios #tourbtn { font: 600 var(--t-body-lg)/1 var(--font); }
+.ios #digest-btn[aria-pressed="true"] { background: none; border: 0; color: var(--link); }
+.ios #digest-btn[aria-pressed="true"] .ico { fill: currentColor; }
+.ios .view-title {
+  display: block; margin: 6px 0 0;
+  font: 700 var(--t-large)/1.15 var(--font); letter-spacing: .01em; color: var(--text);
+}
+.ios .sub { display: none; }
+.ios .status { margin-top: 4px; }
+.ios .fresh { font-size: var(--t-label); }
+.ios .health-btn { color: var(--link); text-decoration: none; font-size: var(--t-label); }
+.ios .health-btn::before { content: "· "; color: var(--muted); }
+
+/* Capsule buttons: 44px hit area, a smaller visible capsule (the transparent border is the gap),
+   like the App Store's Get button. */
+.ios .filter-btn, .ios .chip, .ios .more-btn, .ios .act, .ios .icon-btn, .ios .tour-btn, .ios .bubble {
+  border: 5px solid transparent; background-clip: padding-box; border-radius: 999px; box-shadow: none;
+  background-color: var(--fill); color: var(--link);
+  font: 600 var(--t-sub)/1.2 var(--font);
+  transition: transform .25s var(--ease), opacity .2s, background-color .2s, color .2s;
+}
+.ios .filter-btn:active, .ios .chip:active, .ios .more-btn:active, .ios .act:active, .ios .icon-btn:active,
+.ios .tour-btn:active, .ios .bubble:active, .ios .show-more:active, .ios .tab:active, .ios .src:active {
+  transform: scale(.95); opacity: .7; box-shadow: none;
+}
+.ios .filter-btn { padding: 0 16px; }
+.ios .filter-btn.on { background-color: var(--tint-fill); color: var(--on-tint); border-color: transparent; }
+
+/* New-since banner: a tinted row, not a speech bubble. */
+.ios .bubble {
+  display: block; width: 100%; margin: 10px 0 0; padding: 8px 14px; border-radius: 14px; border-width: 0;
+  background-color: var(--red-bg); color: var(--red-fg); text-decoration: none; font-weight: 600;
+}
+.ios .bubble::before, .ios .bubble::after { display: none; }
+.ios .bubble[aria-pressed="true"] { background-color: var(--red); color: #fff; }
+.ios .just-in {
+  border: 0; border-radius: 999px; padding: 2px 8px; background: var(--tint-fill); color: var(--on-tint);
+  font: 700 var(--t-caption)/1.3 var(--font); letter-spacing: .02em;
+}
+
+/* Tab bar: a floating Liquid Glass capsule at the bottom, icon over label. */
+.ios .tabs {
+  position: fixed; top: auto; left: 50%; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 10;
+  width: min(calc(100% - 16px), 480px); transform: translateX(-50%);
+  gap: 0; padding: 4px; border: .5px solid var(--glass-line); border-radius: 999px;
+  background: var(--glass); box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8); backdrop-filter: blur(24px) saturate(1.8);
+}
+.ios .tab, .ios .tab[aria-selected="true"] {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  min-height: 54px; padding: 5px 0 3px; border: 0; border-radius: 999px; box-shadow: none; transform: none;
+  background: none; color: var(--text);
+  font: 600 .58824rem/1.15 var(--font); letter-spacing: -.01em;
+  transition: transform .25s var(--ease), background-color .2s, color .2s;
+}
+.ios .tab .ico { width: 24px; height: 24px; flex: none; }
+.ios .tab-lbl { display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ios .tab[aria-selected="true"] { background: var(--fill); color: var(--link); }
+.ios .tab[aria-selected="true"] .ico { fill: currentColor; fill-opacity: .18; }
+
+/* Filters: iOS search field and capsule chips. */
+.ios .filters { padding: 12px 0 0; }
+.ios .search {
+  min-height: 40px; padding: 0 12px 0 36px; border: 0; border-radius: 12px;
+  background: var(--fill) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='m15.5 15.5 5 5'/%3E%3C/svg%3E") no-repeat 11px 50% / 17px;
+  font: 400 var(--t-body) var(--font); -webkit-appearance: none; appearance: none;
+}
+.ios .chips { gap: 2px; }
+.ios .chip, .ios #chips .chip, .ios #areas .chip { padding: 0 14px; color: var(--text); box-shadow: none; }
+.ios .chip[aria-pressed="true"], .ios #chips .chip[aria-pressed="true"], .ios #areas .chip[aria-pressed="true"] {
+  background-color: var(--tint-fill); color: var(--on-tint); border-color: transparent;
+}
+.ios .chip-clear { background-color: transparent; color: var(--link); border-style: solid; }
+.ios .active-f { font-size: var(--t-label); }
+
+/* Birthday: an inset grouped section. */
+.ios .bday-box { margin-top: 12px; border: 0; border-radius: 14px; }
+.ios .bday-head .mascot { display: none; }
+.ios .bday-head { font: 600 var(--t-body)/1.3 var(--font); }
+.ios .sel { border: 0; border-radius: 10px; background: var(--fill); font: 400 var(--t-body) var(--font); }
+.ios .bday-hint { font-size: var(--t-label); }
+
+/* Sources list: an inset grouped table. */
+.ios .health-list { gap: 0; margin: 8px 0; background: var(--surface); border-radius: 14px; overflow: hidden; }
+.ios .health-list li { border: 0; border-radius: 0; background: none; padding: 10px 16px; border-bottom: .5px solid var(--line); }
+.ios .health-list li:last-child { border-bottom: 0; }
+
+/* Story cards. The sticker becomes an app-icon tile the text wraps around. */
+.ios .list { gap: 16px; padding-top: 16px; }
+.ios .card, .ios .card:nth-of-type(n) {
+  display: flow-root; transform: none; border: 0; border-radius: var(--radius);
+  padding: 16px 16px 6px; box-shadow: var(--shadow);
+}
+.ios .card.taped::before { display: none; }
+.ios .sticker, .ios .card:nth-of-type(even) .sticker, .ios .card.unconfirmed .sticker {
+  position: static; float: right; width: 60px; height: 60px; margin: 0 0 8px 12px; padding: 9px;
+  transform: none; filter: none; background: var(--tile); border-radius: 14px; object-fit: contain;
+}
+.ios .card.unconfirmed .sticker { filter: grayscale(1); }
+.ios .eyebrow { padding-right: 0; gap: 2px 6px; align-items: center; }
+.ios .kind, .ios .card.opening .kind {
+  padding: 0; background: none; transform: none; color: var(--red);
+  font: 700 var(--t-label)/1.3 var(--font); letter-spacing: .02em; text-transform: uppercase;
+}
+.ios .card.opening .kind { color: var(--blue); }
+.ios .merch { font: 600 var(--t-label)/1.3 var(--font); letter-spacing: .02em; text-transform: uppercase; color: var(--muted); }
+.ios .merch::before { margin-right: 6px; }
+.ios .title { margin-top: 4px; font: 700 var(--t-title)/1.2 var(--font); letter-spacing: -.005em; }
+.ios .where { font-weight: 500; }
+.ios .badges { gap: 6px; }
+.ios .badge, .ios #stale { border-radius: 999px; padding: 3px 9px; font: 600 var(--t-caption)/1.3 var(--font); letter-spacing: 0; }
+.ios .valid { font-size: var(--t-label); }
+.ios .summary-btn { font-size: var(--t-sub); color: var(--muted); line-height: 1.4; }
+.ios .summary-btn[aria-expanded="true"] { color: var(--text); }
+.ios .more-hint { color: var(--link); font-size: var(--t-label); font-weight: 600; }
+.ios .needs { font-size: var(--t-label); }
+.ios .actions { clear: both; margin-top: 10px; padding-top: 4px; gap: 0; border-top: .5px solid var(--line); }
+.ios .src { color: var(--link); font: 600 var(--t-sub)/44px var(--font); }
+.ios .more-btn, .ios .act { min-width: 44px; padding: 0 12px; }
+.ios .more-btn { color: var(--text); }
+.ios .more-btn[aria-expanded="true"], .ios .act[aria-pressed="true"] {
+  background-color: var(--tint-fill); color: var(--on-tint); border-color: transparent;
+}
+.ios .act[data-act="report"][aria-pressed="true"] { background-color: var(--red); color: #fff; }
+.ios .report-row { gap: 2px; }
+.ios .src-list a, .ios .src-extra { border-top: .5px solid var(--line); font-weight: 600; }
+.ios .show-more {
+  min-height: 50px; border: 0; border-radius: 14px; background: var(--surface);
+  color: var(--link); font: 600 var(--t-body)/1 var(--font); transition: transform .25s var(--ease), opacity .2s;
+}
+.ios .card:focus-visible { outline-color: var(--focus); }
+
+/* Empty / error: ContentUnavailableView. */
+.ios .state { border: 0; padding: 40px 16px; }
+.ios .state strong { font: 700 var(--t-body-lg)/1.3 var(--font); }
+.ios .state.err strong { color: var(--red); }
+
+/* Toast: a glass HUD capsule above the tab bar. */
+.ios .toast {
+  bottom: calc(86px + env(safe-area-inset-bottom)); padding: 12px 20px; border-radius: 999px;
+  background: rgba(28, 28, 30, .82); color: #fff; font: 600 var(--t-sub)/1.3 var(--font); text-align: center;
+  -webkit-backdrop-filter: blur(20px) saturate(1.8); backdrop-filter: blur(20px) saturate(1.8);
+  transition: transform .35s var(--ease), opacity .25s, visibility .25s;
+}
+
+/* Tour: an alert-style sheet. */
+.ios .tour-spot { border-radius: 22px; outline-color: var(--link); }
+.ios .tour-card {
+  border: 0; border-radius: 24px; padding: 18px 18px 12px;
+  background: var(--surface); box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+}
+.ios .tour-n { letter-spacing: .04em; }
+.ios .tour-t { font: 700 var(--t-body-lg)/1.25 var(--font); }
+.ios .tour-b { font-size: var(--t-sub); }
+.ios .tour-off input { accent-color: var(--link); }
+.ios .tour-btn { padding: 0 16px; }
+.ios #tour-skip { background-color: transparent; color: var(--muted); }
+.ios .tour-next { background-color: var(--tint-fill); color: var(--on-tint); border-color: transparent; }
+
 /* Last on purpose: a @media block adds no specificity, so it must follow the rules it overrides.
    The named movers use !important too, so their position cannot matter. Tilt and rotation are
    static and stay; so does the press offset, which is a state, not an animation. */

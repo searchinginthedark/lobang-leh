@@ -13,6 +13,8 @@
 <link rel="preload" href="fonts/PlusJakartaSans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/BagelFatOne-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="app.css">
+<!-- Sets html.ios (the default look) or not, before first paint. -->
+<script src="skin.js"></script>
 </head>
 <body>
 <!-- Kaya toast mascot sprite. class="sr", not an inline style: CSP is style-src 'self'. -->
@@ -25,20 +27,39 @@
     <circle cx="39" cy="27" r="3" fill="#2b2f36"/>
     <path d="M27 43q5 4 10 0" stroke="#2b2f36" stroke-width="3" fill="none" stroke-linecap="round"/>
   </symbol>
+  <!-- Line icons for the iOS look (tab bar, toolbar). Drawn for this app, 24px grid, stroked in
+       currentColor. Hidden in the Sticker look, which keeps its text labels. -->
+  <symbol id="i-hot" viewBox="0 0 24 24"><path d="M12 2.8c.6 3.6 5.2 5.4 5.2 10.4a5.2 5.2 0 0 1-10.4 0c0-2.7 1.4-4.4 2.7-5.4.1 2 1 3.2 2.1 3.7-.5-3.4-.4-6 .4-8.7z"/></symbol>
+  <symbol id="i-ending" viewBox="0 0 24 24"><path d="M6.5 3h11M6.5 21h11M8 3v2.6c0 2.6 4 3.8 4 6.4 0-2.6 4-3.8 4-6.4V3M8 21v-2.6c0-2.6 4-3.8 4-6.4 0 2.6 4 3.8 4 6.4V21"/></symbol>
+  <symbol id="i-new" viewBox="0 0 24 24"><path d="M4 9.5 5.6 4h12.8L20 9.5M4.6 9.5V20h14.8V9.5M4 9.5a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0M10 20v-5h4v5"/></symbol>
+  <symbol id="i-birthday" viewBox="0 0 24 24"><path d="M4 9.5h16V13H4zM5.5 13v7.5h13V13M12 9.5v11M12 9.5C10.6 5.8 6.5 5.4 6.5 7.6S10 9.5 12 9.5s5.5-.1 5.5-1.9-4.1-1.8-5.5 1.9"/></symbol>
+  <symbol id="i-saved" viewBox="0 0 24 24"><path d="M6.5 3.5h11v17L12 16.6l-5.5 3.9z"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M19.4 12.5A7.5 7.5 0 1 1 17 6.6M19.2 3.6v4.6h-4.6"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6.2 16.5V11a5.8 5.8 0 0 1 11.6 0v5.5l1.7 2.2h-15zM10 21.2h4"/></symbol>
+  <symbol id="i-skin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M12 3.4a8.6 8.6 0 0 0 0 17.2z" fill="currentColor" stroke="none"/></symbol>
 </svg>
 <div class="wrap">
   <header class="top">
     <div class="brand-row">
       <div class="brand-lockup">
         <svg class="mascot bob" viewBox="0 0 64 64" aria-hidden="true"><use href="#kaya"/></svg>
-        <h1 class="brand">LobangLeh</h1>
+        <!-- In the iOS look the brand and today's date stack as the small eyebrow over the large title. -->
+        <div class="brand-text">
+          <h1 class="brand">LobangLeh</h1>
+          <p class="ios-date ios-only" id="ios-date"></p>
+        </div>
       </div>
       <div class="top-btns">
         <button type="button" id="tourbtn" class="icon-btn" aria-label="How to use" title="How to use" hidden>?</button>
-        <button type="button" id="digest-btn" class="icon-btn" aria-label="Morning digest" aria-pressed="false" title="Morning digest">&#x1F514;</button>
-        <button type="button" id="refresh" class="icon-btn" aria-label="Refresh deals">Refresh</button>
+        <button type="button" id="digest-btn" class="icon-btn" aria-label="Morning digest" aria-pressed="false" title="Morning digest"><svg class="ico ios-only" aria-hidden="true"><use href="#i-bell"/></svg><span class="sticker-only">&#x1F514;</span></button>
+        <!-- Switches between the iOS look and the Sticker look; saved on this phone (skin.js). -->
+        <button type="button" id="skin-btn" class="icon-btn" aria-label="Switch to Sticker look" title="Switch to Sticker look"><svg class="ico" aria-hidden="true"><use href="#i-skin"/></svg></button>
+        <button type="button" id="refresh" class="icon-btn" aria-label="Refresh deals"><svg class="ico ios-only" aria-hidden="true"><use href="#i-refresh"/></svg><span class="sticker-only">Refresh</span></button>
       </div>
     </div>
+    <!-- iOS look only: the open view's name as a large title (the tab bar already names it for
+         screen readers, so this is hidden from them). -->
+    <p class="view-title ios-only" id="view-title" aria-hidden="true"></p>
     <!-- Filled by app.js from lobang:seen; stays hidden on a first visit or when nothing is new.
          Tapping it shows only those deals (each card is also marked Just in). -->
     <button type="button" class="bubble" id="newsince" aria-pressed="false" hidden></button>
@@ -54,11 +75,11 @@
   </header>
 
   <nav class="tabs" id="tabs" role="tablist" aria-label="Views">
-    <button type="button" role="tab" class="tab" data-view="hot" aria-selected="true">Hot</button>
-    <button type="button" role="tab" class="tab" data-view="ending" aria-selected="false">Ending soon</button>
-    <button type="button" role="tab" class="tab" data-view="new" aria-selected="false">New openings</button>
-    <button type="button" role="tab" class="tab" data-view="birthday" aria-selected="false">Birthday</button>
-    <button type="button" role="tab" class="tab" data-view="saved" aria-selected="false">Saved</button>
+    <button type="button" role="tab" class="tab" data-view="hot" aria-selected="true"><svg class="ico ios-only" aria-hidden="true"><use href="#i-hot"/></svg><span class="tab-lbl">Hot</span></button>
+    <button type="button" role="tab" class="tab" data-view="ending" aria-selected="false"><svg class="ico ios-only" aria-hidden="true"><use href="#i-ending"/></svg><span class="tab-lbl">Ending soon</span></button>
+    <button type="button" role="tab" class="tab" data-view="new" aria-selected="false"><svg class="ico ios-only" aria-hidden="true"><use href="#i-new"/></svg><span class="tab-lbl">New openings</span></button>
+    <button type="button" role="tab" class="tab" data-view="birthday" aria-selected="false"><svg class="ico ios-only" aria-hidden="true"><use href="#i-birthday"/></svg><span class="tab-lbl">Birthday</span></button>
+    <button type="button" role="tab" class="tab" data-view="saved" aria-selected="false"><svg class="ico ios-only" aria-hidden="true"><use href="#i-saved"/></svg><span class="tab-lbl">Saved</span></button>
   </nav>
 
   <!-- Birthday view only. The date never leaves this phone: it is read by app.js, not sent anywhere. -->
@@ -118,7 +139,7 @@
     <li data-target="filter-btn" data-view=""><b>Narrow it down</b><span>Tap Filter to search. Search goes by meaning, so free food also finds complimentary cake, best match first; a brand or mall name works too. Pick a category or an area, or keep only 1-for-1, Free or Easy to claim deals (a real discount you just walk in for: no app, sign-up, code or minimum spend). An area shows only posts that name a place, so chain-wide deals drop out. While a filter is on, a Showing line above the deals names it, and Clear filters shows everything again.</span></li>
     <li data-target="tour-first-card" data-view="hot"><b>Reading a card</b><span>The label says what it is: a red Promo or blue New opening label. The sticker shows the kind of food. The brand sits beside it when we recognise one. A pin line under the headline says where, with the nearest MRT, when the post names a place. Tags sum up the deal, and an end date only shows when the post states one. A Needs line lists what the post says it takes, such as membership or a min spend. Tap the text to read the full post right here.</span></li>
     <li data-target="tour-first-actions" data-view="hot"><b>Act on it</b><span>Tap the source name to read the full post. A number like +3 lists the other sites that covered it. Save keeps it in the Saved view; Share sends the link. The flag reports a card that has ended, is not food or has wrong details; reports stay on this phone and the sources list can copy them. Each view shows 12 deals; Show more at the bottom loads the next 12.</span></li>
-    <li data-target="tourbtn" data-view=""><b>That's it</b><span>Tap the bell for a morning digest: one notification around 8am with the 3 best new deals. On iPhone, add the app to your Home Screen first. Tap the ? button any time to see this tour again.</span></li>
+    <li data-target="tourbtn" data-view=""><b>That's it</b><span>Tap the bell for a morning digest: one notification around 8am with the 3 best new deals. On iPhone, add the app to your Home Screen first. The half-circle button switches between the iOS look and the Sticker look. Tap the ? button any time to see this tour again.</span></li>
   </ol>
 </div>
 <script src="embed.js"></script>

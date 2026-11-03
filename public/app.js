@@ -1001,6 +1001,27 @@
     $('active-text').textContent = 'Showing: ' + on.join(' · ');
     $('bday-box').hidden = state.view !== 'birthday';
     if (state.view === 'birthday') renderBday();
+    // iOS look: the open view's name is the large title (CSS hides it in the Sticker look).
+    var sel = document.querySelector('.tab[aria-selected="true"] .tab-lbl');
+    $('view-title').textContent = sel ? sel.textContent : '';
+  }
+
+  // ---------- look: iOS (default) or Sticker. skin.js applies it before first paint ----------
+  function paintSkin() {
+    var ios = !window.LobangSkin || window.LobangSkin.get() === 'ios';
+    var label = ios ? 'Switch to Sticker look' : 'Switch to iOS look';
+    $('skin-btn').setAttribute('aria-label', label);
+    $('skin-btn').title = label;
+  }
+  // iOS look: today's date as the eyebrow over the large title, like the App Store's Today tab.
+  var longDay = new Intl.DateTimeFormat('en-SG', { timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long' });
+  function paintDate() { $('ios-date').textContent = longDay.format(new Date()); }
+  function toggleSkin() {
+    if (!window.LobangSkin) return;
+    var next = window.LobangSkin.get() === 'ios' ? 'sticker' : 'ios';
+    window.LobangSkin.set(next);
+    paintSkin();
+    toast(next === 'ios' ? 'iOS look' : 'Sticker look');
   }
 
   function render() {
@@ -1283,6 +1304,9 @@
     $('bday-d').addEventListener('change', function () { bdaySet(); rerender(); });
     $('refresh').addEventListener('click', load);
     $('digest-btn').addEventListener('click', toggleDigest);
+    $('skin-btn').addEventListener('click', toggleSkin);
+    paintSkin();
+    paintDate();
     $('filter-btn').addEventListener('click', function () {
       var open = $('filters').hidden;
       $('filters').hidden = !open;
@@ -1295,6 +1319,7 @@
       if (document.hidden) return;
       countOpen();
       countView(state.view);
+      paintDate();
       if (data) renderHeader();
     });
     countOpen();
