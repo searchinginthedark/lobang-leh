@@ -23,7 +23,7 @@
     {
       "id": "views",
       "name": "Five views switch from the tab row",
-      "reach": "Tap Hot / Ending soon / New openings / Birthday / Saved under the header.",
+      "reach": "Tap Hot / Ending soon / New openings / Birthday / Saved: the glass tab bar at the bottom in the iOS look, the tab row under the header in the Sticker look.",
       "steps": [["click", ".tab[data-view=new]"]],
       "expect": [
         "document.querySelector('.tab[data-view=new]').getAttribute('aria-selected') === 'true'",
@@ -68,7 +68,7 @@
       "id": "clear",
       "name": "Clear filters brings every deal back",
       "reach": "With any filter on, tap Clear filters (#clear) on the Showing line.",
-      "steps": [["click", "#filter-btn"], ["fill", "#q", "zzqqnomatch"], ["wait_js", "!document.getElementById('active').hidden"], ["click", "#clear"]],
+      "steps": [["click", "#filter-btn"], ["fill", "#q", "zzqqnomatch"], ["wait_js", "!document.getElementById('active').hidden"], ["click", "#filters-done"], ["wait_js", "document.getElementById('filters').hidden"], ["click", "#clear"]],
       "expect": [
         "document.querySelectorAll('#list .card').length > 0",
         "document.getElementById('active').hidden",
@@ -282,6 +282,44 @@
         "document.getElementById('newsince').getAttribute('aria-pressed') === 'true'",
         "document.getElementById('active-text').textContent.includes('New since')",
         "[...document.querySelectorAll('#list .card')].every(c => c.querySelector('.just-in'))"
+      ]
+    },
+    {
+      "id": "skin",
+      "name": "Two looks: iOS (default) and Sticker, switched from the header and kept on this phone",
+      "reach": "Tap the half-circle button (#skin-btn) in the header. It toggles between the iOS look (bottom tab bar, large title) and the Sticker look; the choice is saved in lobang:skin.",
+      "steps": [["js", "window.__was = document.documentElement.classList.contains('ios')"], ["click", "#skin-btn"]],
+      "expect": [
+        "window.__was === true",
+        "!document.documentElement.classList.contains('ios')",
+        "localStorage.getItem('lobang:skin') === 'sticker'",
+        "document.getElementById('skin-btn').getAttribute('aria-label') === 'Switch to iOS look'",
+        "document.getElementById('toast').textContent === 'Sticker look'"
+      ]
+    },
+    {
+      "id": "zoom",
+      "name": "iOS look: tapping a card's text zooms it to a full-screen page with the full post; close puts it back",
+      "reach": "In the iOS look, tap a card's grey text. The card morphs to full screen (View Transition), already open. The close button (top right), Escape or a swipe down returns it to the list.",
+      "requires": "document.documentElement.classList.contains('ios') && !!document.querySelector('#list .summary-btn')",
+      "steps": [["click_first", "#list .summary-btn"], ["wait_js", "!!document.querySelector('#list .card.zoomed')"], ["js", "window.__z = [document.documentElement.classList.contains('zoom-lock'), getComputedStyle(document.querySelector('.card.zoomed')).position, document.querySelector('.card.zoomed .summary-btn').getAttribute('aria-expanded')].join(); 1"], ["click", "#list .card.zoomed .zoom-close"], ["wait_js", "!document.querySelector('#list .card.zoomed')"]],
+      "expect": [
+        "window.__z === 'true,fixed,true'",
+        "!document.documentElement.classList.contains('zoom-lock')",
+        "document.querySelector('#list .summary-btn').getAttribute('aria-expanded') === 'false'"
+      ]
+    },
+    {
+      "id": "filter-sheet",
+      "name": "iOS look: Filter opens a bottom sheet over a dimmed, locked page; Done closes it",
+      "reach": "In the iOS look tap Filter. The sheet rises with a grabber; drag its header up for the tall height, down (or Done, Escape, a tap on the dimmed page) to close.",
+      "requires": "document.documentElement.classList.contains('ios')",
+      "steps": [["click", "#filter-btn"], ["js", "window.__s = [getComputedStyle(document.getElementById('filters')).position, document.getElementById('filters').getAttribute('role'), document.getElementById('sheet-dim').hidden, document.documentElement.classList.contains('sheet-lock')].join(); 1"], ["click", "#filters-done"], ["wait_js", "document.getElementById('filters').hidden"]],
+      "expect": [
+        "window.__s === 'fixed,dialog,false,true'",
+        "document.getElementById('sheet-dim').hidden",
+        "!document.documentElement.classList.contains('sheet-lock')",
+        "document.getElementById('filter-btn').getAttribute('aria-expanded') === 'false'"
       ]
     },
     {
