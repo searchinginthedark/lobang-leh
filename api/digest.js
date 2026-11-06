@@ -3,6 +3,8 @@
 // POST /api/digest  Authorization: Bearer DIGEST_SECRET
 //                   { day: "YYYY-MM-DD", title, body, ids }  -> push it to every subscriber, once per day
 // GET  /api/digest  -> { ok, last }: the last run's counts, for a health check. No secrets, no subscribers.
+//                      Takes no credential, so its read is memoized per instance for 5 minutes
+//                      (_memo.js): a stranger's loop must not spend the shared database per call.
 //
 // A backend problem answers 200 {ok:false, degraded} (never 5xx): the caller is a scheduler, and
 // the next collect retries because the day's lock is only kept once the subscriber list was read.
@@ -10,8 +12,14 @@
 const webpush = require('web-push');
 const { cmd, configured } = require('./_redis');
 const D = require('./_digest');
+const { memo } = require('./_memo');
 
 const SEND_TIMEOUT_MS = 6000;
+
+const readLast = memo(async () => {
+  const raw = await cmd('GET', D.KEYS.last);
+  return raw ? JSON.parse(raw) : null;
+});
 
 // Why the store failed, as a code that can never echo the URL or token: "Failed to parse URL from
 // <url>" would print the URL, so messages are classified, not passed through.
@@ -34,8 +42,8 @@ module.exports = async (req, res) => {
   if (req.method === 'GET') {
     if (!configured()) return res.status(200).json({ ok: false, degraded: 'store_not_configured' });
     try {
-      const raw = await cmd('GET', D.KEYS.last);
-      return res.status(200).json({ ok: true, last: raw ? JSON.parse(raw) : null });
+      const { value, ageMs } = await readLast();
+      return res.status(200).json({ ok: true, last: value, storeAgeMs: ageMs });
     } catch (e) {
       return res.status(200).json({ ok: false, degraded: 'store_unavailable', reason: storeReason(e) });
     }
@@ -60,3 +68,5 @@ module.exports = async (req, res) => {
     return res.status(200).json({ ok: false, degraded: 'store_unavailable', reason: storeReason(e) });
   }
 };
+
+module.exports._readLast = readLast;

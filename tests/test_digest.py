@@ -60,6 +60,11 @@ class DigestApi(unittest.TestCase):
                              capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
 
+    def test_get_is_memoized(self):
+        out = subprocess.run(["node", os.path.join(ROOT, "tests", "digest_memo.js")],
+                             capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
