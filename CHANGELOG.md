@@ -1,3 +1,7 @@
+## v2026.11.06
+
+- security: stop anonymous GET /api/digest spending shared Redis on every call
+
 ## v2026.11.03.5
 
 - sources: 10 Google News queries down to 5, so a Google outage alone no longer trips the 75% health floor
